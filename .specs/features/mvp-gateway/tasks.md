@@ -97,7 +97,7 @@ response relay, and SSE flush behavior.
 
 **Verify:** `go test ./internal/gateway -run Model -v`
 
-### T5: Create the public HTTP server
+### T5: Create the public HTTP server ✅
 
 **What:** Wire routes and add health, authentication, request ID, recovery, and
 structured access logging.
@@ -111,10 +111,10 @@ structured access logging.
 
 **Done when:**
 
-- [ ] `/healthz` is public and `/v1/*` enforces the configured bearer key.
-- [ ] Every response has a request ID and every completed request is logged.
-- [ ] Panics become a safe OpenAI-shaped 500 response.
-- [ ] `go test ./...` passes with at least 22 tests total.
+- [x] `/healthz` is public and `/v1/*` enforces the configured bearer key.
+- [x] Every response has a request ID and every completed request is logged.
+- [x] Panics become a safe OpenAI-shaped 500 response.
+- [x] `go test ./...` passes with at least 22 tests total.
 
 **Verify:** `go test ./internal/httpapi -v`
 
