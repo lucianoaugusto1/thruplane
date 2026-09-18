@@ -56,7 +56,7 @@ request transformation.
 
 **Verify:** `go test ./internal/provider -v`
 
-### T3: Create chat routing handler
+### T3: Create chat routing handler ✅
 
 **What:** Add request validation, alias resolution, retries, ordered fallback,
 response relay, and SSE flush behavior.
@@ -70,11 +70,11 @@ response relay, and SSE flush behavior.
 
 **Done when:**
 
-- [ ] Unknown fields survive model rewriting.
-- [ ] Retryable failures use retries and then the next target.
-- [ ] Invalid requests do not contact upstreams.
-- [ ] SSE reaches the client before the upstream closes.
-- [ ] `go test ./...` passes with at least 14 tests total.
+- [x] Unknown fields survive model rewriting.
+- [x] Retryable failures use retries and then the next target.
+- [x] Invalid requests do not contact upstreams.
+- [x] SSE reaches the client before the upstream closes.
+- [x] `go test ./...` passes with at least 14 tests total.
 
 **Verify:** `go test ./internal/gateway -v`
 

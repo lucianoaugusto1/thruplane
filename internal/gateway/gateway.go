@@ -1,0 +1,214 @@
+package gateway
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"strings"
+
+	"gollm-gateway/internal/config"
+	"gollm-gateway/internal/provider"
+)
+
+const streamBufferSize = 32 * 1024
+
+type Gateway struct {
+	config  config.Config
+	clients map[string]*provider.Client
+}
+
+func New(cfg config.Config, clients map[string]*provider.Client) *Gateway {
+	return &Gateway{config: cfg, clients: clients}
+}
+
+func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
+	body, ok := readBody(w, r, g.config.Server.MaxBodyBytes)
+	if !ok {
+		return
+	}
+
+	alias, stream, ok := validateChatRequest(w, body)
+	if !ok {
+		return
+	}
+	model, ok := g.config.Models[alias]
+	if !ok {
+		writeError(w, http.StatusNotFound, "The requested model is not configured.", "invalid_request_error", "model_not_found")
+		return
+	}
+
+	for targetIndex, target := range model.Targets {
+		client := g.clients[target.Provider]
+		if client == nil {
+			continue
+		}
+
+		for attempt := 0; attempt <= g.config.Routing.Retries; attempt++ {
+			if r.Context().Err() != nil {
+				return
+			}
+
+			response, err := client.Do(r.Context(), body, target.Model)
+			if err != nil {
+				if r.Context().Err() != nil {
+					return
+				}
+				continue
+			}
+
+			if !isRetryable(response.StatusCode) {
+				relayResponse(w, response, stream)
+				return
+			}
+
+			lastAttempt := attempt == g.config.Routing.Retries
+			lastTarget := targetIndex == len(model.Targets)-1
+			if lastAttempt && lastTarget {
+				relayResponse(w, response, stream)
+				return
+			}
+
+			_, _ = io.Copy(io.Discard, io.LimitReader(response.Body, 64<<10))
+			response.Body.Close()
+		}
+	}
+
+	if r.Context().Err() != nil {
+		return
+	}
+	writeError(w, http.StatusBadGateway, "The gateway could not reach an upstream provider.", "api_error", "upstream_unavailable")
+}
+
+func readBody(w http.ResponseWriter, r *http.Request, maxBytes int64) ([]byte, bool) {
+	body, err := io.ReadAll(io.LimitReader(r.Body, maxBytes+1))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "The request body could not be read.", "invalid_request_error", "invalid_body")
+		return nil, false
+	}
+	if int64(len(body)) > maxBytes {
+		writeError(w, http.StatusRequestEntityTooLarge, "The request body exceeds the configured limit.", "invalid_request_error", "request_too_large")
+		return nil, false
+	}
+	return body, true
+}
+
+func validateChatRequest(w http.ResponseWriter, body []byte) (string, bool, bool) {
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(body, &fields); err != nil || fields == nil {
+		writeError(w, http.StatusBadRequest, "The request body must be a JSON object.", "invalid_request_error", "invalid_json")
+		return "", false, false
+	}
+
+	modelField, ok := fields["model"]
+	if !ok {
+		writeError(w, http.StatusBadRequest, "The model field is required.", "invalid_request_error", "missing_model")
+		return "", false, false
+	}
+	var model string
+	if err := json.Unmarshal(modelField, &model); err != nil {
+		writeError(w, http.StatusBadRequest, "The model field must be a string.", "invalid_request_error", "invalid_model")
+		return "", false, false
+	}
+	if _, ok := fields["messages"]; !ok {
+		writeError(w, http.StatusBadRequest, "The messages field is required.", "invalid_request_error", "missing_messages")
+		return "", false, false
+	}
+
+	if nField, ok := fields["n"]; ok {
+		var n int
+		if err := json.Unmarshal(nField, &n); err != nil || n != 1 {
+			writeError(w, http.StatusBadRequest, "The n field must be 1 when provided.", "invalid_request_error", "unsupported_n")
+			return "", false, false
+		}
+	}
+
+	var stream bool
+	if streamField, ok := fields["stream"]; ok {
+		if err := json.Unmarshal(streamField, &stream); err != nil {
+			writeError(w, http.StatusBadRequest, "The stream field must be a boolean.", "invalid_request_error", "invalid_stream")
+			return "", false, false
+		}
+	}
+
+	return model, stream, true
+}
+
+func isRetryable(status int) bool {
+	switch status {
+	case http.StatusRequestTimeout,
+		http.StatusTooManyRequests,
+		http.StatusInternalServerError,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusGatewayTimeout:
+		return true
+	default:
+		return false
+	}
+}
+
+func relayResponse(w http.ResponseWriter, response *http.Response, stream bool) {
+	defer response.Body.Close()
+	relayHeaders(w.Header(), response.Header)
+	w.WriteHeader(response.StatusCode)
+	if !stream {
+		_, _ = io.Copy(w, response.Body)
+		return
+	}
+
+	controller := http.NewResponseController(w)
+	buffer := make([]byte, streamBufferSize)
+	for {
+		read, err := response.Body.Read(buffer)
+		if read > 0 {
+			if _, writeErr := w.Write(buffer[:read]); writeErr != nil {
+				return
+			}
+			_ = controller.Flush()
+		}
+		if err != nil {
+			return
+		}
+	}
+}
+
+func relayHeaders(destination, source http.Header) {
+	for _, name := range []string{"Content-Type", "Cache-Control", "Retry-After"} {
+		copyHeader(destination, source, name, name)
+	}
+	for name := range source {
+		if strings.HasPrefix(strings.ToLower(name), "x-ratelimit-") {
+			copyHeader(destination, source, name, name)
+		}
+	}
+	copyHeader(destination, source, "X-Request-Id", "X-Upstream-Request-Id")
+}
+
+func copyHeader(destination, source http.Header, sourceName, destinationName string) {
+	values := source.Values(sourceName)
+	if len(values) == 0 {
+		return
+	}
+	destination.Del(destinationName)
+	for _, value := range values {
+		destination.Add(destinationName, value)
+	}
+}
+
+type openAIError struct {
+	Error struct {
+		Message string `json:"message"`
+		Type    string `json:"type"`
+		Code    string `json:"code"`
+	} `json:"error"`
+}
+
+func writeError(w http.ResponseWriter, status int, message, errorType, code string) {
+	payload := openAIError{}
+	payload.Error.Message = message
+	payload.Error.Type = errorType
+	payload.Error.Code = code
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(payload)
+}
