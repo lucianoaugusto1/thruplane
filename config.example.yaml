@@ -1,0 +1,31 @@
+server:
+  address: ":8080"
+  api_key: "${GATEWAY_API_KEY}"
+  max_body_bytes: 1048576
+  read_header_timeout: 5s
+  shutdown_timeout: 10s
+
+providers:
+  openai:
+    type: openai
+    base_url: https://api.openai.com
+    api_key: "${OPENAI_API_KEY}"
+  ollama:
+    type: ollama
+    base_url: http://localhost:11434
+
+models:
+  fast:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+      - provider: ollama
+        model: llama3.2:latest
+  local:
+    targets:
+      - provider: ollama
+        model: llama3.2:latest
+
+routing:
+  retries: 1
+  response_header_timeout: 30s

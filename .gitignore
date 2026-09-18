@@ -1,0 +1,6 @@
+.DS_Store
+gateway
+config.yaml
+coverage.out
+work/
+outputs/

@@ -1,7 +1,7 @@
 # MVP gateway tasks
 
 **Design:** `.specs/features/mvp-gateway/design.md`
-**Status:** In Progress
+**Status:** Done
 
 ## Execution plan
 
@@ -138,7 +138,7 @@ timeouts, and graceful shutdown.
 
 **Verify:** `go build ./cmd/gateway`
 
-### T7: Package and document the MVP
+### T7: Package and document the MVP ✅
 
 **What:** Add an example configuration, Dockerfile, ignore rules, and README
 that matches the implemented behavior.
@@ -153,10 +153,10 @@ that matches the implemented behavior.
 
 **Done when:**
 
-- [ ] A user can run OpenAI and Ollama examples by following the README.
-- [ ] The example configuration passes startup validation.
-- [ ] All documented paths, flags, and fields match the code.
-- [ ] `go test ./... && go vet ./... && go build ./cmd/gateway` passes.
+- [x] A user can run OpenAI and Ollama examples by following the README.
+- [x] The example configuration passes startup validation.
+- [x] All documented paths, flags, and fields match the code.
+- [x] `go test ./... && go vet ./... && go build ./cmd/gateway` passes.
 
 **Verify:** Run the build gate and start the binary with the example config.
 

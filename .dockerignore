@@ -1,0 +1,8 @@
+.git
+.specs
+.DS_Store
+gateway
+work
+outputs
+coverage.out
+config.yaml
