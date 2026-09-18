@@ -78,7 +78,7 @@ response relay, and SSE flush behavior.
 
 **Verify:** `go test ./internal/gateway -v`
 
-### T4: Create model discovery handlers
+### T4: Create model discovery handlers ✅
 
 **What:** Add deterministic list and retrieve behavior for configured aliases.
 **Where:** `internal/gateway/models.go`, `internal/gateway/models_test.go`
@@ -91,9 +91,9 @@ response relay, and SSE flush behavior.
 
 **Done when:**
 
-- [ ] List output is sorted and OpenAI-shaped.
-- [ ] Retrieve returns one model or an OpenAI-shaped 404.
-- [ ] `go test ./internal/...` passes with at least 17 tests total.
+- [x] List output is sorted and OpenAI-shaped.
+- [x] Retrieve returns one model or an OpenAI-shaped 404.
+- [x] `go test ./internal/...` passes with at least 17 tests total.
 
 **Verify:** `go test ./internal/gateway -run Model -v`
 
