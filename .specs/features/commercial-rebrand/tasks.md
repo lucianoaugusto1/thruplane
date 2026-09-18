@@ -9,7 +9,7 @@
 T1 -> T2 -> T3 -> T4 -> T5
 ```
 
-### T1: Define the product identity
+### T1: Define the product identity ✅
 
 **What:** Document the working brand, positioning, voice, and naming system.
 **Where:** `docs/brand.md`
@@ -20,8 +20,8 @@ T1 -> T2 -> T3 -> T4 -> T5
 
 **Done when:**
 
-- [ ] Tagline, one-line description, audiences, and edition names are explicit.
-- [ ] Provisional-name and legal-clearance status are unambiguous.
+- [x] Tagline, one-line description, audiences, and edition names are explicit.
+- [x] Provisional-name and legal-clearance status are unambiguous.
 
 ### T2: Rename the executable and package identity
 
