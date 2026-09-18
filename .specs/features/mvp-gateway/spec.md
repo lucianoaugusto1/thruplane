@@ -128,13 +128,13 @@ OpenAI-compatible list response.
 | GW-01 | Route chat completions | Design | In Design |
 | GW-02 | Stream chat completions | Design | In Design |
 | GW-03 | Fallback and resilience | Design | In Design |
-| GW-04 | Configure and operate | Design | In Design |
+| GW-04 | Configure and operate | Tasks | Implementing |
 | GW-05 | Inbound authentication | Design | In Design |
 | GW-06 | Operational logging and health | Design | In Design |
 | GW-07 | Discover model aliases | Design | In Design |
-| GW-08 | Stable validation and error behavior | Design | In Design |
+| GW-08 | Stable validation and error behavior | Tasks | Implementing |
 
-**Coverage:** 8 total, 0 mapped to tasks, 8 awaiting task mapping.
+**Coverage:** 8 total, 8 mapped to tasks, 0 unmapped.
 
 ## Success criteria
 

@@ -14,7 +14,7 @@ Tests remain co-located with the component they verify.
 
 ## Task breakdown
 
-### T1: Create strict configuration component
+### T1: Create strict configuration component ✅
 
 **What:** Add the Go module plus YAML loading, defaults, environment expansion,
 and validation.
@@ -29,9 +29,9 @@ and validation.
 
 **Done when:**
 
-- [ ] Valid configuration loads with defaults and expanded environment values.
-- [ ] Unknown fields, bad URLs, missing targets, and missing providers fail.
-- [ ] `go test ./internal/...` passes with at least 5 tests.
+- [x] Valid configuration loads with defaults and expanded environment values.
+- [x] Unknown fields, bad URLs, missing targets, and missing providers fail.
+- [x] `go test ./internal/...` passes with at least 5 tests.
 
 **Verify:** `go test ./internal/config -v`
 
