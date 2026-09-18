@@ -1,6 +1,6 @@
 # Project state
 
-**Updated:** September 17, 2026
+**Updated:** September 18, 2026
 
 ## Decisions
 
@@ -10,10 +10,20 @@
 - Provider support begins with OpenAI-compatible HTTP APIs, specifically
   OpenAI and Ollama.
 - Standard Go tests and `httptest` provide unit and end-to-end coverage.
+- Go 1.26 is the tested baseline; the implementation uses only standard HTTP
+  features available since Go 1.22.
+- The container uses a multi-stage Go build and a non-root distroless runtime.
 
 ## Blockers
 
 - None.
+
+## Lessons learned
+
+- Root binary ignore patterns must be anchored so they do not hide Go package
+  directories with the same name.
+- Streaming middleware must expose its wrapped writer through `Unwrap` so
+  `http.ResponseController` can flush SSE chunks.
 
 ## Deferred ideas
 

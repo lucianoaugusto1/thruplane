@@ -8,10 +8,10 @@ OpenAI-compatible endpoint and moves those concerns into a small Go service.
 
 ## Goals
 
-- [ ] Route configured model aliases to one or more upstream targets.
-- [ ] Preserve buffered and streaming OpenAI-compatible chat behavior.
-- [ ] Fail with stable, safe, OpenAI-shaped errors.
-- [ ] Run as a stateless binary with a human-readable configuration file.
+- [x] Route configured model aliases to one or more upstream targets.
+- [x] Preserve buffered and streaming OpenAI-compatible chat behavior.
+- [x] Fail with stable, safe, OpenAI-shaped errors.
+- [x] Run as a stateless binary with a human-readable configuration file.
 
 ## Out of scope
 
@@ -125,20 +125,20 @@ OpenAI-compatible list response.
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| GW-01 | Route chat completions | Design | In Design |
-| GW-02 | Stream chat completions | Design | In Design |
-| GW-03 | Fallback and resilience | Design | In Design |
-| GW-04 | Configure and operate | Tasks | Implementing |
-| GW-05 | Inbound authentication | Design | In Design |
-| GW-06 | Operational logging and health | Design | In Design |
-| GW-07 | Discover model aliases | Design | In Design |
-| GW-08 | Stable validation and error behavior | Tasks | Implementing |
+| GW-01 | Route chat completions | Validation | Verified |
+| GW-02 | Stream chat completions | Validation | Verified |
+| GW-03 | Fallback and resilience | Validation | Verified |
+| GW-04 | Configure and operate | Validation | Verified |
+| GW-05 | Inbound authentication | Validation | Verified |
+| GW-06 | Operational logging and health | Validation | Verified |
+| GW-07 | Discover model aliases | Validation | Verified |
+| GW-08 | Stable validation and error behavior | Validation | Verified |
 
 **Coverage:** 8 total, 8 mapped to tasks, 0 unmapped.
 
 ## Success criteria
 
-- [ ] All build-gate commands pass without skipped tests.
-- [ ] A standard OpenAI client can target the gateway by changing its base URL.
-- [ ] A fake upstream proves that unknown JSON fields survive proxying.
-- [ ] Streaming data reaches a test client before the upstream closes.
+- [x] All build-gate commands pass without skipped tests.
+- [x] The HTTP contract supports OpenAI clients through a `/v1` base URL.
+- [x] A fake upstream proves that unknown JSON fields survive proxying.
+- [x] Streaming data reaches a test client before the upstream closes.

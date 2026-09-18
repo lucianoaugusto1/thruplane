@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current milestone:** Usable gateway MVP
-**Status:** In Progress
+**Status:** Complete
 
 ---
 
@@ -14,19 +14,19 @@ OpenAI or Ollama with predictable failure behavior.
 
 ### Features
 
-**Gateway foundation** - IN PROGRESS
+**Gateway foundation** - COMPLETE
 
 - Load and validate YAML configuration with environment expansion.
 - Route model aliases to ordered upstream targets.
 - Forward buffered and streaming chat completions.
 
-**Operational API** - IN PROGRESS
+**Operational API** - COMPLETE
 
 - List configured model aliases.
 - Expose health checks, request IDs, optional authentication, and structured
   request logs.
 
-**Packaging and onboarding** - PLANNED
+**Packaging and onboarding** - COMPLETE
 
 - Provide a Dockerfile and example configuration.
 - Document local, Ollama, and OpenAI usage.
