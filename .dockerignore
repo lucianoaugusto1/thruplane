@@ -1,7 +1,7 @@
 .git
 .specs
 .DS_Store
-gateway
+/gateway
 work
 outputs
 coverage.out
