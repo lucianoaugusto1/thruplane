@@ -118,7 +118,7 @@ structured access logging.
 
 **Verify:** `go test ./internal/httpapi -v`
 
-### T6: Create the executable
+### T6: Create the executable ✅
 
 **What:** Add CLI flags, structured logging, dependency construction, HTTP
 timeouts, and graceful shutdown.
@@ -132,9 +132,9 @@ timeouts, and graceful shutdown.
 
 **Done when:**
 
-- [ ] `-config` selects the YAML file.
-- [ ] SIGINT and SIGTERM trigger bounded graceful shutdown.
-- [ ] `go test ./... && go vet ./... && go build ./cmd/gateway` passes.
+- [x] `-config` selects the YAML file.
+- [x] SIGINT and SIGTERM trigger bounded graceful shutdown.
+- [x] `go test ./... && go vet ./... && go build ./cmd/gateway` passes.
 
 **Verify:** `go build ./cmd/gateway`
 
