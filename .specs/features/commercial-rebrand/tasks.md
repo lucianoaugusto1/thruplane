@@ -40,7 +40,7 @@ and model ownership metadata.
 - [x] Docker builds an image containing the `/nexoroute` binary.
 - [x] Existing test count does not decrease.
 
-### T3: Establish the open-source and commercial story
+### T3: Establish the open-source and commercial story ✅
 
 **What:** Rewrite onboarding and add licensing, editions, contribution, and
 security documentation.
@@ -53,9 +53,9 @@ security documentation.
 
 **Done when:**
 
-- [ ] Community capabilities and current limitations match the code.
-- [ ] Pro and Enterprise capabilities are labeled as planned.
-- [ ] Apache 2.0, contribution, and private security reporting paths are clear.
+- [x] Community capabilities and current limitations match the code.
+- [x] Pro and Enterprise capabilities are labeled as planned.
+- [x] Apache 2.0, contribution, and private security reporting paths are clear.
 
 ### T4: Update project memory and validate the rebrand
 

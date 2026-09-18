@@ -1,23 +1,46 @@
-# GoLLM Gateway
+# NexoRoute
 
-GoLLM Gateway is a small OpenAI-compatible LLM gateway written in Go. It gives
-applications one endpoint for hosted and local models, then handles model
-aliases, provider credentials, retries, fallbacks, and SSE streaming centrally.
+**The open control plane for AI traffic.**
 
-The current release is a focused MVP. It supports OpenAI and Ollama through
-their OpenAI-compatible chat APIs.
+NexoRoute is an open-source AI gateway written in Go. It gives applications one
+OpenAI-compatible endpoint for hosted and local models, then centralizes model
+aliases, provider credentials, streaming, retries, and failover.
 
-## Features
+NexoRoute Community is available now under Apache License 2.0. NexoRoute Pro
+and NexoRoute Enterprise are planned commercial editions for teams that need
+cost controls, governance, high availability, and support.
 
-- `POST /v1/chat/completions`, including incremental SSE streaming
+## Why NexoRoute
+
+- Keep application code independent from provider URLs and credentials.
+- Route one public model alias to ordered OpenAI or Ollama targets.
+- Preserve unknown JSON fields and opaque provider responses.
+- Relay SSE data incrementally without a global stream timeout.
+- Run a small, stateless binary with one external Go dependency.
+- Inspect, self-host, modify, and redistribute the Community source.
+
+## Current capabilities
+
+- `POST /v1/chat/completions`, including SSE streaming
 - `GET /v1/models` and `GET /v1/models/{model}`
-- YAML model aliases with ordered provider targets
-- Bounded retries and fallback for transient upstream failures
-- OpenAI-shaped local errors and opaque upstream responses
-- Optional bearer authentication for all `/v1/*` endpoints
-- Request IDs, JSON access logs, health checks, and graceful shutdown
-- Strict startup validation and environment-variable expansion
-- One runtime dependency and one external Go module
+- OpenAI and Ollama through OpenAI-compatible upstream APIs
+- Bounded retries and ordered fallback for transient failures
+- Strict YAML configuration with environment expansion
+- Optional inbound bearer authentication
+- Request IDs, structured JSON logs, health checks, and graceful shutdown
+- Distroless, non-root container image
+
+## Editions
+
+| Edition | Status | Designed for |
+| --- | --- | --- |
+| Community | Available | Developers and teams that self-host the core gateway |
+| Pro | Planned | Teams that need usage, cost, policy, and alerting workflows |
+| Enterprise | Planned | Organizations that need SSO, audit, HA, and contracted support |
+
+Core routing, protocols, provider adapters, streaming, and basic observability
+remain part of Community. See [edition principles and roadmap](docs/editions.md)
+for the proposed commercial boundary.
 
 ## Requirements
 
@@ -36,12 +59,12 @@ their OpenAI-compatible chat APIs.
 2. Set the credentials you plan to use.
 
    ```sh
-   export GATEWAY_API_KEY="change-me"
+   export NEXOROUTE_API_KEY="change-me"
    export OPENAI_API_KEY="your-openai-key"
    ```
 
-   Leave `GATEWAY_API_KEY` empty only for trusted local development. The Ollama
-   provider does not require `OPENAI_API_KEY`.
+   Leave `NEXOROUTE_API_KEY` empty only for trusted local development. Ollama
+   does not require `OPENAI_API_KEY`.
 
 3. Optional: pull the example local model.
 
@@ -49,10 +72,10 @@ their OpenAI-compatible chat APIs.
    ollama pull llama3.2
    ```
 
-4. Start the gateway.
+4. Start NexoRoute.
 
    ```sh
-   go run ./cmd/gateway -config config.yaml
+   go run ./cmd/nexoroute -config config.yaml
    ```
 
 5. Check its health.
@@ -67,14 +90,14 @@ List the public model aliases:
 
 ```sh
 curl http://localhost:8080/v1/models \
-  -H "Authorization: Bearer ${GATEWAY_API_KEY}"
+  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}"
 ```
 
-Send a buffered chat completion to Ollama through the `local` alias:
+Send a buffered chat completion through the `local` alias:
 
 ```sh
 curl http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer ${GATEWAY_API_KEY}" \
+  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "local",
@@ -86,7 +109,7 @@ Stream a completion:
 
 ```sh
 curl --no-buffer http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer ${GATEWAY_API_KEY}" \
+  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "local",
@@ -95,12 +118,12 @@ curl --no-buffer http://localhost:8080/v1/chat/completions \
   }'
 ```
 
-For OpenAI-compatible SDKs, set the base URL to
-`http://localhost:8080/v1` and use the gateway key as the client API key.
+For OpenAI-compatible SDKs, use `http://localhost:8080/v1` as the base URL and
+the NexoRoute API key as the client API key.
 
 ## Configure routing
 
-Each public model name has an ordered list of targets:
+Each public alias has an ordered list of upstream targets:
 
 ```yaml
 models:
@@ -112,10 +135,10 @@ models:
         model: llama3.2:latest
 ```
 
-The gateway retries the current target before moving to the next target. It
+NexoRoute retries the current target before moving to the next target. It
 retries HTTP `408`, `429`, `500`, `502`, `503`, and `504`, plus transport
-errors. It returns non-transient `4xx` responses immediately because another
-provider cannot fix an invalid request or credential.
+errors. It returns other `4xx` responses immediately because another provider
+cannot fix an invalid request or credential.
 
 The gateway replaces only the upstream `model` field and preserves JSON fields
 it does not interpret. For Ollama, it also translates
@@ -133,7 +156,7 @@ it does not interpret. For Ollama, it also translates
 | `providers.*.type` | `openai` or `ollama` | `openai` |
 | `providers.*.base_url` | Provider root URL without `/v1` | Required |
 | `providers.*.api_key` | Provider bearer token | Empty |
-| `models.*.targets` | Ordered provider and upstream model pairs | Required |
+| `models.*.targets` | Ordered provider and model pairs | Required |
 | `routing.retries` | Extra attempts per target | `1` |
 | `routing.response_header_timeout` | Upstream header timeout | `30s` |
 
@@ -145,17 +168,17 @@ unknown YAML fields or multiple YAML documents.
 Build the image:
 
 ```sh
-docker build -t gollm-gateway .
+docker build -t nexoroute .
 ```
 
 Run it with your configuration mounted read-only:
 
 ```sh
 docker run --rm -p 8080:8080 \
-  -e GATEWAY_API_KEY \
+  -e NEXOROUTE_API_KEY \
   -e OPENAI_API_KEY \
-  -v "$PWD/config.yaml:/etc/gollm/config.yaml:ro" \
-  gollm-gateway
+  -v "$PWD/config.yaml:/etc/nexoroute/config.yaml:ro" \
+  nexoroute
 ```
 
 When Ollama runs on the Docker host, replace its URL in `config.yaml` with a
@@ -169,7 +192,7 @@ Run the complete project gate:
 ```sh
 go test ./...
 go vet ./...
-go build ./cmd/gateway
+go build ./cmd/nexoroute
 ```
 
 Run the race detector before merging concurrency-related changes:
@@ -178,16 +201,26 @@ Run the race detector before merging concurrency-related changes:
 go test -race ./...
 ```
 
-## MVP limitations
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a change. Report
+vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 
-- The gateway implements Chat Completions, not the Responses, embeddings,
-  image, audio, or batch APIs.
+## Current limitations
+
+- NexoRoute implements Chat Completions, not Responses, embeddings, image,
+  audio, or batch APIs.
 - `n` must be omitted or set to `1` so providers do not silently diverge.
 - Tool use, vision, and structured output remain provider- and model-specific.
-- Ollama's OpenAI compatibility is partial and can vary by version and model.
-- The gateway has no cost tracking, persistent usage history, tenant policies,
-  rate limits, dynamic reload, Prometheus metrics, or distributed tracing yet.
-- If an upstream stream fails after headers are sent, the gateway closes the
+- Ollama's OpenAI compatibility can vary by version and model.
+- Community does not yet include persistent usage history, dynamic reload,
+  Prometheus metrics, distributed tracing, or tenant-level policies.
+- If an upstream stream fails after headers are sent, NexoRoute closes the
   stream without inventing a `[DONE]` event.
 
-See the implementation plan and requirement traceability under `.specs/`.
+## License and brand
+
+NexoRoute Community is licensed under [Apache License 2.0](LICENSE). The
+license covers the source code in this repository. Planned commercial modules
+may use separate terms.
+
+NexoRoute is a working brand pending formal trademark, domain, and registry
+clearance. See the [brand guide](docs/brand.md) for current naming rules.
