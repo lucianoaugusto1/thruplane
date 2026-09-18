@@ -1,4 +1,4 @@
-module gollm-gateway
+module nexoroute
 
 go 1.26.0
 

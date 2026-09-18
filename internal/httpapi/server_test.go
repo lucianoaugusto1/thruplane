@@ -13,15 +13,15 @@ import (
 	"testing"
 	"time"
 
-	"gollm-gateway/internal/config"
-	"gollm-gateway/internal/gateway"
-	"gollm-gateway/internal/provider"
+	"nexoroute/internal/config"
+	"nexoroute/internal/gateway"
+	"nexoroute/internal/provider"
 )
 
 func TestHealthIsPublicAndHasRequestID(t *testing.T) {
 	t.Parallel()
 
-	handler := New(config.Config{Server: config.ServerConfig{APIKey: "gateway-secret"}}, nil, discardLogger())
+	handler := New(config.Config{Server: config.ServerConfig{APIKey: "nexoroute-secret"}}, nil, discardLogger())
 	request := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	response := httptest.NewRecorder()
 
@@ -45,12 +45,12 @@ func TestProtectedRoutesRequireConfiguredBearerToken(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.Config{
-		Server: config.ServerConfig{APIKey: "gateway-secret"},
+		Server: config.ServerConfig{APIKey: "nexoroute-secret"},
 		Models: map[string]config.ModelConfig{"fast": {}},
 	}
 	handler := New(cfg, gateway.New(cfg, nil), discardLogger())
 
-	for _, authorization := range []string{"", "Bearer wrong", "Basic gateway-secret"} {
+	for _, authorization := range []string{"", "Bearer wrong", "Basic nexoroute-secret"} {
 		request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
 		request.Header.Set("Authorization", authorization)
 		response := httptest.NewRecorder()
@@ -62,7 +62,7 @@ func TestProtectedRoutesRequireConfiguredBearerToken(t *testing.T) {
 	}
 
 	request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
-	request.Header.Set("Authorization", "bearer gateway-secret")
+	request.Header.Set("Authorization", "bearer nexoroute-secret")
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
 	if response.Code != http.StatusOK {

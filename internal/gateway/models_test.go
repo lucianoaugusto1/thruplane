@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"gollm-gateway/internal/config"
+	"nexoroute/internal/config"
 )
 
 func TestListModelsReturnsSortedOpenAIList(t *testing.T) {
@@ -46,7 +46,7 @@ func TestListModelsReturnsSortedOpenAIList(t *testing.T) {
 		if model.ID != want[index] {
 			t.Errorf("model[%d].id = %q, want %q", index, model.ID, want[index])
 		}
-		if model.Object != "model" || model.Created != 0 || model.OwnedBy != "gateway" {
+		if model.Object != "model" || model.Created != 0 || model.OwnedBy != "nexoroute" {
 			t.Errorf("model[%d] = %#v, want OpenAI model metadata", index, model)
 		}
 	}
@@ -71,7 +71,7 @@ func TestGetModelReturnsConfiguredAlias(t *testing.T) {
 	if err := json.Unmarshal(response.Body.Bytes(), &model); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
-	if model.ID != "team-model.v1" || model.Object != "model" || model.OwnedBy != "gateway" {
+	if model.ID != "team-model.v1" || model.Object != "model" || model.OwnedBy != "nexoroute" {
 		t.Errorf("model = %#v, want configured alias", model)
 	}
 }

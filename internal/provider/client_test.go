@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"gollm-gateway/internal/config"
+	"nexoroute/internal/config"
 )
 
 func TestNewClientsReuseTransportWithResponseHeaderTimeout(t *testing.T) {

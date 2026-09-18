@@ -1,7 +1,7 @@
 .git
 .specs
 .DS_Store
-/gateway
+/nexoroute
 work
 outputs
 coverage.out

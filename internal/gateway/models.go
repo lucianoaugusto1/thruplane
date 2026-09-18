@@ -45,7 +45,7 @@ func newModelInfo(alias string) modelInfo {
 		ID:      alias,
 		Object:  "model",
 		Created: 0,
-		OwnedBy: "gateway",
+		OwnedBy: "nexoroute",
 	}
 }
 

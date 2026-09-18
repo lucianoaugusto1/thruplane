@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"gollm-gateway/internal/config"
-	"gollm-gateway/internal/provider"
+	"nexoroute/internal/config"
+	"nexoroute/internal/provider"
 )
 
 func TestChatCompletionsRewritesOnlyModelAndRelaysResponse(t *testing.T) {

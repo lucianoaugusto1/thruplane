@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"gollm-gateway/internal/config"
+	"nexoroute/internal/config"
 )
 
 const chatCompletionsPath = "/v1/chat/completions"

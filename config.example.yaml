@@ -1,6 +1,6 @@
 server:
   address: ":8080"
-  api_key: "${GATEWAY_API_KEY}"
+  api_key: "${NEXOROUTE_API_KEY}"
   max_body_bytes: 1048576
   read_header_timeout: 5s
   shutdown_timeout: 10s

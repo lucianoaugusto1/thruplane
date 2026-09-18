@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"gollm-gateway/internal/config"
-	"gollm-gateway/internal/gateway"
+	"nexoroute/internal/config"
+	"nexoroute/internal/gateway"
 )
 
 type requestIDKey struct{}

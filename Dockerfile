@@ -6,11 +6,11 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
-    -o /out/gateway ./cmd/gateway
+    -o /out/nexoroute ./cmd/nexoroute
 
 FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/gateway /gateway
-COPY config.example.yaml /etc/gollm/config.yaml
+COPY --from=build /out/nexoroute /nexoroute
+COPY config.example.yaml /etc/nexoroute/config.yaml
 EXPOSE 8080
-ENTRYPOINT ["/gateway"]
-CMD ["-config", "/etc/gollm/config.yaml"]
+ENTRYPOINT ["/nexoroute"]
+CMD ["-config", "/etc/nexoroute/config.yaml"]

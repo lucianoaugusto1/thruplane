@@ -23,7 +23,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 - [x] Tagline, one-line description, audiences, and edition names are explicit.
 - [x] Provisional-name and legal-clearance status are unambiguous.
 
-### T2: Rename the executable and package identity
+### T2: Rename the executable and package identity ✅
 
 **What:** Rename the Go module, imports, command, binary, image, example key,
 and model ownership metadata.
@@ -36,9 +36,9 @@ and model ownership metadata.
 
 **Done when:**
 
-- [ ] `go test -race ./...`, `go vet ./...`, and `go build ./cmd/nexoroute` pass.
-- [ ] Docker builds an image containing the `/nexoroute` binary.
-- [ ] Existing test count does not decrease.
+- [x] `go test -race ./...`, `go vet ./...`, and `go build ./cmd/nexoroute` pass.
+- [x] Docker builds an image containing the `/nexoroute` binary.
+- [x] Existing test count does not decrease.
 
 ### T3: Establish the open-source and commercial story
 

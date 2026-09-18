@@ -12,10 +12,10 @@ import (
 	"syscall"
 	"time"
 
-	"gollm-gateway/internal/config"
-	"gollm-gateway/internal/gateway"
-	"gollm-gateway/internal/httpapi"
-	"gollm-gateway/internal/provider"
+	"nexoroute/internal/config"
+	"nexoroute/internal/gateway"
+	"nexoroute/internal/httpapi"
+	"nexoroute/internal/provider"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	if err := run(*configPath, logger); err != nil {
-		logger.Error("gateway stopped", "error", err)
+		logger.Error("NexoRoute stopped", "error", err)
 		os.Exit(1)
 	}
 }
@@ -52,7 +52,7 @@ func run(configPath string, logger *slog.Logger) error {
 
 	serveErr := make(chan error, 1)
 	go func() {
-		logger.Info("gateway listening", "address", server.Addr)
+		logger.Info("NexoRoute listening", "address", server.Addr)
 		serveErr <- server.ListenAndServe()
 	}()
 
@@ -63,7 +63,7 @@ func run(configPath string, logger *slog.Logger) error {
 		}
 		return fmt.Errorf("serve HTTP: %w", err)
 	case <-ctx.Done():
-		logger.Info("gateway shutting down")
+		logger.Info("NexoRoute shutting down")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Server.ShutdownTimeout))

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"gollm-gateway/internal/config"
-	"gollm-gateway/internal/provider"
+	"nexoroute/internal/config"
+	"nexoroute/internal/provider"
 )
 
 const streamBufferSize = 32 * 1024
