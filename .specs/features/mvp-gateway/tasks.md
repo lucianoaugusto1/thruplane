@@ -35,7 +35,7 @@ and validation.
 
 **Verify:** `go test ./internal/config -v`
 
-### T2: Create OpenAI-compatible provider client
+### T2: Create OpenAI-compatible provider client ✅
 
 **What:** Add reusable upstream clients with credential isolation and Ollama
 request transformation.
@@ -49,10 +49,10 @@ request transformation.
 
 **Done when:**
 
-- [ ] Provider requests use the configured URL, key, and model.
-- [ ] Ollama translates token fields without dropping unrelated JSON fields.
-- [ ] Provider credentials never come from the inbound request.
-- [ ] `go test ./...` passes with at least 8 tests total.
+- [x] Provider requests use the configured URL, key, and model.
+- [x] Ollama translates token fields without dropping unrelated JSON fields.
+- [x] Provider credentials never come from the inbound request.
+- [x] `go test ./...` passes with at least 8 tests total.
 
 **Verify:** `go test ./internal/provider -v`
 

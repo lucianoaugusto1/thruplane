@@ -62,7 +62,7 @@ reuse. The implementation reuses Go standard-library HTTP primitives,
 - **Location:** `internal/provider/client.go`
 - **Interfaces:**
   - `NewClients(config.Config) (map[string]*Client, error)`
-  - `Do(ctx context.Context, body []byte) (*http.Response, error)`
+  - `Do(ctx context.Context, body []byte, model string) (*http.Response, error)`
 - **Dependencies:** Configuration and `net/http`.
 
 ### Gateway
