@@ -20,10 +20,10 @@ before a public commercial launch.
 
 ## Goals
 
-- [ ] Present one consistent NexoRoute identity across code and documentation.
-- [ ] Keep a genuinely useful Community edition under Apache License 2.0.
-- [ ] Explain planned Pro and Enterprise value without claiming it exists today.
-- [ ] Prepare the repository for external contributors and security reports.
+- [x] Present one consistent NexoRoute identity across code and documentation.
+- [x] Keep a genuinely useful Community edition under Apache License 2.0.
+- [x] Explain planned Pro and Enterprise value without claiming it exists today.
+- [x] Prepare the repository for external contributors and security reports.
 - [ ] Move the completed repository to `/Users/lucianobr01/go-llm-gateway`.
 
 ## Out of scope
@@ -61,7 +61,7 @@ before a public commercial launch.
 
 ## Success criteria
 
-- [ ] Repository search finds no obsolete product or module identity.
-- [ ] Existing 29 top-level tests and 16 subtests remain intact.
-- [ ] Race detector, vet, binary build, and Docker build pass.
+- [x] Repository search finds no obsolete product or module identity.
+- [x] Existing 29 top-level tests and 16 subtests remain intact.
+- [x] Race detector, vet, binary build, and Docker build pass.
 - [ ] Git worktree is clean at the destination path.

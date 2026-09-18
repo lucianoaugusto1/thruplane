@@ -122,7 +122,7 @@ structured access logging.
 
 **What:** Add CLI flags, structured logging, dependency construction, HTTP
 timeouts, and graceful shutdown.
-**Where:** `cmd/gateway/main.go`
+**Where:** `cmd/nexoroute/main.go`
 **Depends on:** T5
 **Reuses:** All internal packages.
 **Requirement:** GW-04, GW-06
@@ -134,9 +134,9 @@ timeouts, and graceful shutdown.
 
 - [x] `-config` selects the YAML file.
 - [x] SIGINT and SIGTERM trigger bounded graceful shutdown.
-- [x] `go test ./... && go vet ./... && go build ./cmd/gateway` passes.
+- [x] `go test ./... && go vet ./... && go build ./cmd/nexoroute` passes.
 
-**Verify:** `go build ./cmd/gateway`
+**Verify:** `go build ./cmd/nexoroute`
 
 ### T7: Package and document the MVP ✅
 
@@ -156,7 +156,7 @@ that matches the implemented behavior.
 - [x] A user can run OpenAI and Ollama examples by following the README.
 - [x] The example configuration passes startup validation.
 - [x] All documented paths, flags, and fields match the code.
-- [x] `go test ./... && go vet ./... && go build ./cmd/gateway` passes.
+- [x] `go test ./... && go vet ./... && go build ./cmd/nexoroute` passes.
 
 **Verify:** Run the build gate and start the binary with the example config.
 

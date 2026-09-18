@@ -58,10 +58,11 @@
 - **Tests:** 29 top-level tests plus 16 table-driven subtests
 - **Race detector:** `go test -race ./... -count=1` passed
 - **Static analysis:** `go vet ./...` passed
-- **Build:** `go build ./cmd/gateway` passed
+- **Build:** `go build ./cmd/nexoroute` passed after the product rebrand
 - **Smoke test:** Example configuration loaded; `/healthz` returned HTTP 200;
   SIGINT completed graceful shutdown
-- **Container:** `docker build -t gollm-gateway:local-test .` passed
+- **Container:** `docker build -t nexoroute:local-test .` passed after the
+  product rebrand
 - **Skipped tests:** None
 - **Live provider calls:** Not run; provider behavior uses deterministic local
   HTTP test servers

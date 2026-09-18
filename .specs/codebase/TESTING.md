@@ -16,7 +16,7 @@
 | --- | --- |
 | Quick | `go test ./internal/...` |
 | Full | `go test ./...` |
-| Build | `go test ./... && go vet ./... && go build ./cmd/gateway` |
+| Build | `go test ./... && go vet ./... && go build ./cmd/nexoroute` |
 
 ## Conventions
 
@@ -24,5 +24,5 @@
 - Use local `httptest.Server` instances instead of live provider calls.
 - Assert status, headers, request transformation, and response bodies.
 - Do not use skipped tests in the MVP.
-- Run tests with `-race` as an additional final check when the environment allows
-  it.
+- Run tests with `-race` as an additional final check when the environment
+  allows it.

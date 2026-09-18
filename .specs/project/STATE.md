@@ -4,6 +4,14 @@
 
 ## Decisions
 
+- NexoRoute is the working product brand and must complete legal, domain, and
+  registry clearance before public commercial launch.
+- The Community edition is licensed under Apache License 2.0 and remains useful
+  for production self-hosting.
+- Pro and Enterprise are planned commercial editions; their capabilities are
+  roadmap statements, not currently available product claims.
+- Pro focuses on team operations, cost controls, and managed convenience.
+- Enterprise focuses on governance, security, scale, assurance, and support.
 - The MVP is stateless and uses one YAML file as its source of truth.
 - The public API is an OpenAI-compatible subset centered on chat completions.
 - Request bodies are minimally inspected so unknown fields pass through.
@@ -18,6 +26,12 @@
 
 - None.
 
+## Launch prerequisites
+
+- Legal and trademark review of the NexoRoute working name
+- Domain, social-handle, and package-registry availability checks
+- Public repository, release automation, and versioning policy
+
 ## Lessons learned
 
 - Root binary ignore patterns must be anchored so they do not hide Go package
@@ -27,7 +41,10 @@
 
 ## Deferred ideas
 
-- Cost tracking, budgets, rate limiting, and persistent usage records
+- Pro implementation: cost tracking, budgets, rate limiting, analytics, and
+  managed operations
+- Enterprise implementation: SSO, SCIM, RBAC, audit exports, policy controls,
+  high availability, and support workflows
 - Responses API and embeddings
 - Hot reload and distributed configuration
 - Full observability stack integration

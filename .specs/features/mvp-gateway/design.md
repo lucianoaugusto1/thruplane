@@ -89,7 +89,7 @@ reuse. The implementation reuses Go standard-library HTTP primitives,
 
 - **Purpose:** Load configuration, initialize dependencies, and manage graceful
   HTTP shutdown.
-- **Location:** `cmd/gateway/main.go`
+- **Location:** `cmd/nexoroute/main.go`
 - **Dependencies:** All internal packages.
 
 ## Data models

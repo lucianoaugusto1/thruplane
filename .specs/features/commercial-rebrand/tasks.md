@@ -36,7 +36,8 @@ and model ownership metadata.
 
 **Done when:**
 
-- [x] `go test -race ./...`, `go vet ./...`, and `go build ./cmd/nexoroute` pass.
+- [x] `go test -race ./...`, `go vet ./...`, and
+  `go build ./cmd/nexoroute` pass.
 - [x] Docker builds an image containing the `/nexoroute` binary.
 - [x] Existing test count does not decrease.
 
@@ -57,7 +58,7 @@ security documentation.
 - [x] Pro and Enterprise capabilities are labeled as planned.
 - [x] Apache 2.0, contribution, and private security reporting paths are clear.
 
-### T4: Update project memory and validate the rebrand
+### T4: Update project memory and validate the rebrand ✅
 
 **What:** Update project specs and record the rebrand validation.
 **Where:** `.specs/`
@@ -68,8 +69,8 @@ security documentation.
 
 **Done when:**
 
-- [ ] No stale identity remains outside historical context.
-- [ ] Requirements BR-01 through BR-06 are verified.
+- [x] No stale identity remains outside historical context.
+- [x] Requirements BR-01 through BR-06 are verified.
 
 ### T5: Move and verify the repository
 

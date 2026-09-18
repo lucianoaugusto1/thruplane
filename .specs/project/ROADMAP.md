@@ -1,7 +1,7 @@
 # Roadmap
 
-**Current milestone:** Usable gateway MVP
-**Status:** Complete
+**Current milestone:** Public Community launch
+**Status:** In Progress
 
 ---
 
@@ -33,9 +33,30 @@ OpenAI or Ollama with predictable failure behavior.
 
 ---
 
+## Public Community launch
+
+**Goal:** Publish a credible open-source foundation under the NexoRoute working
+brand without overstating commercial readiness.
+
+### Features
+
+**Commercial rebrand** - COMPLETE
+
+- Rename the module, command, binary, image, configuration namespace, and docs.
+- Establish Apache 2.0 licensing and contributor and security guidance.
+- Document Community, Pro, and Enterprise boundaries.
+
+**Release hardening** - PLANNED
+
+- Add CI, signed release artifacts, checksums, and a versioning policy.
+- Complete legal, domain, social-handle, and package-registry clearance.
+- Publish a public repository and first tagged release.
+
+---
+
 ## Production controls
 
-**Goal:** Add controls needed for multi-user deployments.
+**Goal:** Validate and build the planned Pro team-operations offering.
 
 ### Features
 
@@ -44,6 +65,22 @@ OpenAI or Ollama with predictable failure behavior.
 **Metrics and tracing** - PLANNED
 
 **Usage and cost accounting** - PLANNED
+
+**Managed control plane and team dashboard** - PLANNED
+
+---
+
+## Enterprise foundation
+
+**Goal:** Add organization-wide controls without weakening the Community core.
+
+### Features
+
+**SSO, SCIM, and role-based access** - PLANNED
+
+**Audit exports and policy governance** - PLANNED
+
+**High availability and enterprise support** - PLANNED
 
 ---
 

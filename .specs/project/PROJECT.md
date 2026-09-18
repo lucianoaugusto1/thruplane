@@ -1,8 +1,9 @@
-# GoLLM Gateway
+# NexoRoute
 
-**Vision:** Build a small, production-minded LLM gateway in Go that exposes an
-OpenAI-compatible API and routes requests to multiple upstream providers.
-**For:** Go teams that want one stable API in front of hosted and local models.
+**Vision:** Make reliable AI traffic control accessible as open-source
+infrastructure, with a clear path to managed operations and enterprise
+governance.
+**For:** Teams that want one stable API in front of hosted and local models.
 **Solves:** Provider-specific credentials, URLs, model names, retries, and
 fallback behavior otherwise leak into every application.
 
@@ -12,6 +13,16 @@ fallback behavior otherwise leak into every application.
 - Add a provider or model route through configuration without changing clients.
 - Preserve streaming behavior and unknown request fields end to end.
 - Keep the MVP stateless and verify it with deterministic Go tests.
+- Keep the Community edition production-usable and free from protocol lock-in.
+
+## Product model
+
+- **Community:** Apache 2.0 self-hosted gateway with core routing, streaming,
+  retries, fallbacks, authentication, health checks, and structured logs.
+- **Pro (planned):** Team operations, cost controls, analytics, and a managed
+  experience.
+- **Enterprise (planned):** Organization-wide governance, security, scale,
+  deployment assurance, and support.
 
 ## Tech stack
 
@@ -29,7 +40,7 @@ fallback behavior otherwise leak into every application.
 
 ## Scope
 
-**v1 includes:**
+**Community v1 includes:**
 
 - `POST /v1/chat/completions` with non-streaming and SSE streaming responses
 - `GET /v1/models` with configured model aliases
@@ -40,7 +51,8 @@ fallback behavior otherwise leak into every application.
 
 **Explicitly out of scope:**
 
-- Billing, budgets, cost accounting, and persistent usage history
+- Shipping or charging for Pro and Enterprise before their features exist
+- Billing, budgets, cost accounting, and persistent usage history in v1
 - Per-tenant rate limits or an administrative UI
 - Native provider protocols that are not OpenAI-compatible
 - Embeddings, image, audio, batch, and Responses API endpoints
@@ -53,3 +65,6 @@ fallback behavior otherwise leak into every application.
 - Resources: Prefer the standard library and keep the dependency surface small.
 - Compatibility: Focus on the practical OpenAI-compatible subset, not a claim of
   complete LiteLLM feature parity.
+- Commercial: Label roadmap capabilities as planned until they are implemented
+  and validated.
+- Brand: Treat NexoRoute as a working name until legal and registry clearance.
