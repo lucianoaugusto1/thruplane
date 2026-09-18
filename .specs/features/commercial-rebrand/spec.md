@@ -24,7 +24,7 @@ before a public commercial launch.
 - [x] Keep a genuinely useful Community edition under Apache License 2.0.
 - [x] Explain planned Pro and Enterprise value without claiming it exists today.
 - [x] Prepare the repository for external contributors and security reports.
-- [ ] Move the completed repository to `/Users/lucianobr01/go-llm-gateway`.
+- [x] Move the completed repository to `/Users/lucianobr01/go-llm-gateway`.
 
 ## Out of scope
 
@@ -64,4 +64,4 @@ before a public commercial launch.
 - [x] Repository search finds no obsolete product or module identity.
 - [x] Existing 29 top-level tests and 16 subtests remain intact.
 - [x] Race detector, vet, binary build, and Docker build pass.
-- [ ] Git worktree is clean at the destination path.
+- [x] Git worktree is clean at the destination path.

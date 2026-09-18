@@ -1,7 +1,7 @@
 # Commercial rebrand validation
 
 **Date:** September 18, 2026
-**Overall:** Pending destination move
+**Overall:** PASS
 
 ## Requirement results
 
@@ -13,7 +13,7 @@
 | BR-04 | PASS | `docs/editions.md` defines edition boundaries |
 | BR-05 | PASS | Contribution and private security paths exist |
 | BR-06 | PASS | Paid capabilities are consistently labeled planned |
-| BR-07 | PENDING | Final gate must run from the requested destination |
+| BR-07 | PASS | Full gate passed from the requested destination |
 
 ## Verification record
 
@@ -26,7 +26,7 @@
 - A full tracked-file search found no obsolete product, module, command,
   environment-variable, image, or binary identity outside historical context.
 
-## Remaining verification
+## Destination verification
 
-- Move the repository to `/Users/lucianobr01/go-llm-gateway`.
-- Rerun the full build gate and confirm a clean Git worktree there.
+- Repository moved to `/Users/lucianobr01/go-llm-gateway`.
+- The full Go and Docker build gates passed and the Git worktree is clean.

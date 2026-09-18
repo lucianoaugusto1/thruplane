@@ -1,7 +1,7 @@
 # Commercial rebrand tasks
 
 **Spec:** `.specs/features/commercial-rebrand/spec.md`
-**Status:** In Progress
+**Status:** Complete
 
 ## Execution plan
 
@@ -72,7 +72,7 @@ security documentation.
 - [x] No stale identity remains outside historical context.
 - [x] Requirements BR-01 through BR-06 are verified.
 
-### T5: Move and verify the repository
+### T5: Move and verify the repository ✅
 
 **What:** Move the complete Git repository to the requested home-directory path
 and rerun the final gate there.
@@ -84,6 +84,6 @@ and rerun the final gate there.
 
 **Done when:**
 
-- [ ] Destination contains the repository and complete Git history.
-- [ ] Build gate passes from the destination.
-- [ ] Source path no longer contains the repository.
+- [x] Destination contains the repository and complete Git history.
+- [x] Build gate passes from the destination.
+- [x] Source path no longer contains the repository.
