@@ -474,9 +474,10 @@ func assertOpenAIError(t *testing.T, response *httptest.ResponseRecorder) {
 	}
 	var payload struct {
 		Error struct {
-			Message string `json:"message"`
-			Type    string `json:"type"`
-			Code    string `json:"code"`
+			Message string          `json:"message"`
+			Type    string          `json:"type"`
+			Param   json.RawMessage `json:"param"`
+			Code    string          `json:"code"`
 		} `json:"error"`
 	}
 	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
@@ -484,5 +485,8 @@ func assertOpenAIError(t *testing.T, response *httptest.ResponseRecorder) {
 	}
 	if payload.Error.Message == "" || payload.Error.Type == "" || payload.Error.Code == "" {
 		t.Errorf("error response = %#v, want non-empty OpenAI error fields", payload.Error)
+	}
+	if len(payload.Error.Param) == 0 {
+		t.Errorf("error response = %#v, want param field", payload.Error)
 	}
 }
