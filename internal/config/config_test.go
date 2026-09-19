@@ -147,6 +147,14 @@ providers: {}
 	}
 }
 
+func TestExampleConfigurationLoads(t *testing.T) {
+	t.Setenv("NEXOROUTE_API_KEY", "gateway-key")
+	t.Setenv("OPENAI_API_KEY", "provider-key")
+	if _, err := Load(filepath.Join("..", "..", "config.example.yaml")); err != nil {
+		t.Fatalf("Load(config.example.yaml) error = %v", err)
+	}
+}
+
 func TestValidateRejectsInvalidValues(t *testing.T) {
 	tests := []struct {
 		name    string
