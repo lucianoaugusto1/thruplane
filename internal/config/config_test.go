@@ -180,6 +180,115 @@ func TestValidateRejectsInvalidValues(t *testing.T) {
 	}
 }
 
+func TestLoadNormalizesProviderTypesAndDefaults(t *testing.T) {
+	path := writeConfig(t, `
+providers:
+  openai:
+    type: openai
+  claude:
+    type: anthropic
+  gemini:
+    type: gemini
+  grok:
+    type: grok
+  local:
+    type: ollama
+models:
+  chat:
+    targets:
+      - provider: grok
+        model: grok-model
+`)
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	wants := map[string]struct {
+		typeName string
+		baseURL  string
+	}{
+		"openai": {"openai", "https://api.openai.com"},
+		"claude": {"anthropic", "https://api.anthropic.com"},
+		"gemini": {"gemini", "https://generativelanguage.googleapis.com"},
+		"grok":   {"xai", "https://api.x.ai"},
+		"local":  {"ollama", "http://localhost:11434"},
+	}
+	for name, want := range wants {
+		got := cfg.Providers[name]
+		if got.Type != want.typeName || got.BaseURL != want.baseURL {
+			t.Errorf("provider %s = type %q URL %q, want type %q URL %q", name, got.Type, got.BaseURL, want.typeName, want.baseURL)
+		}
+	}
+}
+
+func TestLoadAcceptsEveryProviderType(t *testing.T) {
+	path := writeConfig(t, `
+providers:
+  openai: {type: openai}
+  anthropic: {type: anthropic}
+  gemini: {type: gemini}
+  vertex:
+    type: vertex
+    project: customer-project
+    location: us-central1
+    access_token: test-token
+  bedrock:
+    type: bedrock
+    region: us-east-1
+    access_key_id: test-access-key
+    secret_access_key: test-secret
+  azure:
+    type: azure-openai
+    base_url: https://customer.openai.azure.com
+  ollama: {type: ollama}
+  compatible:
+    type: openai-compatible
+    base_url: https://models.example.com
+  inference:
+    type: nexoroute-inference
+    base_url: https://inference.example.com
+  xai: {type: xai}
+models:
+  chat:
+    targets:
+      - provider: openai
+        model: upstream-model
+`)
+
+	if _, err := Load(path); err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+}
+
+func TestLoadRejectsMissingTypeSpecificProviderFields(t *testing.T) {
+	tests := []struct {
+		name     string
+		provider string
+		wantErr  string
+	}{
+		{"vertex project", "type: vertex\n    location: us-central1\n    access_token: token", "project"},
+		{"vertex location", "type: vertex\n    project: project\n    access_token: token", "location"},
+		{"vertex token", "type: vertex\n    project: project\n    location: us-central1", "access_token"},
+		{"bedrock region", "type: bedrock\n    access_key_id: key\n    secret_access_key: secret", "region"},
+		{"bedrock access key", "type: bedrock\n    region: us-east-1\n    secret_access_key: secret", "access_key_id"},
+		{"bedrock secret", "type: bedrock\n    region: us-east-1\n    access_key_id: key", "secret_access_key"},
+		{"azure URL", "type: azure-openai", "base_url"},
+		{"compatible URL", "type: openai-compatible", "base_url"},
+		{"inference URL", "type: nexoroute-inference", "base_url"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := writeConfig(t, "providers:\n  tested:\n    "+tt.provider+"\nmodels:\n  chat:\n    targets:\n      - provider: tested\n        model: model\n")
+			_, err := Load(path)
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("Load() error = %v, want error containing %q", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func validConfig() Config {
 	return Config{
 		Server: ServerConfig{

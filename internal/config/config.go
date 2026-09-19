@@ -54,9 +54,17 @@ type ServerConfig struct {
 }
 
 type ProviderConfig struct {
-	Type    string `yaml:"type"`
-	BaseURL string `yaml:"base_url"`
-	APIKey  string `yaml:"api_key"`
+	Type            string `yaml:"type"`
+	BaseURL         string `yaml:"base_url"`
+	APIKey          string `yaml:"api_key"`
+	APIVersion      string `yaml:"api_version"`
+	AccessToken     string `yaml:"access_token"`
+	Project         string `yaml:"project"`
+	Location        string `yaml:"location"`
+	Region          string `yaml:"region"`
+	AccessKeyID     string `yaml:"access_key_id"`
+	SecretAccessKey string `yaml:"secret_access_key"`
+	SessionToken    string `yaml:"session_token"`
 }
 
 type ModelConfig struct {
@@ -176,11 +184,20 @@ func (cfg *Config) normalize() {
 	cfg.Server.Address = strings.TrimSpace(cfg.Server.Address)
 
 	for name, provider := range cfg.Providers {
-		provider.Type = strings.TrimSpace(provider.Type)
+		provider.Type = strings.ToLower(strings.TrimSpace(provider.Type))
 		if provider.Type == "" {
 			provider.Type = "openai"
 		}
+		if provider.Type == "grok" {
+			provider.Type = "xai"
+		}
+		provider.Project = strings.TrimSpace(provider.Project)
+		provider.Location = strings.TrimSpace(provider.Location)
+		provider.Region = strings.TrimSpace(provider.Region)
 		provider.BaseURL = strings.TrimRight(strings.TrimSpace(provider.BaseURL), "/")
+		if provider.BaseURL == "" {
+			provider.BaseURL = defaultProviderBaseURL(provider)
+		}
 		cfg.Providers[name] = provider
 	}
 
@@ -195,9 +212,34 @@ func (cfg *Config) normalize() {
 
 func validateProvider(name string, provider ProviderConfig) error {
 	switch provider.Type {
-	case "", "openai", "ollama":
+	case "", "openai", "anthropic", "gemini", "vertex", "bedrock",
+		"azure-openai", "ollama", "openai-compatible",
+		"nexoroute-inference", "xai":
 	default:
-		return fmt.Errorf("provider %q type must be openai or ollama", name)
+		return fmt.Errorf("provider %q has unsupported type %q", name, provider.Type)
+	}
+
+	if provider.Type == "vertex" {
+		if provider.Project == "" {
+			return fmt.Errorf("provider %q project must not be empty for vertex", name)
+		}
+		if provider.Location == "" {
+			return fmt.Errorf("provider %q location must not be empty for vertex", name)
+		}
+		if strings.TrimSpace(provider.AccessToken) == "" {
+			return fmt.Errorf("provider %q access_token must not be empty for vertex", name)
+		}
+	}
+	if provider.Type == "bedrock" {
+		if provider.Region == "" {
+			return fmt.Errorf("provider %q region must not be empty for bedrock", name)
+		}
+		if strings.TrimSpace(provider.AccessKeyID) == "" {
+			return fmt.Errorf("provider %q access_key_id must not be empty for bedrock", name)
+		}
+		if strings.TrimSpace(provider.SecretAccessKey) == "" {
+			return fmt.Errorf("provider %q secret_access_key must not be empty for bedrock", name)
+		}
 	}
 
 	parsed, err := url.Parse(provider.BaseURL)
@@ -209,4 +251,28 @@ func validateProvider(name string, provider ProviderConfig) error {
 	}
 
 	return nil
+}
+
+func defaultProviderBaseURL(provider ProviderConfig) string {
+	switch provider.Type {
+	case "openai":
+		return "https://api.openai.com"
+	case "anthropic":
+		return "https://api.anthropic.com"
+	case "gemini":
+		return "https://generativelanguage.googleapis.com"
+	case "vertex":
+		if provider.Location != "" {
+			return "https://" + provider.Location + "-aiplatform.googleapis.com"
+		}
+	case "bedrock":
+		if provider.Region != "" {
+			return "https://bedrock-runtime." + provider.Region + ".amazonaws.com"
+		}
+	case "xai":
+		return "https://api.x.ai"
+	case "ollama":
+		return "http://localhost:11434"
+	}
+	return ""
 }
