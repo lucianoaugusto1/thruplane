@@ -98,6 +98,33 @@ across a growing team.
 
 ---
 
+## Hosted inference
+
+**Goal:** Include useful model capacity in Pro and Enterprise without creating
+unbounded cost or coupling applications to physical model names.
+
+### Features
+
+**Curated model aliases** - PLANNED
+
+- Add `nexoroute/fast`, `nexoroute/smart`, `nexoroute/embed`,
+  `nexoroute/guard`, and `nexoroute/auto`.
+
+**Pro shared inference** - PLANNED
+
+- Add monthly compute credits, plan limits, explicit overage, and BYOK fallback.
+
+**Enterprise inference deployment** - PLANNED
+
+- Add reserved, dedicated, BYOC, private, and approved-region options.
+
+**Capacity and margin controls** - PLANNED
+
+- Measure utilization, inference cost, gross margin, concurrency, and cache
+  benefit before operating dedicated GPU infrastructure.
+
+---
+
 ## Safe model rollout
 
 **Goal:** Let teams measure and control model changes before full production
@@ -120,7 +147,11 @@ and privacy objectives.
 
 ### Features
 
-**SLO policy schema and routing receipts** - PLANNED
+**Hard constraints, heuristic routing, and routing receipts** - PLANNED
+
+**Semantic routing and evaluated workload profiles** - PLANNED
+
+**Selective LLM router for ambiguous decisions** - PLANNED
 
 **Routing recommendations with approval** - PLANNED
 
@@ -163,6 +194,7 @@ and privacy objectives.
 ## Future considerations
 
 - Cost Autopilot with model cascades and explicit quality floors
+- Dedicated inference infrastructure after demand validation
 - Agent Firewall with prompt-injection and data-exfiltration controls
 - BYOC, on-premises, and air-gapped deployment patterns
 - Provider-specific request transformations

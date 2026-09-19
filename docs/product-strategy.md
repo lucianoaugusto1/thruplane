@@ -26,6 +26,25 @@ operations and governance. Teams keep control of their traffic and
 configuration while paid editions reduce the work required to operate the
 gateway across teams and regulated environments.
 
+## Three product fronts
+
+NexoRoute develops as three connected products with separate responsibilities:
+
+| Front | Product | Responsibility |
+| --- | --- | --- |
+| 1 | NexoRoute Gateway | Open data plane, protocols, BYOK, security, and resilience |
+| 2 | NexoRoute Inference | Curated hosted open-weight models with paid-plan usage allowances |
+| 3 | NexoRoute Intelligence | AutoRouter, Flight Recorder, evaluations, and optimization |
+
+Gateway drives adoption and remains independently useful. Inference creates a
+recurring usage business. Intelligence differentiates the platform through
+measured routing decisions rather than provider aggregation alone.
+
+Each front must remain independently observable and replaceable. A customer
+can use Gateway with only bring-your-own-key providers, use NexoRoute Inference
+without enabling automated routing, or enable Intelligence across both hosted
+and external models.
+
 ## Market baseline
 
 Provider abstraction alone is not a durable differentiator. Current gateways
@@ -44,6 +63,8 @@ References:
 - [Cloudflare AI Gateway features](https://developers.cloudflare.com/ai-gateway/features/)
 - [Portkey conditional routing](https://docs1.portkey.ai/docs/product/ai-gateway/conditional-routing)
 - [Portkey Agent Gateway announcement](https://portkey.ai/blog/agent-gateway/)
+- [Cloudflare Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/)
+- [OpenRouter free model collection](https://openrouter.ai/collections/free-models)
 
 NexoRoute needs these table-stakes features, but it must differentiate through
 safe model change, outcome-based routing, private deployment, and agent
@@ -99,6 +120,7 @@ themselves. Candidate capabilities include:
 - Shadow traffic, replay, canary rollout, A/B tests, and regression reports.
 - SLO-based routing recommendations and opt-in automation.
 - A privacy-preserving hosted control plane.
+- Shared NexoRoute Inference usage included through monthly compute credits.
 - Priority support.
 
 Pro sells faster, safer operations rather than access to basic gateway
@@ -119,17 +141,96 @@ assurance. Candidate capabilities include:
 - Geographic routing and data-residency enforcement.
 - High-availability, multi-region, disaster-recovery, and backup options.
 - BYOC, on-premises, and air-gapped deployment patterns.
+- Reserved or dedicated NexoRoute Inference capacity.
+- Private and customer-specific hosted models.
 - Contracted support, security response, upgrade planning, and SLAs.
 
 Enterprise claims must follow working implementations, operational evidence,
 and support readiness.
 
+## NexoRoute Inference
+
+NexoRoute Inference is the second product front. It provides curated hosted
+open-weight models through the same API as customer-managed providers.
+
+Commercial material must describe this benefit as **included inference** or
+**included model usage**, not free or unlimited inference. NexoRoute still pays
+for compute, and an unlimited promise would create unpredictable margins and an
+abuse surface.
+
+### Pro packaging
+
+Pro uses a shared inference pool with:
+
+- Monthly compute credits included in the subscription.
+- Per-model request, concurrency, context, and output limits.
+- Optional metered overage with an explicit customer opt-in.
+- Fallback to the customer's BYOK providers.
+- No dedicated-capacity guarantee.
+
+Compute credits normalize different input, output, cache, and model costs. They
+avoid presenting one token as economically equivalent across every model.
+
+### Enterprise packaging
+
+Enterprise adds deployment and capacity choices:
+
+- Reserved or dedicated inference capacity.
+- Private or customer-specific models.
+- Customer VPC, BYOC, on-premises, or approved-region deployment.
+- Negotiated limits, availability, throughput, and support commitments.
+- Customer-managed keys and network controls.
+
+Enterprise sells predictable capacity, privacy, and control rather than a
+larger pool of nominally free tokens.
+
+### Initial model aliases
+
+Start with a small catalog based on stable capabilities:
+
+- `nexoroute/fast` for chat, classification, and simple tasks.
+- `nexoroute/smart` for higher-quality general work.
+- `nexoroute/embed` for embeddings and semantic routing.
+- `nexoroute/guard` for moderation, PII, and safety checks.
+- `nexoroute/auto` as the virtual alias controlled by AutoRouter.
+
+Aliases decouple the application contract from a physical model. NexoRoute can
+change the serving model only within published compatibility, quality, and
+change-management rules.
+
+### Capacity strategy
+
+Validate demand before operating a fixed GPU fleet:
+
+1. Start with metered serverless inference providers behind NexoRoute.
+2. Measure utilization, gross margin, latency, concurrency, and cache benefit.
+3. Move stable workloads to reserved capacity when utilization justifies it.
+4. Operate dedicated infrastructure only where it improves economics or meets
+   customer isolation requirements.
+
+The gateway preserves the model alias and policy contract while the underlying
+capacity changes.
+
+### Economic controls
+
+- Set monthly compute-credit allowances instead of unlimited usage.
+- Limit concurrency, context size, output size, and batch behavior by plan.
+- Use prefix and response caching when policy allows it.
+- Deduplicate equivalent in-flight requests when safe.
+- Enforce internal budgets and a kill switch per workspace and model.
+- Maintain a minimum gross-margin threshold for automated route selection.
+- Require authorization before overage billing begins.
+
 ## Strategic product bets
 
-### NexoRoute Autopilot
+### NexoRoute AutoRouter and Autopilot
 
-Autopilot routes requests according to outcomes instead of a fixed provider
-list. A policy can express constraints such as:
+AutoRouter is the decision engine in the third product front. Autopilot is the
+opt-in control loop that applies AutoRouter recommendations automatically.
+Flight Recorder supplies the evaluation and production evidence used by both.
+
+AutoRouter routes requests according to outcomes instead of a fixed provider
+list. A policy can express constraints and inference preferences such as:
 
 ```yaml
 policy:
@@ -138,16 +239,53 @@ policy:
   minimum_quality: 0.87
   data_classification: confidential
   allowed_regions: [br, us]
+  provider_preference:
+    - nexoroute_included
+    - customer_byok
+  maximum_escalation_levels: 2
+```
+
+The decision pipeline has four layers:
+
+1. **Hard constraints:** Filter by modality, tools, structured output, context,
+   region, data classification, provider policy, budget, health, and capacity.
+2. **Heuristics:** Score token count, code signals, tool count, schema
+   complexity, language, priority, price, latency, errors, and fallback history.
+3. **Semantic routing:** Classify task, domain, complexity, and similarity to
+   workloads with known evaluation results.
+4. **LLM routing:** Resolve only ambiguous or high-value decisions with a small
+   structured-output routing model.
+
+```text
+Request
+  -> hard constraints
+  -> heuristic router when confidence is high
+  -> semantic router when heuristics are uncertain
+  -> LLM router only when the decision remains ambiguous
+  -> selected model or escalation cascade
 ```
 
 The router combines model price, observed latency, availability, evaluated
 quality, capabilities, and data restrictions. Each decision produces a routing
-receipt that explains the selected route and any fallback.
+receipt that records the selected route, confidence, policy inputs, escalation,
+and fallback.
+
+The LLM routing layer must not run on every request. It adds latency, cost, and
+another failure dependency. NexoRoute must cache eligible routing decisions and
+fall back to deterministic policy whenever the semantic or LLM layer fails.
 
 Community receives the policy schema and deterministic local rules. Pro adds
-recommendations, learned performance profiles, and opt-in automation.
-Enterprise adds organization-wide constraints, regional enforcement, and
-approval workflows.
+heuristic and semantic routing, learned performance profiles, and opt-in
+automation. Enterprise adds custom routing models, organization-wide
+constraints, regional enforcement, and approval workflows.
+
+The intended request lifecycle is:
+
+1. Prefer an eligible NexoRoute model covered by included usage.
+2. Validate the quality floor, budget, latency goal, and policy constraints.
+3. Escalate to a stronger included or BYOK model only when necessary.
+4. Record the decision and outcome through Flight Recorder.
+5. Use evaluated outcomes to improve future recommendations.
 
 ### Flight Recorder
 
@@ -213,6 +351,7 @@ through NexoRoute infrastructure.
 - Add PostgreSQL and Redis state.
 - Add projects, keys, usage, costs, budgets, quotas, and alerts.
 - Add the first web console and hosted control-plane boundary.
+- Pilot NexoRoute Inference with compute credits and a small alias catalog.
 
 ### v0.4: Safe model rollout
 
@@ -222,7 +361,9 @@ through NexoRoute infrastructure.
 
 ### v0.5: Adaptive routing
 
-- Add SLO policies and routing receipts.
+- Add hard constraints, heuristic routing, and routing receipts.
+- Add semantic routing after representative evaluation data exists.
+- Use an LLM router only for ambiguous or high-value requests.
 - Start with recommendations and human-approved policy changes.
 - Add opt-in Autopilot only after replay and evaluation prove its decisions.
 
@@ -240,6 +381,7 @@ through NexoRoute infrastructure.
 - Treat provider costs as estimates unless reconciled with provider billing.
 - Preserve a deterministic manual route and immediate rollback path.
 - Explain why each automated route or policy action occurred.
+- Never advertise included inference as unlimited or cost-free infrastructure.
 
 ## Discovery questions
 
@@ -251,7 +393,10 @@ Validate these questions before fixing packaging or prices:
 - Which request data may leave the customer's network or region?
 - Which audit evidence does security or compliance require?
 - Would the team pay first for cost control, safe rollout, or governance?
+- Which included model tasks create enough value without unacceptable subsidy?
+- Does the customer prefer shared usage, reserved capacity, or BYOC?
 
 Track activation, gateways in production, weekly routed requests, retained
-projects, prevented regressions, measured savings, and time to approve a model
-change. These outcomes matter more than the number of supported providers.
+projects, inference cost per active workspace, gross margin, escalation rate,
+prevented regressions, measured savings, and time to approve a model change.
+These outcomes matter more than the number of supported providers.

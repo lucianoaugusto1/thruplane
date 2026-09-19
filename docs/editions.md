@@ -35,6 +35,9 @@ not generally available features or contractual commitments.
 | Weighted and policy-based routing | Planned open source | SLO automation | Governed |
 | Guardrail rules and webhooks | Planned open source | Managed catalog | Organization policy |
 | Replay, shadow traffic, and canary rollout | Not planned | Planned | Planned |
+| NexoRoute-hosted inference | Not included | Shared credits | Reserved or dedicated |
+| AutoRouter | Static local policy | Heuristic and semantic | Custom and governed |
+| LLM routing layer | Not included | Selective and metered | Custom and governed |
 | Web management console | Not planned | Planned | Planned |
 | SSO with SAML or OIDC | Not planned | Not planned | Planned |
 | RBAC and immutable audit logs | Not planned | Limited roles | Planned |
@@ -67,6 +70,8 @@ own management layer. Candidate capabilities include:
 - SLO-based routing recommendations and opt-in Autopilot
 - Advanced routing and policy templates
 - A privacy-preserving hosted control plane
+- Monthly compute credits for shared NexoRoute Inference
+- AutoRouter with heuristic, semantic, and selective LLM routing
 - Priority support
 
 The first Pro release must be informed by customer discovery. This repository
@@ -82,6 +87,8 @@ availability requirements. Candidate capabilities include:
 - Multi-tenant hierarchy and delegated administration
 - High-availability control and data planes
 - Private networking, secret-manager integrations, and deployment review
+- Reserved, dedicated, BYOC, or private inference capacity
+- Custom routing policies and routing models
 - Contracted support, SLAs, upgrade planning, and security response
 
 The longer product thesis, strategic bets, and proposed delivery sequence live
@@ -96,6 +103,9 @@ A practical launch sequence is:
 3. Launch Pro around the smallest repeated operational workflow.
 4. Sell Enterprise only after security, support, and HA commitments are real.
 5. Consider NexoRoute Cloud after the self-hosted operational model is stable.
+
+Describe paid-plan model usage as included inference backed by compute credits,
+limits, and explicit overage. Do not market inference as unlimited or free.
 
 Avoid pricing by feature count alone. Price paid editions around managed model
 spend, team scale, support expectations, and deployment complexity after the

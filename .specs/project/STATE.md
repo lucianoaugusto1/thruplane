@@ -1,9 +1,22 @@
 # Project state
 
-**Updated:** September 18, 2026
+**Updated:** September 19, 2026
 
 ## Decisions
 
+- NexoRoute has three product fronts: the open Gateway data plane, paid
+  NexoRoute Inference, and NexoRoute Intelligence.
+- NexoRoute Inference is described as included usage backed by compute credits,
+  limits, and explicit overage. It is never marketed as unlimited or free.
+- Pro uses a shared inference pool with monthly credits and BYOK fallback.
+  Enterprise can use reserved, dedicated, private, BYOC, or approved-region
+  capacity.
+- Start hosted inference through metered external capacity. Operate reserved or
+  dedicated infrastructure only after utilization and margin justify it.
+- AutoRouter is the decision engine; Autopilot is its opt-in automated mode;
+  Flight Recorder provides evaluation and production evidence.
+- AutoRouter evaluates hard constraints first, then heuristics, then semantic
+  classification, and uses an LLM only for ambiguous or high-value decisions.
 - NexoRoute's product thesis is to make models replaceable, measurable, and
   governed rather than compete only as a Go implementation of LiteLLM.
 - The commercial boundary follows operational scale and governance, not minimum
@@ -47,6 +60,7 @@
 - Domain, social-handle, and package-registry availability checks
 - Public repository, release automation, and versioning policy
 - Customer interviews that rank cost control, safe rollout, and governance pain
+- A unit-economic model for compute credits, overage, and capacity commitments
 
 ## Lessons learned
 
@@ -57,6 +71,9 @@
 
 ## Deferred ideas
 
+- NexoRoute Inference aliases and shared Pro compute credits
+- Enterprise reserved, dedicated, private, and BYOC inference
+- Semantic and selective LLM routing after sufficient evaluation data exists
 - Cost Autopilot with model cascades and an explicit quality floor
 - Agent and MCP governance with tool policies and human approval
 - Provider compatibility monitoring and drift alerts
