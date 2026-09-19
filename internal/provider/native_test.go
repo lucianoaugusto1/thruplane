@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -12,6 +13,95 @@ import (
 
 	"nexoroute/internal/config"
 )
+
+func TestDecodeNativeToolContract(t *testing.T) {
+	t.Parallel()
+	request, err := decodeChatRequest([]byte(`{
+  "messages": [
+    {"role":"assistant","content":null,"tool_calls":[{"id":"call_1","type":"function","function":{"name":"weather","arguments":"{\"city\":\"Sao Paulo\"}"}}]},
+    {"role":"tool","tool_call_id":"call_1","content":"{\"temperature\":24}"}
+  ],
+  "tools":[{"type":"function","function":{"name":"weather","description":"Get weather","parameters":{"type":"object","properties":{"city":{"type":"string"}}}}}],
+  "tool_choice":{"type":"function","function":{"name":"weather"}},
+  "parallel_tool_calls":false
+}`))
+	if err != nil {
+		t.Fatalf("decodeChatRequest() error = %v", err)
+	}
+	contract, err := nativeTools(request)
+	if err != nil {
+		t.Fatalf("nativeTools() error = %v", err)
+	}
+	if len(contract.Definitions) != 1 || contract.Definitions[0].Function.Name != "weather" {
+		t.Errorf("definitions = %#v", contract.Definitions)
+	}
+	if contract.Choice.Mode != "named" || contract.Choice.Name != "weather" || !contract.Choice.DisableParallel {
+		t.Errorf("choice = %#v", contract.Choice)
+	}
+	if contract.CallNames["call_1"] != "weather" {
+		t.Errorf("call names = %#v", contract.CallNames)
+	}
+}
+
+func TestNativeToolContractRejectsUnsupportedOrMalformedTools(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		body string
+		code string
+	}{
+		{"non-function tool", `{"tools":[{"type":"custom"}]}`, "unsupported_tool_type"},
+		{"strict function", `{"tools":[{"type":"function","function":{"name":"weather","strict":true}}]}`, "unsupported_tool_option"},
+		{"unknown result", `{"messages":[{"role":"tool","tool_call_id":"missing","content":"ok"}]}`, "unmatched_tool_result"},
+		{"legacy functions", `{"functions":[{"name":"weather"}]}`, "unsupported_legacy_functions"},
+		{"invalid choice", `{"tool_choice":{"type":"custom"}}`, "unsupported_tool_choice"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request, err := decodeChatRequest([]byte(tt.body))
+			if err != nil {
+				t.Fatalf("decodeChatRequest() error = %v", err)
+			}
+			_, err = nativeTools(request)
+			requestError, ok := err.(*RequestError)
+			if !ok || requestError.Code != tt.code {
+				t.Fatalf("nativeTools() error = %#v, want code %q", err, tt.code)
+			}
+		})
+	}
+}
+
+func TestNormalizedToolResponseAndStreamChunk(t *testing.T) {
+	t.Parallel()
+	upstream := &http.Response{StatusCode: http.StatusOK, Header: make(http.Header), Body: io.NopCloser(strings.NewReader("{}"))}
+	calls := []openAIToolCall{{ID: "call_1", Type: "function", Function: openAIFunctionCall{Name: "weather", Arguments: `{"city":"Sao Paulo"}`}}}
+	response, err := normalizedResponse(upstream, "id", "model", "", "tool_calls", tokenUsage{}, calls)
+	if err != nil {
+		t.Fatalf("normalizedResponse() error = %v", err)
+	}
+	var payload struct {
+		Choices []struct {
+			Message struct {
+				Content   *string          `json:"content"`
+				ToolCalls []openAIToolCall `json:"tool_calls"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+	if err := json.NewDecoder(response.Body).Decode(&payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.Choices[0].Message.Content != nil || len(payload.Choices[0].Message.ToolCalls) != 1 {
+		t.Errorf("message = %#v", payload.Choices[0].Message)
+	}
+
+	var stream bytes.Buffer
+	if err := writeToolChunk(&stream, "id", "model", []openAIStreamToolCall{{Index: 0, ID: "call_1", Type: "function", Function: openAIFunctionCall{Name: "weather", Arguments: ""}}}); err != nil {
+		t.Fatalf("writeToolChunk() error = %v", err)
+	}
+	if got := stream.String(); !strings.Contains(got, `"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"weather","arguments":""}}]`) {
+		t.Errorf("stream chunk = %q", got)
+	}
+}
 
 func TestAnthropicAdapterTranslatesBufferedChat(t *testing.T) {
 	t.Parallel()
