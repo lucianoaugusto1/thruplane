@@ -46,6 +46,12 @@ brand without overstating commercial readiness.
 - Establish Apache 2.0 licensing and contributor and security guidance.
 - Document Community, Pro, and Enterprise boundaries.
 
+**Product strategy** - COMPLETE
+
+- Define the open data plane and commercial control-plane boundary.
+- Prioritize Flight Recorder and SLO-based routing as strategic bets.
+- Record the proposed Community, Pro, and Enterprise capabilities.
+
 **Release hardening** - PLANNED
 
 - Add CI, signed release artifacts, checksums, and a versioning policy.
@@ -54,19 +60,71 @@ brand without overstating commercial readiness.
 
 ---
 
-## Production controls
+## Community production foundation
 
-**Goal:** Validate and build the planned Pro team-operations offering.
+**Goal:** Make the open data plane secure, observable, and extensible enough
+for broader production adoption.
 
 ### Features
 
-**Per-key policies and rate limits** - PLANNED
+**Protocol and provider expansion** - PLANNED
 
-**Metrics and tracing** - PLANNED
+- Add Responses, embeddings, and priority provider adapters.
+- Normalize streaming, tool calls, and structured outputs.
 
-**Usage and cost accounting** - PLANNED
+**Reliability and access controls** - PLANNED
+
+- Add circuit breakers, weighted routing, multiple local keys, and local
+  limits.
+
+**Open observability and packaging** - PLANNED
+
+- Add Prometheus, OpenTelemetry, cost estimates, hot reload, and Helm.
+
+---
+
+## Pro operations beta
+
+**Goal:** Remove the repeated operational work required to manage gateway use
+across a growing team.
+
+### Features
+
+**Projects, virtual keys, and distributed limits** - PLANNED
+
+**Usage, cost, budgets, quotas, and alerts** - PLANNED
 
 **Managed control plane and team dashboard** - PLANNED
+
+---
+
+## Safe model rollout
+
+**Goal:** Let teams measure and control model changes before full production
+rollout.
+
+### Features
+
+**Flight Recorder capture and replay** - PLANNED
+
+**Shadow traffic, canary rollout, and rollback** - PLANNED
+
+**Cost, latency, quality, schema, and tool-call comparisons** - PLANNED
+
+---
+
+## Adaptive routing
+
+**Goal:** Select routes against explicit cost, latency, quality, availability,
+and privacy objectives.
+
+### Features
+
+**SLO policy schema and routing receipts** - PLANNED
+
+**Routing recommendations with approval** - PLANNED
+
+**Opt-in NexoRoute Autopilot** - PLANNED
 
 ---
 
@@ -81,6 +139,10 @@ brand without overstating commercial readiness.
 **Audit exports and policy governance** - PLANNED
 
 **High availability and enterprise support** - PLANNED
+
+**Agent and MCP registry, traces, budgets, and tool policies** - PLANNED
+
+**Privacy-preserving hosted control plane** - PLANNED
 
 ---
 
@@ -100,7 +162,7 @@ brand without overstating commercial readiness.
 
 ## Future considerations
 
-- Semantic routing and load balancing
-- Redis-backed distributed quotas
-- Administrative API and dashboard
+- Cost Autopilot with model cascades and explicit quality floors
+- Agent Firewall with prompt-injection and data-exfiltration controls
+- BYOC, on-premises, and air-gapped deployment patterns
 - Provider-specific request transformations

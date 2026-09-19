@@ -27,10 +27,14 @@ not generally available features or contractual commitments.
 | Basic bearer authentication | Included | Included | Included |
 | Structured logs and health checks | Included | Included | Included |
 | Prometheus and OpenTelemetry integration | Planned open source | Included | Included |
-| Virtual keys and team workspaces | Not planned | Planned | Planned |
-| Usage and cost analytics | Not planned | Planned | Planned |
-| Budgets, quotas, and alerting | Not planned | Planned | Planned |
-| Advanced routing policies | Basic rules | Planned | Planned |
+| Multiple local keys and simple scopes | Planned open source | Managed | Managed |
+| Local rate limits and quotas | Planned open source | Distributed | Distributed |
+| Per-request token and cost estimates | Planned open source | Included | Included |
+| Persistent usage and cost analytics | Not planned | Planned | Planned |
+| Budgets, distributed quotas, and alerts | Not planned | Planned | Planned |
+| Weighted and policy-based routing | Planned open source | SLO automation | Governed |
+| Guardrail rules and webhooks | Planned open source | Managed catalog | Organization policy |
+| Replay, shadow traffic, and canary rollout | Not planned | Planned | Planned |
 | Web management console | Not planned | Planned | Planned |
 | SSO with SAML or OIDC | Not planned | Not planned | Planned |
 | RBAC and immutable audit logs | Not planned | Limited roles | Planned |
@@ -46,8 +50,9 @@ operate their own gateway. Apache License 2.0 allows commercial use,
 modification, and redistribution under its terms.
 
 Community must remain useful without a commercial subscription. Future open
-work includes additional providers, standard metrics and traces, more endpoint
-families, and stronger routing primitives.
+work includes additional providers, standard metrics and traces, multiple
+local keys, basic local limits, more endpoint families, and stronger routing
+primitives.
 
 ## NexoRoute Pro
 
@@ -58,7 +63,10 @@ own management layer. Candidate capabilities include:
 - Usage and cost dashboards
 - Budgets, quotas, alerts, and provider health views
 - Managed configuration and safer rollout workflows
+- Flight Recorder for replay, shadow traffic, canary rollout, and rollback
+- SLO-based routing recommendations and opt-in Autopilot
 - Advanced routing and policy templates
+- A privacy-preserving hosted control plane
 - Priority support
 
 The first Pro release must be informed by customer discovery. This repository
@@ -75,6 +83,9 @@ availability requirements. Candidate capabilities include:
 - High-availability control and data planes
 - Private networking, secret-manager integrations, and deployment review
 - Contracted support, SLAs, upgrade planning, and security response
+
+The longer product thesis, strategic bets, and proposed delivery sequence live
+in [the product strategy](product-strategy.md).
 
 ## Commercial packaging
 

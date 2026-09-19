@@ -40,7 +40,8 @@ cost controls, governance, high availability, and support.
 
 Core routing, protocols, provider adapters, streaming, and basic observability
 remain part of Community. See [edition principles and roadmap](docs/editions.md)
-for the proposed commercial boundary.
+for the proposed commercial boundary and the
+[product strategy](docs/product-strategy.md) for the longer-term direction.
 
 ## Requirements
 

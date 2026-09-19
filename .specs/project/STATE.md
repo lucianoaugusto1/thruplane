@@ -4,6 +4,21 @@
 
 ## Decisions
 
+- NexoRoute's product thesis is to make models replaceable, measurable, and
+  governed rather than compete only as a Go implementation of LiteLLM.
+- The commercial boundary follows operational scale and governance, not minimum
+  production safety. Basic multiple keys, local limits, metrics, and traces
+  belong in Community.
+- The first differentiated Pro workflow is Flight Recorder: sanitized replay,
+  shadow traffic, canary rollout, comparisons, and rollback.
+- The longer-term product identity is SLO-based routing across cost, latency,
+  quality, availability, privacy, and region constraints.
+- Automated routing must be opt-in, explainable, reversible, and backed by
+  representative evaluations.
+- The hosted control plane must avoid receiving prompts and responses by
+  default; the Go data plane remains inside the customer's infrastructure.
+- Agent Firewall is a later strategic direction after gateway tracing and
+  customer discovery validate the need.
 - NexoRoute is the working product brand and must complete legal, domain, and
   registry clearance before public commercial launch.
 - The Community edition is licensed under Apache License 2.0 and remains useful
@@ -31,6 +46,7 @@
 - Legal and trademark review of the NexoRoute working name
 - Domain, social-handle, and package-registry availability checks
 - Public repository, release automation, and versioning policy
+- Customer interviews that rank cost control, safe rollout, and governance pain
 
 ## Lessons learned
 
@@ -41,6 +57,9 @@
 
 ## Deferred ideas
 
+- Cost Autopilot with model cascades and an explicit quality floor
+- Agent and MCP governance with tool policies and human approval
+- Provider compatibility monitoring and drift alerts
 - Pro implementation: cost tracking, budgets, rate limiting, analytics, and
   managed operations
 - Enterprise implementation: SSO, SCIM, RBAC, audit exports, policy controls,
