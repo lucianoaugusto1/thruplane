@@ -1,0 +1,70 @@
+schema_version: 1
+provider:
+  id: vertex
+  name: Google Vertex AI
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://cloud.google.com/vertex-ai/generative-ai/docs
+      title: Generative AI on Vertex AI
+    - url: https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing
+      title: Google model pricing on Vertex AI
+    - url: https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling
+      title: Vertex AI function calling
+models:
+  - id: gemini-3.8-flash
+    name: Gemini 3.8 Flash on Vertex AI
+    family: gemini-3
+    status: active
+    capabilities: &vertex_gemini_capabilities
+      operations: [chat]
+      input_modalities: [text, image, audio, video, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: false}
+    limits: {context_tokens: 1048576, max_input_tokens: 1048576, max_output_tokens: 65536}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: any, unit: million_tokens, price: 0.75, condition: "global endpoint through 2026-12-31"}
+        - {kind: cache_read, modality: any, unit: million_tokens, price: 0.075, condition: "global endpoint through 2026-12-31"}
+        - {kind: output, modality: text, unit: million_tokens, price: 3.75, condition: "global endpoint through 2026-12-31; includes thinking"}
+      notes: Non-global endpoints and priority service have different rates.
+    performance:
+      latency_class: fast
+      notes: Google doesn't publish comparable TTFT or output tokens per second for standard service.
+
+  - id: gemini-3.1-pro-preview
+    name: Gemini 3.1 Pro Preview on Vertex AI
+    family: gemini-3
+    status: preview
+    capabilities: *vertex_gemini_capabilities
+    limits: {context_tokens: 1048576, max_input_tokens: 1048576, max_output_tokens: 65536}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: any, unit: million_tokens, price: 2, condition: "global endpoint; input_tokens <= 200000"}
+        - {kind: cache_read, modality: any, unit: million_tokens, price: 0.2, condition: "global endpoint; input_tokens <= 200000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 12, condition: "global endpoint; input_tokens <= 200000"}
+        - {kind: input, modality: any, unit: million_tokens, price: 4, condition: "global endpoint; input_tokens > 200000"}
+        - {kind: cache_read, modality: any, unit: million_tokens, price: 0.4, condition: "global endpoint; input_tokens > 200000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 18, condition: "global endpoint; input_tokens > 200000"}
+      notes: Non-global endpoints and priority service have different rates.
+    performance:
+      latency_class: moderate
+      notes: Google doesn't publish comparable TTFT or output tokens per second for standard service.
+
+  - id: gemini-3.1-flash-lite
+    name: Gemini 3.1 Flash-Lite on Vertex AI
+    family: gemini-3
+    status: active
+    capabilities: *vertex_gemini_capabilities
+    limits: {context_tokens: 1048576, max_input_tokens: 1048576, max_output_tokens: 65536}
+    pricing:
+      currency: USD
+      notes: Pricing varies by endpoint geography and service tier; use the official live table for deployment-specific rates.
+    performance:
+      latency_class: fastest
+      notes: Google doesn't publish comparable TTFT or output tokens per second for standard service.

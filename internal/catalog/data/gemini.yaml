@@ -1,0 +1,94 @@
+schema_version: 1
+provider:
+  id: gemini
+  name: Google Gemini Developer API
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://ai.google.dev/gemini-api/docs/models
+      title: Gemini API models
+    - url: https://ai.google.dev/gemini-api/docs/pricing
+      title: Gemini Developer API pricing
+    - url: https://ai.google.dev/gemini-api/docs/tokens
+      title: Gemini tokens and context windows
+models:
+  - id: gemini-3.8-flash
+    name: Gemini 3.8 Flash
+    family: gemini-3
+    status: active
+    capabilities: &gemini_capabilities
+      operations: [chat]
+      input_modalities: [text, image, audio, video, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: false}
+    limits: {context_tokens: 1048576, max_input_tokens: 1048576, max_output_tokens: 65536}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: any, unit: million_tokens, price: 0.75, condition: "through 2026-12-31"}
+        - {kind: cache_read, modality: any, unit: million_tokens, price: 0.075, condition: "through 2026-12-31"}
+        - {kind: cache_storage, modality: any, unit: million_token_hours, price: 0.5, condition: "through 2026-12-31"}
+        - {kind: output, modality: text, unit: million_tokens, price: 3.75, condition: "through 2026-12-31; includes thinking"}
+        - {kind: input, modality: any, unit: million_tokens, price: 1.5, condition: "from 2027-01-01"}
+        - {kind: cache_read, modality: any, unit: million_tokens, price: 0.15, condition: "from 2027-01-01"}
+        - {kind: output, modality: text, unit: million_tokens, price: 7.5, condition: "from 2027-01-01; includes thinking"}
+    performance:
+      latency_class: fast
+      notes: Google doesn't publish comparable TTFT or output tokens per second.
+
+  - id: gemini-3.1-pro-preview
+    name: Gemini 3.1 Pro Preview
+    family: gemini-3
+    status: preview
+    capabilities: *gemini_capabilities
+    limits: {context_tokens: 1048576, max_input_tokens: 1048576, max_output_tokens: 65536}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: any, unit: million_tokens, price: 2, condition: "input_tokens <= 200000"}
+        - {kind: cache_read, modality: any, unit: million_tokens, price: 0.2, condition: "input_tokens <= 200000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 12, condition: "input_tokens <= 200000; includes thinking"}
+        - {kind: input, modality: any, unit: million_tokens, price: 4, condition: "input_tokens > 200000"}
+        - {kind: cache_read, modality: any, unit: million_tokens, price: 0.4, condition: "input_tokens > 200000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 18, condition: "input_tokens > 200000; includes thinking"}
+        - {kind: cache_storage, modality: any, unit: million_token_hours, price: 4.5}
+    performance:
+      latency_class: moderate
+      notes: Google doesn't publish comparable TTFT or output tokens per second.
+
+  - id: gemini-3.1-flash-lite
+    name: Gemini 3.1 Flash-Lite
+    family: gemini-3
+    status: active
+    capabilities: *gemini_capabilities
+    limits: {context_tokens: 1048576, max_input_tokens: 1048576, max_output_tokens: 65536}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: "text,image,video,document", unit: million_tokens, price: 0.25}
+        - {kind: input, modality: audio, unit: million_tokens, price: 0.5}
+        - {kind: cache_read, modality: "text,image,video,document", unit: million_tokens, price: 0.025}
+        - {kind: cache_read, modality: audio, unit: million_tokens, price: 0.05}
+        - {kind: cache_storage, modality: any, unit: million_token_hours, price: 1}
+        - {kind: output, modality: text, unit: million_tokens, price: 1.5, condition: "includes thinking"}
+    performance:
+      latency_class: fastest
+      notes: Google doesn't publish comparable TTFT or output tokens per second.
+
+  - id: gemini-2.5-pro
+    name: Gemini 2.5 Pro
+    family: gemini-2.5
+    status: active
+    knowledge_cutoff: "2025-01"
+    capabilities: *gemini_capabilities
+    limits: {context_tokens: 1048576, max_input_tokens: 1048576, max_output_tokens: 65536}
+    pricing:
+      currency: USD
+      notes: Consult the live pricing page before cost-based routing; Google can revise legacy-model rates independently.
+    performance:
+      latency_class: moderate
+      notes: Google doesn't publish comparable TTFT or output tokens per second.
+

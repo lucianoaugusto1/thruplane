@@ -1,0 +1,92 @@
+schema_version: 1
+provider:
+  id: anthropic
+  name: Anthropic
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://platform.claude.com/docs/en/models/overview
+      title: Claude models overview
+    - url: https://platform.claude.com/docs/en/about-claude/pricing
+      title: Claude API pricing and prompt caching
+    - url: https://platform.claude.com/docs/en/build-with-claude/vision
+      title: Claude vision input
+    - url: https://platform.claude.com/docs/en/build-with-claude/pdf-support
+      title: Claude PDF support
+models:
+  - id: claude-fable-5-1
+    name: Claude Fable 5.1
+    family: claude-fable
+    status: active
+    knowledge_cutoff: "2026-06"
+    capabilities: &claude_capabilities
+      operations: [chat]
+      input_modalities: [text, image, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 1000000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 10}
+        - {kind: cache_write_5m, modality: text, unit: million_tokens, price: 12.5}
+        - {kind: cache_write_1h, modality: text, unit: million_tokens, price: 20}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 1}
+        - {kind: output, modality: text, unit: million_tokens, price: 50}
+    performance: {latency_class: slower, notes: "Anthropic publishes only a comparative latency class."}
+
+  - id: claude-opus-5
+    name: Claude Opus 5
+    family: claude-opus
+    status: active
+    knowledge_cutoff: "2026-05"
+    capabilities: *claude_capabilities
+    limits: {context_tokens: 1000000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 5}
+        - {kind: cache_write_5m, modality: text, unit: million_tokens, price: 6.25}
+        - {kind: cache_write_1h, modality: text, unit: million_tokens, price: 10}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.5}
+        - {kind: output, modality: text, unit: million_tokens, price: 25}
+    performance: {latency_class: moderate, notes: "Anthropic publishes only a comparative latency class."}
+
+  - id: claude-sonnet-5
+    name: Claude Sonnet 5
+    family: claude-sonnet
+    status: active
+    knowledge_cutoff: "2026-01"
+    capabilities: *claude_capabilities
+    limits: {context_tokens: 1000000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 2}
+        - {kind: cache_write_5m, modality: text, unit: million_tokens, price: 2.5}
+        - {kind: cache_write_1h, modality: text, unit: million_tokens, price: 4}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.2}
+        - {kind: output, modality: text, unit: million_tokens, price: 10}
+    performance: {latency_class: fast, notes: "Anthropic publishes only a comparative latency class."}
+
+  - id: claude-haiku-4-5-20251001
+    aliases: [claude-haiku-4-5]
+    name: Claude Haiku 4.5
+    family: claude-haiku
+    status: active
+    knowledge_cutoff: "2025-02"
+    capabilities: *claude_capabilities
+    limits: {context_tokens: 200000, max_output_tokens: 64000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 1}
+        - {kind: cache_write_5m, modality: text, unit: million_tokens, price: 1.25}
+        - {kind: cache_write_1h, modality: text, unit: million_tokens, price: 2}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.1}
+        - {kind: output, modality: text, unit: million_tokens, price: 5}
+    performance: {latency_class: fastest, notes: "Anthropic publishes only a comparative latency class."}
+

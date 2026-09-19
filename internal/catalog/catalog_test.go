@@ -121,3 +121,38 @@ models:
 		t.Fatal("LoadFS() error = nil, want duplicate model error")
 	}
 }
+
+func TestBuiltInCatalogContainsInitialProviderModels(t *testing.T) {
+	registry, err := BuiltIn()
+	if err != nil {
+		t.Fatalf("BuiltIn() error = %v", err)
+	}
+
+	tests := []struct {
+		provider string
+		model    string
+	}{
+		{provider: "openai", model: "gpt-6-astra"},
+		{provider: "anthropic", model: "claude-sonnet-5"},
+		{provider: "gemini", model: "gemini-3.8-flash"},
+		{provider: "vertex", model: "gemini-3.8-flash"},
+		{provider: "bedrock", model: "global.amazon.nova-2-lite-v1:0"},
+		{provider: "azure-openai", model: "gpt-5.6-terra"},
+		{provider: "ollama", model: "llama3.2:latest"},
+		{provider: "xai", model: "grok-4.6"},
+	}
+	for _, test := range tests {
+		t.Run(test.provider+"/"+test.model, func(t *testing.T) {
+			model, ok := registry.Lookup(test.provider, test.model)
+			if !ok {
+				t.Fatal("Lookup() did not find embedded model")
+			}
+			if len(model.Provider.Sources) == 0 || model.Provider.UpdatedAt == "" {
+				t.Fatalf("model provenance = %#v", model.Provider)
+			}
+			if model.Performance.OutputTokensPerSecond != nil || model.Performance.TimeToFirstTokenMS != nil {
+				t.Fatal("provider-independent measured performance must remain unknown")
+			}
+		})
+	}
+}

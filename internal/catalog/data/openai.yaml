@@ -1,0 +1,129 @@
+schema_version: 1
+provider:
+  id: openai
+  name: OpenAI
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://developers.openai.com/api/docs/models
+      title: OpenAI models
+    - url: https://developers.openai.com/api/docs/models/compare
+      title: OpenAI model comparison
+models:
+  - id: gpt-6-astra
+    name: GPT-6 Astra
+    family: gpt-6
+    status: active
+    knowledge_cutoff: "2026-04-30"
+    capabilities:
+      operations: [chat, responses]
+      input_modalities: [text, image, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 1050000, max_input_tokens: 922000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 10}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 1}
+        - {kind: cache_write, modality: text, unit: million_tokens, price: 12.5}
+        - {kind: output, modality: text, unit: million_tokens, price: 50}
+        - {kind: input, modality: text, unit: million_tokens, price: 20, condition: "input_tokens > 272000"}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 2, condition: "input_tokens > 272000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 75, condition: "input_tokens > 272000"}
+    performance:
+      latency_class: moderate
+      notes: OpenAI doesn't publish comparable TTFT or output tokens per second.
+
+  - id: gpt-5.6-sol
+    aliases: [gpt-5.6]
+    name: GPT-5.6 Sol
+    family: gpt-5.6
+    status: active
+    knowledge_cutoff: "2026-02-16"
+    capabilities:
+      operations: [chat, responses]
+      input_modalities: [text, image, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 1050000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 4}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.4}
+        - {kind: cache_write, modality: text, unit: million_tokens, price: 5}
+        - {kind: output, modality: text, unit: million_tokens, price: 20}
+        - {kind: input, modality: text, unit: million_tokens, price: 8, condition: "input_tokens > 272000"}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.8, condition: "input_tokens > 272000"}
+        - {kind: cache_write, modality: text, unit: million_tokens, price: 10, condition: "input_tokens > 272000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 30, condition: "input_tokens > 272000"}
+    performance:
+      latency_class: moderate
+      notes: OpenAI doesn't publish comparable TTFT or output tokens per second.
+
+  - id: gpt-5.6-terra
+    name: GPT-5.6 Terra
+    family: gpt-5.6
+    status: active
+    knowledge_cutoff: "2026-02-16"
+    capabilities:
+      operations: [chat, responses]
+      input_modalities: [text, image, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 1050000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 2}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.2}
+        - {kind: cache_write, modality: text, unit: million_tokens, price: 2.5}
+        - {kind: output, modality: text, unit: million_tokens, price: 12}
+        - {kind: input, modality: text, unit: million_tokens, price: 4, condition: "input_tokens > 272000"}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.4, condition: "input_tokens > 272000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 18, condition: "input_tokens > 272000"}
+    performance:
+      latency_class: fast
+      notes: OpenAI doesn't publish comparable TTFT or output tokens per second.
+
+  - id: gpt-5.6-luna
+    name: GPT-5.6 Luna
+    family: gpt-5.6
+    status: active
+    knowledge_cutoff: "2026-02-16"
+    capabilities:
+      operations: [chat, responses]
+      input_modalities: [text, image, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 1050000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 0.2}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.02}
+        - {kind: cache_write, modality: text, unit: million_tokens, price: 0.25}
+        - {kind: output, modality: text, unit: million_tokens, price: 1.2}
+        - {kind: input, modality: text, unit: million_tokens, price: 0.4, condition: "input_tokens > 272000"}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.04, condition: "input_tokens > 272000"}
+        - {kind: output, modality: text, unit: million_tokens, price: 1.8, condition: "input_tokens > 272000"}
+    performance:
+      latency_class: fastest
+      notes: OpenAI doesn't publish comparable TTFT or output tokens per second.
+

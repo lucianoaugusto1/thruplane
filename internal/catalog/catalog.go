@@ -29,6 +29,7 @@ type Provider struct {
 	Name      string   `yaml:"name" json:"name"`
 	UpdatedAt string   `yaml:"updated_at" json:"updated_at"`
 	Sources   []Source `yaml:"sources" json:"sources"`
+	Notes     string   `yaml:"notes" json:"notes,omitempty"`
 }
 
 type ToolCapabilities struct {
@@ -208,10 +209,6 @@ func (r *Registry) add(file catalogFile) error {
 			return fmt.Errorf("provider %q source %d must have an HTTPS URL and title", provider.ID, index)
 		}
 	}
-	if len(file.Models) == 0 {
-		return fmt.Errorf("provider %q requires at least one model", provider.ID)
-	}
-
 	r.providers[provider.ID] = provider
 	for _, model := range file.Models {
 		model.ID = strings.TrimSpace(model.ID)

@@ -1,0 +1,81 @@
+schema_version: 1
+provider:
+  id: azure-openai
+  name: Azure OpenAI
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models
+      title: Azure OpenAI models and token limits
+    - url: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/prompt-caching
+      title: Azure OpenAI prompt caching
+    - url: https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/
+      title: Azure OpenAI pricing
+  notes: Model availability and prices vary by region, deployment type, and agreement. Target model values are deployment names; use catalog_model to identify the underlying model.
+models:
+  - id: gpt-6-astra
+    name: GPT-6 Astra on Azure OpenAI
+    family: gpt-6
+    status: active
+    knowledge_cutoff: "2026-04"
+    capabilities: &azure_capabilities
+      operations: [chat, responses]
+      input_modalities: [text, image, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 1050000, max_input_tokens: 922000, max_output_tokens: 128000}
+    pricing:
+      currency: USD
+      notes: Query the Azure pricing calculator for the deployment region and tier.
+    performance:
+      latency_class: moderate
+      notes: Latency depends on region, deployment type, capacity, and service tier; no comparable TPS is published.
+
+  - id: gpt-5.6-sol
+    name: GPT-5.6 Sol on Azure OpenAI
+    family: gpt-5.6
+    status: active
+    capabilities: *azure_capabilities
+    limits: {context_tokens: 1050000, max_output_tokens: 128000}
+    pricing: {currency: USD, notes: "Query the Azure pricing calculator for the deployment region and tier."}
+    performance: {latency_class: moderate, notes: "Latency depends on deployment configuration; no comparable TPS is published."}
+
+  - id: gpt-5.6-terra
+    name: GPT-5.6 Terra on Azure OpenAI
+    family: gpt-5.6
+    status: active
+    capabilities: *azure_capabilities
+    limits: {context_tokens: 1050000, max_output_tokens: 128000}
+    pricing: {currency: USD, notes: "Query the Azure pricing calculator for the deployment region and tier."}
+    performance: {latency_class: fast, notes: "Latency depends on deployment configuration; no comparable TPS is published."}
+
+  - id: gpt-5.6-luna
+    name: GPT-5.6 Luna on Azure OpenAI
+    family: gpt-5.6
+    status: active
+    capabilities: *azure_capabilities
+    limits: {context_tokens: 1050000, max_output_tokens: 128000}
+    pricing: {currency: USD, notes: "Query the Azure pricing calculator for the deployment region and tier."}
+    performance: {latency_class: fastest, notes: "Latency depends on deployment configuration; no comparable TPS is published."}
+
+  - id: gpt-4o
+    name: GPT-4o on Azure OpenAI
+    family: gpt-4o
+    status: active
+    knowledge_cutoff: "2023-10"
+    capabilities:
+      operations: [chat]
+      input_modalities: [text, image]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: false
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 128000, max_input_tokens: 128000, max_output_tokens: 16384}
+    pricing: {currency: USD, notes: "Query the Azure pricing calculator for the deployment region and tier."}
+    performance: {latency_class: fast, notes: "Latency depends on deployment configuration; no comparable TPS is published."}
+

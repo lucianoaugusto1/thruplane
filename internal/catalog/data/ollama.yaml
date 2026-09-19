@@ -1,0 +1,85 @@
+schema_version: 1
+provider:
+  id: ollama
+  name: Ollama
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://ollama.com/library
+      title: Ollama model library
+    - url: https://docs.ollama.com/capabilities/vision
+      title: Ollama vision capability
+    - url: https://docs.ollama.com/capabilities/tool-calling
+      title: Ollama tool calling capability
+  notes: Tags can select different quantizations and context settings. Throughput and cost depend on local hardware, runtime settings, and concurrency, so they must be measured in the customer's deployment.
+models:
+  - id: llama3.2
+    aliases: ["llama3.2:latest"]
+    name: Llama 3.2
+    family: llama3.2
+    status: active
+    capabilities:
+      operations: [chat]
+      input_modalities: [text]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: false
+      reasoning: false
+      tools: {function_calling: true, parallel_calls: true, strict_schema: false}
+    limits: {}
+    pricing: {currency: USD, notes: "No per-token API fee; infrastructure, electricity, and operations determine cost."}
+    performance: {latency_class: hardware_dependent, notes: "Measure TTFT and output TPS on the selected tag, quantization, hardware, and concurrency."}
+
+  - id: llama3.2-vision
+    aliases: ["llama3.2-vision:latest"]
+    name: Llama 3.2 Vision
+    family: llama3.2
+    status: active
+    capabilities:
+      operations: [chat]
+      input_modalities: [text, image]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: false
+      reasoning: false
+      tools: {function_calling: true, parallel_calls: true, strict_schema: false}
+    limits: {}
+    pricing: {currency: USD, notes: "No per-token API fee; infrastructure, electricity, and operations determine cost."}
+    performance: {latency_class: hardware_dependent, notes: "Measure TTFT and output TPS on the selected tag, quantization, hardware, and concurrency."}
+
+  - id: gemma3
+    aliases: ["gemma3:latest"]
+    name: Gemma 3
+    family: gemma3
+    status: active
+    capabilities:
+      operations: [chat]
+      input_modalities: [text, image]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: false
+      reasoning: false
+      tools: {function_calling: false, parallel_calls: false, strict_schema: false}
+    limits: {}
+    pricing: {currency: USD, notes: "No per-token API fee; infrastructure, electricity, and operations determine cost."}
+    performance: {latency_class: hardware_dependent, notes: "Measure TTFT and output TPS on the selected tag, quantization, hardware, and concurrency."}
+
+  - id: qwen3
+    aliases: ["qwen3:latest"]
+    name: Qwen 3
+    family: qwen3
+    status: active
+    capabilities:
+      operations: [chat]
+      input_modalities: [text]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: false
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: false}
+    limits: {}
+    pricing: {currency: USD, notes: "No per-token API fee; infrastructure, electricity, and operations determine cost."}
+    performance: {latency_class: hardware_dependent, notes: "Measure TTFT and output TPS on the selected tag, quantization, hardware, and concurrency."}

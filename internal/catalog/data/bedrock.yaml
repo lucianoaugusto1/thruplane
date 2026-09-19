@@ -1,0 +1,77 @@
+schema_version: 1
+provider:
+  id: bedrock
+  name: Amazon Bedrock
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://docs.aws.amazon.com/bedrock/latest/userguide/models.html
+      title: Amazon Bedrock model availability and compatibility
+    - url: https://docs.aws.amazon.com/en_en/bedrock/latest/userguide/model-card-amazon-nova-2-lite.html
+      title: Amazon Nova 2 Lite model card
+    - url: https://aws.amazon.com/bedrock/pricing/
+      title: Amazon Bedrock pricing
+    - url: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
+      title: Amazon Bedrock Converse API
+  notes: Bedrock exposes many vendors and region-specific inference profile IDs. The embedded catalog covers Amazon Nova models exercised through the NexoRoute Converse adapter; map inference profiles with catalog_model.
+models:
+  - id: amazon.nova-2-lite-v1:0
+    aliases: [us.amazon.nova-2-lite-v1:0, eu.amazon.nova-2-lite-v1:0, jp.amazon.nova-2-lite-v1:0, global.amazon.nova-2-lite-v1:0]
+    name: Amazon Nova 2 Lite
+    family: amazon-nova
+    status: active
+    knowledge_cutoff: "2025-10"
+    capabilities: &nova_capabilities
+      operations: [chat]
+      input_modalities: [text, image, video, document]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: true
+      tools: {function_calling: true, parallel_calls: true, strict_schema: false}
+    limits: {context_tokens: 1000000, max_output_tokens: 64000}
+    pricing:
+      currency: USD
+      notes: Rates vary by region, service tier, and cross-region inference profile; consult the live Bedrock pricing table.
+    performance:
+      latency_class: fast
+      notes: AWS offers standard and priority tiers but doesn't publish comparable TTFT or output TPS.
+
+  - id: amazon.nova-pro-v1:0
+    aliases: [us.amazon.nova-pro-v1:0]
+    name: Amazon Nova Pro
+    family: amazon-nova
+    status: active
+    capabilities: *nova_capabilities
+    limits: {context_tokens: 300000, max_output_tokens: 10000}
+    pricing: {currency: USD, notes: "Rates vary by region and inference profile; consult the live Bedrock pricing table."}
+    performance: {latency_class: moderate, notes: "AWS doesn't publish comparable TTFT or output TPS."}
+
+  - id: amazon.nova-lite-v1:0
+    aliases: [us.amazon.nova-lite-v1:0]
+    name: Amazon Nova Lite
+    family: amazon-nova
+    status: active
+    capabilities: *nova_capabilities
+    limits: {context_tokens: 300000, max_output_tokens: 10000}
+    pricing: {currency: USD, notes: "Rates vary by region and inference profile; consult the live Bedrock pricing table."}
+    performance: {latency_class: fast, notes: "AWS doesn't publish comparable TTFT or output TPS."}
+
+  - id: amazon.nova-micro-v1:0
+    aliases: [us.amazon.nova-micro-v1:0]
+    name: Amazon Nova Micro
+    family: amazon-nova
+    status: active
+    capabilities:
+      operations: [chat]
+      input_modalities: [text]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: false
+      tools: {function_calling: true, parallel_calls: true, strict_schema: false}
+    limits: {context_tokens: 128000, max_output_tokens: 10000}
+    pricing: {currency: USD, notes: "Rates vary by region and inference profile; consult the live Bedrock pricing table."}
+    performance: {latency_class: fastest, notes: "AWS doesn't publish comparable TTFT or output TPS."}
+
