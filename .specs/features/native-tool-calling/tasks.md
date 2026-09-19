@@ -1,7 +1,7 @@
 # Native tool calling tasks
 
 **Design:** `design.md`
-**Status:** In progress
+**Status:** Done
 
 ## Execution plan
 
@@ -9,7 +9,7 @@
 T1 -> T2 -> T3 -> T4 -> T5
 ```
 
-### T1: Add the shared native tool contract
+### T1: Add the shared native tool contract ✅
 
 **Where:** `internal/provider/native.go`, native provider tests
 **Depends on:** None
@@ -17,7 +17,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 **Tests:** Unit
 **Gate:** Quick
 
-### T2: Implement Anthropic tool translation
+### T2: Implement Anthropic tool translation ✅
 
 **Where:** `internal/provider/anthropic.go`, native provider tests
 **Depends on:** T1
@@ -25,7 +25,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 **Tests:** Integration with local HTTP/SSE fixtures
 **Gate:** Full
 
-### T3: Implement Gemini and Vertex tool translation
+### T3: Implement Gemini and Vertex tool translation ✅
 
 **Where:** `internal/provider/google.go`, native provider tests
 **Depends on:** T1
@@ -33,7 +33,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 **Tests:** Integration with local HTTP/SSE fixtures
 **Gate:** Full
 
-### T4: Implement Bedrock Converse tool translation
+### T4: Implement Bedrock Converse tool translation ✅
 
 **Where:** `internal/provider/bedrock.go`, Bedrock provider tests
 **Depends on:** T1
@@ -41,7 +41,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 **Tests:** Integration with local HTTP fixtures
 **Gate:** Full
 
-### T5: Document and validate native tool portability
+### T5: Document and validate native tool portability ✅
 
 **Where:** `docs/providers.md`, project state, feature validation
 **Depends on:** T2, T3, T4
@@ -53,8 +53,8 @@ T1 -> T2 -> T3 -> T4 -> T5
 
 | Task | Scope | Dependency matches plan | Tests colocated | Status |
 | --- | --- | --- | --- | --- |
-| T1 | Shared model | Yes | Yes | Ready |
-| T2 | One adapter | Yes | Yes | Ready |
-| T3 | One shared protocol family | Yes | Yes | Ready |
-| T4 | One adapter | Yes | Yes | Ready |
-| T5 | Documentation and validation | Yes | Yes | Ready |
+| T1 | Shared model | Yes | Yes | Done |
+| T2 | One adapter | Yes | Yes | Done |
+| T3 | One shared protocol family | Yes | Yes | Done |
+| T4 | One adapter | Yes | Yes | Done |
+| T5 | Documentation and validation | Yes | Yes | Done |

@@ -157,7 +157,7 @@ func TestClientDoUsesConfiguredEndpointCredentialAndModel(t *testing.T) {
 		t.Fatalf("NewClients() error = %v", err)
 	}
 
-	body := []byte(`{"model":"public-alias","messages":[{"role":"user","content":"hello"}],"n":3,"custom":{"future":true}}`)
+	body := []byte(`{"model":"public-alias","messages":[{"role":"user","content":"hello"}],"tools":[{"type":"function","function":{"name":"weather","parameters":{"type":"object"}}}],"tool_choice":"auto","n":3,"custom":{"future":true}}`)
 	response, err := clients["openai"].Do(context.Background(), body, "provider-model")
 	if err != nil {
 		t.Fatalf("Do() error = %v", err)
@@ -203,6 +203,12 @@ func TestClientDoUsesConfiguredEndpointCredentialAndModel(t *testing.T) {
 	}
 	if string(fields["messages"]) != `[{"role":"user","content":"hello"}]` {
 		t.Errorf("messages = %s, want preserved messages", fields["messages"])
+	}
+	if string(fields["tools"]) != `[{"type":"function","function":{"name":"weather","parameters":{"type":"object"}}}]` {
+		t.Errorf("tools = %s, want preserved tools", fields["tools"])
+	}
+	if string(fields["tool_choice"]) != `"auto"` {
+		t.Errorf("tool_choice = %s, want preserved value", fields["tool_choice"])
 	}
 }
 

@@ -1,6 +1,6 @@
 # Native tool calling specification
 
-**Status:** In progress
+**Status:** Verified
 **Date:** September 19, 2026
 
 ## Problem
@@ -68,3 +68,15 @@ and response bodies SHALL continue through the existing opaque passthrough.
 - Multiple tool calls retain stable indices and identifiers.
 - Unsupported native tool features never disappear silently.
 - Deterministic local fixtures cover buffered and streaming mappings.
+
+## Traceability
+
+| Requirement | Implementation | Status |
+| --- | --- | --- |
+| TC-01 | Shared contract plus all native request codecs | Verified |
+| TC-02 | Provider-specific tool-choice mapping | Verified |
+| TC-03 | Call-name index and grouped tool-result turns | Verified |
+| TC-04 | Shared normalized response and native codecs | Verified |
+| TC-05 | Anthropic and Google SSE transformers | Verified |
+| TC-06 | `RequestError` validation before transport | Verified |
+| TC-07 | Existing compatible passthrough tests | Verified |

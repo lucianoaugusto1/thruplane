@@ -11,10 +11,10 @@ to the provider-specific model identifier configured in `models.*.targets`.
 | Type | Upstream protocol | Buffered | Streaming | Authentication |
 | --- | --- | --- | --- | --- |
 | `openai` | OpenAI Chat Completions | Yes | Yes | Bearer key |
-| `anthropic` | Anthropic Messages | Text | Text | `x-api-key` |
-| `gemini` | Gemini `generateContent` | Text | Text | `x-goog-api-key` |
-| `vertex` | Vertex `generateContent` | Text | Text | OAuth bearer token |
-| `bedrock` | Bedrock Converse | Text | Not yet | AWS Signature Version 4 |
+| `anthropic` | Anthropic Messages | Text and function tools | Text and function tools | `x-api-key` |
+| `gemini` | Gemini `generateContent` | Text and function tools | Text and function tools | `x-goog-api-key` |
+| `vertex` | Vertex `generateContent` | Text and function tools | Text and function tools | OAuth bearer token |
+| `bedrock` | Bedrock Converse | Text and function tools | Not yet | AWS Signature Version 4 |
 | `azure-openai` | Azure OpenAI v1 chat | Yes | Yes | `api-key` |
 | `ollama` | Ollama OpenAI compatibility | Yes | Yes | Optional bearer key |
 | `openai-compatible` | Configurable OpenAI compatibility | Yes | Yes | Optional bearer key |
@@ -26,8 +26,38 @@ provider type. Grok is the model family; xAI is the API provider.
 
 Compatible adapters preserve request fields they don't interpret and relay
 successful response bodies without conversion. Native adapters translate
-text messages and normalize successful provider responses. They reject
-unsupported content instead of silently dropping it.
+text messages, client-executed function tools, tool results, and successful
+provider responses. They reject unsupported content instead of silently
+dropping it.
+
+## Function tools
+
+Native adapters support the OpenAI Chat Completions tool loop:
+
+1. Send `tools` with one or more `type: function` definitions.
+2. Read `choices[0].message.tool_calls` from the response.
+3. Execute each function in your application.
+4. Append the assistant response and one `role: tool` message per result.
+5. Send the full conversation again to receive the final answer.
+
+NexoRoute preserves function names, JSON Schema parameters, call identifiers,
+JSON arguments, multiple calls, tool results, and `finish_reason: tool_calls`.
+Anthropic and Google tool calls are also normalized during streaming.
+
+The native portability contract has these deliberate limits:
+
+- Only `type: function` tools are portable. Provider-hosted web search, code
+  execution, computer use, and remote MCP tools aren't translated.
+- `strict: true` is rejected until every native protocol can preserve the same
+  JSON Schema guarantee.
+- Anthropic honors `parallel_tool_calls: false`. Gemini, Vertex, and Bedrock
+  reject that setting because they don't expose an equivalent portable control
+  through these APIs. Parallel calls remain supported when the field is
+  omitted or `true`.
+- Legacy `functions` and `function_call` fields are rejected. Use `tools` and
+  `tool_choice`.
+- Tool execution stays in your application. NexoRoute translates the protocol
+  but never executes a function on the customer's behalf.
 
 ## OpenAI
 
@@ -65,7 +95,8 @@ providers:
 ```
 
 The adapter calls `generateContent` or `streamGenerateContent` at the default
-`https://generativelanguage.googleapis.com` endpoint.
+`https://generativelanguage.googleapis.com` endpoint. Function declarations,
+calls, and results use native Google content parts.
 
 ## Vertex AI
 
@@ -96,9 +127,10 @@ providers:
 
 The adapter calls the regional Bedrock Runtime Converse endpoint and signs each
 request with AWS Signature Version 4. Use short-lived credentials in
-production. Streaming returns a `400 unsupported_streaming` error before any
-network request until NexoRoute includes a CRC-validated AWS event-stream
-decoder.
+production. Function tools use Converse `toolConfig`, `toolUse`, and
+`toolResult` blocks. Streaming returns a `400 unsupported_streaming` error
+before any network request until NexoRoute includes a CRC-validated AWS
+event-stream decoder.
 
 ## Azure OpenAI
 

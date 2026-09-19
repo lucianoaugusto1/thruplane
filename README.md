@@ -224,7 +224,8 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
   audio, or batch APIs.
 - `n` must be omitted or set to `1` so providers do not silently diverge.
 - Compatible adapters pass through tool use, vision, and structured-output
-  fields. Native adapters currently accept text messages only.
+  fields. Native adapters translate text messages and client-executed function
+  tools; native multimodal content remains planned.
 - Bedrock supports buffered Converse responses; Bedrock streaming remains
   deferred until the binary AWS event-stream decoder is available.
 - Ollama's OpenAI compatibility can vary by version and model.

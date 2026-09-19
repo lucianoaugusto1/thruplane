@@ -51,8 +51,13 @@
   Azure OpenAI, Ollama, configurable OpenAI-compatible APIs, NexoRoute
   Inference, and xAI. `grok` is an alias for xAI.
 - Compatible adapters use response passthrough. Native adapters translate text
-  chat; Bedrock streaming, native tools, and native multimodal content remain
-  explicit follow-up work.
+  chat; Bedrock streaming and native multimodal content remain explicit
+  follow-up work.
+- Native adapters translate client-executed function definitions, tool choice,
+  assistant tool calls, parallel tool results, and normalized buffered
+  responses. Anthropic, Gemini, and Vertex also normalize streamed tool calls.
+- Portable native tools intentionally exclude provider-hosted tools,
+  `strict: true`, legacy function fields, and multimodal tool results.
 - Standard Go tests and `httptest` provide unit and end-to-end coverage.
 - Go 1.26 is the tested baseline; the implementation uses only standard HTTP
   features available since Go 1.22.
@@ -86,7 +91,7 @@
 - Agent and MCP governance with tool policies and human approval
 - Provider compatibility monitoring and drift alerts
 - Bedrock binary event-stream decoding and normalization
-- Native tool-call and multimodal normalization
+- Native multimodal normalization and provider-hosted tool adapters
 - Pro implementation: cost tracking, budgets, rate limiting, analytics, and
   managed operations
 - Enterprise implementation: SSO, SCIM, RBAC, audit exports, policy controls,
