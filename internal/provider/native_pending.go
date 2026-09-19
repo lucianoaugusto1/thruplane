@@ -17,17 +17,6 @@ func (pendingAdapter) normalizeResponse(response *http.Response, _ string, _ boo
 	return response, nil
 }
 
-func newAnthropicAdapter(config.ProviderConfig) (adapter, error) {
-	return pendingAdapter{provider: "Anthropic"}, nil
-}
-
-func newGoogleAdapter(_ config.ProviderConfig, vertex bool) (adapter, error) {
-	if vertex {
-		return pendingAdapter{provider: "Vertex AI"}, nil
-	}
-	return pendingAdapter{provider: "Gemini"}, nil
-}
-
 func newBedrockAdapter(config.ProviderConfig) (adapter, error) {
 	return pendingAdapter{provider: "Amazon Bedrock"}, nil
 }
