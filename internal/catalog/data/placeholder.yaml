@@ -1,0 +1,15 @@
+schema_version: 1
+provider:
+  id: placeholder
+  name: Placeholder
+  updated_at: "2026-09-19"
+  sources:
+    - url: https://example.com
+      title: Placeholder removed when provider catalogs are added
+models:
+  - id: placeholder
+    status: internal
+    capabilities:
+      operations: [chat]
+      input_modalities: [text]
+      output_modalities: [text]
