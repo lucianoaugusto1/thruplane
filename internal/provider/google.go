@@ -23,13 +23,44 @@ type googleAdapter struct {
 	vertex      bool
 }
 
+type googleFunctionCall struct {
+	ID   string          `json:"id,omitempty"`
+	Name string          `json:"name"`
+	Args json.RawMessage `json:"args"`
+}
+
+type googleFunctionResponse struct {
+	ID       string          `json:"id,omitempty"`
+	Name     string          `json:"name"`
+	Response json.RawMessage `json:"response"`
+}
+
 type googlePart struct {
-	Text string `json:"text"`
+	Text             string                  `json:"text,omitempty"`
+	FunctionCall     *googleFunctionCall     `json:"functionCall,omitempty"`
+	FunctionResponse *googleFunctionResponse `json:"functionResponse,omitempty"`
 }
 
 type googleContent struct {
 	Role  string       `json:"role,omitempty"`
 	Parts []googlePart `json:"parts"`
+}
+
+type googleFunctionDeclaration struct {
+	Name        string          `json:"name"`
+	Description string          `json:"description,omitempty"`
+	Parameters  json.RawMessage `json:"parameters"`
+}
+
+type googleTool struct {
+	FunctionDeclarations []googleFunctionDeclaration `json:"functionDeclarations"`
+}
+
+type googleToolConfig struct {
+	FunctionCallingConfig struct {
+		Mode                 string   `json:"mode"`
+		AllowedFunctionNames []string `json:"allowedFunctionNames,omitempty"`
+	} `json:"functionCallingConfig"`
 }
 
 type googleResponse struct {
@@ -61,6 +92,13 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 	if err != nil {
 		return nil, err
 	}
+	tools, err := nativeTools(common)
+	if err != nil {
+		return nil, err
+	}
+	if tools.Choice.DisableParallel && len(tools.Definitions) > 0 {
+		return nil, &RequestError{Code: "unsupported_parallel_tool_calls", Message: "Gemini and Vertex cannot portably enforce parallel_tool_calls=false."}
+	}
 	payload := struct {
 		Contents          []googleContent `json:"contents"`
 		SystemInstruction *googleContent  `json:"systemInstruction,omitempty"`
@@ -70,6 +108,8 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 			TopP            *float64 `json:"topP,omitempty"`
 			StopSequences   []string `json:"stopSequences,omitempty"`
 		} `json:"generationConfig,omitempty"`
+		Tools      []googleTool      `json:"tools,omitempty"`
+		ToolConfig *googleToolConfig `json:"toolConfig,omitempty"`
 	}{}
 	var systems []string
 	for _, item := range common.Messages {
@@ -83,9 +123,28 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 		case "user":
 			payload.Contents = append(payload.Contents, googleContent{Role: "user", Parts: []googlePart{{Text: text}}})
 		case "assistant":
-			payload.Contents = append(payload.Contents, googleContent{Role: "model", Parts: []googlePart{{Text: text}}})
+			parts := make([]googlePart, 0, 1+len(item.ToolCalls))
+			if text != "" {
+				parts = append(parts, googlePart{Text: text})
+			}
+			for _, call := range item.ToolCalls {
+				arguments, err := toolArguments(call.Function.Arguments)
+				if err != nil {
+					return nil, err
+				}
+				parts = append(parts, googlePart{FunctionCall: &googleFunctionCall{ID: call.ID, Name: call.Function.Name, Args: arguments}})
+			}
+			payload.Contents = append(payload.Contents, googleContent{Role: "model", Parts: parts})
+		case "tool":
+			result, err := googleToolResult(item.Content)
+			if err != nil {
+				return nil, err
+			}
+			payload.Contents = append(payload.Contents, googleContent{Role: "user", Parts: []googlePart{{FunctionResponse: &googleFunctionResponse{
+				ID: item.ToolCallID, Name: tools.CallNames[item.ToolCallID], Response: result,
+			}}}})
 		default:
-			return nil, &RequestError{Code: "unsupported_role", Message: "The Google adapters support system, developer, user, and assistant messages."}
+			return nil, &RequestError{Code: "unsupported_role", Message: "The Google adapters support system, developer, user, assistant, and tool messages."}
 		}
 	}
 	if len(systems) > 0 {
@@ -98,6 +157,14 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 	if err != nil {
 		return nil, err
 	}
+	if len(tools.Definitions) > 0 {
+		declarations := make([]googleFunctionDeclaration, 0, len(tools.Definitions))
+		for _, definition := range tools.Definitions {
+			declarations = append(declarations, googleFunctionDeclaration{Name: definition.Function.Name, Description: definition.Function.Description, Parameters: definition.Function.Parameters})
+		}
+		payload.Tools = []googleTool{{FunctionDeclarations: declarations}}
+	}
+	payload.ToolConfig = googleChoice(tools.Choice, len(payload.Tools) > 0)
 	encoded, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("encode Google request: %w", err)
@@ -114,6 +181,43 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 		request.Header.Set("x-goog-api-key", a.apiKey)
 	}
 	return request, nil
+}
+
+func googleToolResult(content json.RawMessage) (json.RawMessage, error) {
+	text, err := textContent(content)
+	if err != nil {
+		return nil, err
+	}
+	var object map[string]any
+	if json.Unmarshal([]byte(text), &object) == nil && object != nil {
+		return json.RawMessage(text), nil
+	}
+	encoded, err := json.Marshal(map[string]any{"result": text})
+	if err != nil {
+		return nil, fmt.Errorf("encode Google tool result: %w", err)
+	}
+	return encoded, nil
+}
+
+func googleChoice(choice nativeToolChoice, hasTools bool) *googleToolConfig {
+	if !hasTools && choice.Mode == "none" {
+		return nil
+	}
+	result := &googleToolConfig{}
+	switch choice.Mode {
+	case "auto":
+		result.FunctionCallingConfig.Mode = "AUTO"
+	case "none":
+		result.FunctionCallingConfig.Mode = "NONE"
+	case "required":
+		result.FunctionCallingConfig.Mode = "ANY"
+	case "named":
+		result.FunctionCallingConfig.Mode = "ANY"
+		result.FunctionCallingConfig.AllowedFunctionNames = []string{choice.Name}
+	default:
+		return nil
+	}
+	return result
 }
 
 func (a *googleAdapter) endpoint(model string, stream bool) string {
@@ -146,6 +250,7 @@ func (a *googleAdapter) normalizeResponse(response *http.Response, model string,
 		return nil, err
 	}
 	text, finish := googleTextAndFinish(result)
+	calls := googleToolCalls(result)
 	usage := tokenUsage{PromptTokens: result.Usage.PromptTokens, CompletionTokens: result.Usage.CompletionTokens, TotalTokens: result.Usage.TotalTokens}
 	if usage.TotalTokens == 0 {
 		usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
@@ -153,7 +258,7 @@ func (a *googleAdapter) normalizeResponse(response *http.Response, model string,
 	if result.Model != "" {
 		model = result.Model
 	}
-	return normalizedResponse(response, result.ResponseID, model, text, finish, usage)
+	return normalizedResponse(response, result.ResponseID, model, text, finish, usage, calls)
 }
 
 func transformGoogleStream(reader io.Reader, writer io.Writer, model string) error {
@@ -163,6 +268,8 @@ func transformGoogleStream(reader io.Reader, writer io.Writer, model string) err
 	role := "assistant"
 	started := false
 	finished := false
+	toolIndices := make(map[string]int)
+	nextToolIndex := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		if !strings.HasPrefix(line, "data:") {
@@ -194,6 +301,19 @@ func transformGoogleStream(reader io.Reader, writer io.Writer, model string) err
 				return err
 			}
 		}
+		calls := googleToolCalls(result)
+		for _, call := range calls {
+			index, ok := toolIndices[call.ID]
+			if !ok {
+				index = nextToolIndex
+				toolIndices[call.ID] = index
+				nextToolIndex++
+			}
+			streamCall := openAIStreamToolCall{Index: index, ID: call.ID, Type: "function", Function: call.Function}
+			if err := writeToolChunk(writer, id, model, []openAIStreamToolCall{streamCall}); err != nil {
+				return err
+			}
+		}
 		if len(result.Candidates) > 0 && result.Candidates[0].FinishReason != "" {
 			usage := tokenUsage{PromptTokens: result.Usage.PromptTokens, CompletionTokens: result.Usage.CompletionTokens, TotalTokens: result.Usage.TotalTokens}
 			if usage.TotalTokens == 0 {
@@ -218,6 +338,28 @@ func transformGoogleStream(reader io.Reader, writer io.Writer, model string) err
 	return err
 }
 
+func googleToolCalls(result googleResponse) []openAIToolCall {
+	if len(result.Candidates) == 0 {
+		return nil
+	}
+	var calls []openAIToolCall
+	for index, part := range result.Candidates[0].Content.Parts {
+		if part.FunctionCall == nil {
+			continue
+		}
+		callID := part.FunctionCall.ID
+		if callID == "" {
+			callID = fmt.Sprintf("call_google_%d", index)
+		}
+		arguments := string(part.FunctionCall.Args)
+		if arguments == "" {
+			arguments = "{}"
+		}
+		calls = append(calls, openAIToolCall{ID: callID, Type: "function", Function: openAIFunctionCall{Name: part.FunctionCall.Name, Arguments: arguments}})
+	}
+	return calls
+}
+
 func googleTextAndFinish(result googleResponse) (string, string) {
 	if len(result.Candidates) == 0 {
 		return "", "stop"
@@ -225,6 +367,9 @@ func googleTextAndFinish(result googleResponse) (string, string) {
 	var text strings.Builder
 	for _, part := range result.Candidates[0].Content.Parts {
 		text.WriteString(part.Text)
+	}
+	if len(googleToolCalls(result)) > 0 {
+		return text.String(), "tool_calls"
 	}
 	switch result.Candidates[0].FinishReason {
 	case "MAX_TOKENS":
