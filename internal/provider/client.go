@@ -1,25 +1,30 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
 	"nexoroute/internal/config"
 )
 
-const chatCompletionsPath = "/v1/chat/completions"
+type RequestError struct {
+	Code    string
+	Message string
+}
+
+func (e *RequestError) Error() string { return e.Message }
+
+type adapter interface {
+	buildRequest(context.Context, []byte, string) (*http.Request, error)
+	normalizeResponse(*http.Response, string, bool) (*http.Response, error)
+}
 
 type Client struct {
 	httpClient *http.Client
-	endpoint   string
-	apiKey     string
-	provider   string
+	adapter    adapter
 }
 
 func NewClients(cfg config.Config) (map[string]*Client, error) {
@@ -30,74 +35,77 @@ func NewClients(cfg config.Config) (map[string]*Client, error) {
 
 	transport := defaultTransport.Clone()
 	transport.ResponseHeaderTimeout = time.Duration(cfg.Routing.ResponseHeaderTimeout)
+	transport.MaxIdleConns = 512
+	transport.MaxIdleConnsPerHost = 64
+	transport.MaxConnsPerHost = 0
+	transport.IdleConnTimeout = 90 * time.Second
+	transport.ForceAttemptHTTP2 = true
 	httpClient := &http.Client{Transport: transport}
 	clients := make(map[string]*Client, len(cfg.Providers))
 
 	for name, providerConfig := range cfg.Providers {
-		baseURL := strings.TrimRight(providerConfig.BaseURL, "/")
-		endpoint := baseURL + chatCompletionsPath
-		parsed, err := url.Parse(endpoint)
-		if err != nil || parsed.Scheme == "" || parsed.Host == "" {
-			return nil, fmt.Errorf("provider %q has invalid base URL %q", name, providerConfig.BaseURL)
+		providerAdapter, err := newAdapter(providerConfig)
+		if err != nil {
+			return nil, fmt.Errorf("provider %q: %w", name, err)
 		}
-
-		providerType := providerConfig.Type
-		if providerType == "" {
-			providerType = "openai"
-		}
-		clients[name] = &Client{
-			httpClient: httpClient,
-			endpoint:   endpoint,
-			apiKey:     providerConfig.APIKey,
-			provider:   providerType,
-		}
+		clients[name] = &Client{httpClient: httpClient, adapter: providerAdapter}
 	}
 
 	return clients, nil
 }
 
 func (c *Client) Do(ctx context.Context, body []byte, model string) (*http.Response, error) {
-	transformedBody, err := c.transformBody(body, model)
+	stream, err := requestStreams(body)
 	if err != nil {
 		return nil, err
 	}
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(transformedBody))
+	request, err := c.adapter.buildRequest(ctx, body, model)
 	if err != nil {
-		return nil, fmt.Errorf("create provider request: %w", err)
+		return nil, err
 	}
-	request.Header.Set("Content-Type", "application/json")
-	if c.apiKey != "" {
-		request.Header.Set("Authorization", "Bearer "+c.apiKey)
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		return response, nil
 	}
 
-	return c.httpClient.Do(request)
+	normalized, err := c.adapter.normalizeResponse(response, model, stream)
+	if err != nil {
+		response.Body.Close()
+		return nil, err
+	}
+	return normalized, nil
 }
 
-func (c *Client) transformBody(body []byte, model string) ([]byte, error) {
-	var fields map[string]json.RawMessage
-	if err := json.Unmarshal(body, &fields); err != nil {
-		return nil, fmt.Errorf("decode provider request: %w", err)
+func newAdapter(cfg config.ProviderConfig) (adapter, error) {
+	switch cfg.Type {
+	case "", "openai", "openai-compatible", "nexoroute-inference", "xai":
+		return newCompatibleAdapter(cfg, "/v1/chat/completions", "bearer", false)
+	case "ollama":
+		return newCompatibleAdapter(cfg, "/v1/chat/completions", "bearer", true)
+	case "azure-openai":
+		return newCompatibleAdapter(cfg, "/openai/v1/chat/completions", "api-key", false)
+	case "anthropic":
+		return newAnthropicAdapter(cfg)
+	case "gemini":
+		return newGoogleAdapter(cfg, false)
+	case "vertex":
+		return newGoogleAdapter(cfg, true)
+	case "bedrock":
+		return newBedrockAdapter(cfg)
+	default:
+		return nil, fmt.Errorf("unsupported provider type %q", cfg.Type)
 	}
-	if fields == nil {
-		return nil, fmt.Errorf("decode provider request: expected JSON object")
-	}
+}
 
-	encodedModel, err := json.Marshal(model)
-	if err != nil {
-		return nil, fmt.Errorf("encode provider model: %w", err)
+func requestStreams(body []byte) (bool, error) {
+	var request struct {
+		Stream bool `json:"stream"`
 	}
-	fields["model"] = encodedModel
-	if c.provider == "ollama" {
-		if value, ok := fields["max_completion_tokens"]; ok {
-			fields["max_tokens"] = value
-			delete(fields, "max_completion_tokens")
-		}
+	if err := json.Unmarshal(body, &request); err != nil {
+		return false, &RequestError{Code: "invalid_json", Message: "The request body must be a JSON object."}
 	}
-
-	transformed, err := json.Marshal(fields)
-	if err != nil {
-		return nil, fmt.Errorf("encode provider request: %w", err)
-	}
-	return transformed, nil
+	return request.Stream, nil
 }

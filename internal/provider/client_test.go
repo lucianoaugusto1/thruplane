@@ -52,6 +52,66 @@ func TestNewClientsReuseTransportWithResponseHeaderTimeout(t *testing.T) {
 	if transport == http.DefaultTransport {
 		t.Fatal("provider client mutated or reused http.DefaultTransport instead of a clone")
 	}
+	if transport.MaxIdleConns != 512 || transport.MaxIdleConnsPerHost != 64 {
+		t.Errorf("idle connection limits = %d/%d, want 512/64", transport.MaxIdleConns, transport.MaxIdleConnsPerHost)
+	}
+	if !transport.ForceAttemptHTTP2 {
+		t.Error("ForceAttemptHTTP2 = false, want true")
+	}
+}
+
+func TestCompatibleProviderEndpointsAndAuthentication(t *testing.T) {
+	tests := []struct {
+		name       string
+		typeName   string
+		apiVersion string
+		wantPath   string
+		wantQuery  string
+		wantAuth   string
+		wantAPIKey string
+	}{
+		{"openai", "openai", "", "/v1/chat/completions", "", "Bearer secret", ""},
+		{"compatible", "openai-compatible", "", "/v1/chat/completions", "", "Bearer secret", ""},
+		{"inference", "nexoroute-inference", "", "/v1/chat/completions", "", "Bearer secret", ""},
+		{"xai", "xai", "", "/v1/chat/completions", "", "Bearer secret", ""},
+		{"ollama", "ollama", "", "/v1/chat/completions", "", "Bearer secret", ""},
+		{"azure", "azure-openai", "2025-01-01-preview", "/openai/v1/chat/completions", "api-version=2025-01-01-preview", "", "secret"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			received := make(chan *http.Request, 1)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				received <- r.Clone(r.Context())
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"id":"direct"}`))
+			}))
+			t.Cleanup(server.Close)
+
+			clients, err := NewClients(config.Config{
+				Providers: map[string]config.ProviderConfig{"tested": {
+					Type: tt.typeName, BaseURL: server.URL + "/root", APIKey: "secret", APIVersion: tt.apiVersion,
+				}},
+				Routing: config.RoutingConfig{ResponseHeaderTimeout: config.Duration(time.Second)},
+			})
+			if err != nil {
+				t.Fatalf("NewClients() error = %v", err)
+			}
+			response, err := clients["tested"].Do(context.Background(), []byte(`{"model":"alias","messages":[]}`), "upstream")
+			if err != nil {
+				t.Fatalf("Do() error = %v", err)
+			}
+			response.Body.Close()
+			got := <-received
+			if got.URL.Path != "/root"+tt.wantPath || got.URL.RawQuery != tt.wantQuery {
+				t.Errorf("URL = %s, want path %s query %s", got.URL.String(), "/root"+tt.wantPath, tt.wantQuery)
+			}
+			if got.Header.Get("Authorization") != tt.wantAuth || got.Header.Get("api-key") != tt.wantAPIKey {
+				t.Errorf("auth headers = Authorization %q api-key %q", got.Header.Get("Authorization"), got.Header.Get("api-key"))
+			}
+		})
+	}
 }
 
 func TestClientDoUsesConfiguredEndpointCredentialAndModel(t *testing.T) {
