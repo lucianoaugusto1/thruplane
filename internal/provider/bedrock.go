@@ -25,6 +25,58 @@ type bedrockAdapter struct {
 	now             func() time.Time
 }
 
+type bedrockToolUse struct {
+	ToolUseID string          `json:"toolUseId"`
+	Name      string          `json:"name"`
+	Input     json.RawMessage `json:"input"`
+}
+
+type bedrockToolResultContent struct {
+	Text string          `json:"text,omitempty"`
+	JSON json.RawMessage `json:"json,omitempty"`
+}
+
+type bedrockToolResult struct {
+	ToolUseID string                     `json:"toolUseId"`
+	Content   []bedrockToolResultContent `json:"content"`
+}
+
+type bedrockContent struct {
+	Text       string             `json:"text,omitempty"`
+	ToolUse    *bedrockToolUse    `json:"toolUse,omitempty"`
+	ToolResult *bedrockToolResult `json:"toolResult,omitempty"`
+}
+
+type bedrockMessage struct {
+	Role    string           `json:"role"`
+	Content []bedrockContent `json:"content"`
+}
+
+type bedrockToolSpec struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	InputSchema struct {
+		JSON json.RawMessage `json:"json"`
+	} `json:"inputSchema"`
+}
+
+type bedrockTool struct {
+	ToolSpec bedrockToolSpec `json:"toolSpec"`
+}
+
+type bedrockToolChoice struct {
+	Auto *struct{} `json:"auto,omitempty"`
+	Any  *struct{} `json:"any,omitempty"`
+	Tool *struct {
+		Name string `json:"name"`
+	} `json:"tool,omitempty"`
+}
+
+type bedrockToolConfig struct {
+	Tools      []bedrockTool      `json:"tools"`
+	ToolChoice *bedrockToolChoice `json:"toolChoice,omitempty"`
+}
+
 func newBedrockAdapter(cfg config.ProviderConfig) (adapter, error) {
 	if _, err := providerEndpoint(cfg.BaseURL, ""); err != nil {
 		return nil, err
@@ -41,28 +93,32 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 	if err != nil {
 		return nil, err
 	}
+	tools, err := nativeTools(common)
+	if err != nil {
+		return nil, err
+	}
 	if common.Stream {
 		return nil, &RequestError{
 			Code:    "unsupported_streaming",
 			Message: "The Bedrock adapter does not support streaming yet; send stream=false.",
 		}
 	}
+	if tools.Choice.DisableParallel && len(tools.Definitions) > 0 {
+		return nil, &RequestError{Code: "unsupported_parallel_tool_calls", Message: "Bedrock Converse cannot portably enforce parallel_tool_calls=false."}
+	}
 	type content struct {
 		Text string `json:"text"`
 	}
-	type message struct {
-		Role    string    `json:"role"`
-		Content []content `json:"content"`
-	}
 	payload := struct {
-		Messages        []message `json:"messages"`
-		System          []content `json:"system,omitempty"`
+		Messages        []bedrockMessage `json:"messages"`
+		System          []content        `json:"system,omitempty"`
 		InferenceConfig struct {
 			MaxTokens     int      `json:"maxTokens,omitempty"`
 			Temperature   *float64 `json:"temperature,omitempty"`
 			TopP          *float64 `json:"topP,omitempty"`
 			StopSequences []string `json:"stopSequences,omitempty"`
 		} `json:"inferenceConfig,omitempty"`
+		ToolConfig *bedrockToolConfig `json:"toolConfig,omitempty"`
 	}{}
 	for _, item := range common.Messages {
 		text, err := textContent(item.Content)
@@ -72,10 +128,29 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 		switch item.Role {
 		case "system", "developer":
 			payload.System = append(payload.System, content{Text: text})
-		case "user", "assistant":
-			payload.Messages = append(payload.Messages, message{Role: item.Role, Content: []content{{Text: text}}})
+		case "user":
+			payload.Messages = append(payload.Messages, bedrockMessage{Role: "user", Content: []bedrockContent{{Text: text}}})
+		case "assistant":
+			blocks := make([]bedrockContent, 0, 1+len(item.ToolCalls))
+			if text != "" {
+				blocks = append(blocks, bedrockContent{Text: text})
+			}
+			for _, call := range item.ToolCalls {
+				arguments, err := toolArguments(call.Function.Arguments)
+				if err != nil {
+					return nil, err
+				}
+				blocks = append(blocks, bedrockContent{ToolUse: &bedrockToolUse{ToolUseID: call.ID, Name: call.Function.Name, Input: arguments}})
+			}
+			payload.Messages = append(payload.Messages, bedrockMessage{Role: "assistant", Content: blocks})
+		case "tool":
+			result, err := bedrockResultContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
+			payload.Messages = append(payload.Messages, bedrockMessage{Role: "user", Content: []bedrockContent{{ToolResult: &bedrockToolResult{ToolUseID: item.ToolCallID, Content: result}}}})
 		default:
-			return nil, &RequestError{Code: "unsupported_role", Message: "The Bedrock adapter supports system, developer, user, and assistant messages."}
+			return nil, &RequestError{Code: "unsupported_role", Message: "The Bedrock adapter supports system, developer, user, assistant, and tool messages."}
 		}
 	}
 	payload.InferenceConfig.MaxTokens = maxOutputTokens(common, 0)
@@ -84,6 +159,15 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 	payload.InferenceConfig.StopSequences, err = stopSequences(common.Stop)
 	if err != nil {
 		return nil, err
+	}
+	if len(tools.Definitions) > 0 && tools.Choice.Mode != "none" {
+		payload.ToolConfig = &bedrockToolConfig{Tools: make([]bedrockTool, 0, len(tools.Definitions))}
+		for _, definition := range tools.Definitions {
+			spec := bedrockToolSpec{Name: definition.Function.Name, Description: definition.Function.Description}
+			spec.InputSchema.JSON = definition.Function.Parameters
+			payload.ToolConfig.Tools = append(payload.ToolConfig.Tools, bedrockTool{ToolSpec: spec})
+		}
+		payload.ToolConfig.ToolChoice = bedrockChoice(tools.Choice)
 	}
 	encoded, err := json.Marshal(payload)
 	if err != nil {
@@ -99,13 +183,40 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 	return request, nil
 }
 
+func bedrockResultContent(content json.RawMessage) ([]bedrockToolResultContent, error) {
+	text, err := textContent(content)
+	if err != nil {
+		return nil, err
+	}
+	var object map[string]any
+	if json.Unmarshal([]byte(text), &object) == nil && object != nil {
+		return []bedrockToolResultContent{{JSON: json.RawMessage(text)}}, nil
+	}
+	return []bedrockToolResultContent{{Text: text}}, nil
+}
+
+func bedrockChoice(choice nativeToolChoice) *bedrockToolChoice {
+	result := &bedrockToolChoice{}
+	switch choice.Mode {
+	case "auto":
+		result.Auto = &struct{}{}
+	case "required":
+		result.Any = &struct{}{}
+	case "named":
+		result.Tool = &struct {
+			Name string `json:"name"`
+		}{Name: choice.Name}
+	case "none", "":
+		return nil
+	}
+	return result
+}
+
 func (a *bedrockAdapter) normalizeResponse(response *http.Response, model string, _ bool) (*http.Response, error) {
 	var result struct {
 		Output struct {
 			Message struct {
-				Content []struct {
-					Text string `json:"text"`
-				} `json:"content"`
+				Content []bedrockContent `json:"content"`
 			} `json:"message"`
 		} `json:"output"`
 		StopReason string `json:"stopReason"`
@@ -119,14 +230,22 @@ func (a *bedrockAdapter) normalizeResponse(response *http.Response, model string
 		return nil, err
 	}
 	var text strings.Builder
+	var calls []openAIToolCall
 	for _, part := range result.Output.Message.Content {
 		text.WriteString(part.Text)
+		if part.ToolUse != nil {
+			arguments := string(part.ToolUse.Input)
+			if arguments == "" {
+				arguments = "{}"
+			}
+			calls = append(calls, openAIToolCall{ID: part.ToolUse.ToolUseID, Type: "function", Function: openAIFunctionCall{Name: part.ToolUse.Name, Arguments: arguments}})
+		}
 	}
 	usage := tokenUsage{PromptTokens: result.Usage.InputTokens, CompletionTokens: result.Usage.OutputTokens, TotalTokens: result.Usage.TotalTokens}
 	if usage.TotalTokens == 0 {
 		usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
 	}
-	return normalizedResponse(response, "chatcmpl-bedrock", model, text.String(), bedrockFinishReason(result.StopReason), usage)
+	return normalizedResponse(response, "chatcmpl-bedrock", model, text.String(), bedrockFinishReason(result.StopReason), usage, calls)
 }
 
 func (a *bedrockAdapter) sign(request *http.Request, payload []byte, now time.Time) {
