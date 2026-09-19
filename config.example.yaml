@@ -14,6 +14,10 @@ providers:
     type: ollama
     base_url: http://localhost:11434
 
+  # See docs/providers.md for Anthropic, Gemini, Vertex AI, Bedrock,
+  # Azure OpenAI, xAI/Grok, custom OpenAI-compatible APIs, and NexoRoute
+  # Inference configuration.
+
 models:
   fast:
     targets:

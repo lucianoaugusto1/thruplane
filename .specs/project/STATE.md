@@ -45,6 +45,14 @@
 - Request bodies are minimally inspected so unknown fields pass through.
 - Provider support begins with OpenAI-compatible HTTP APIs, specifically
   OpenAI and Ollama.
+- Direct provider calls are the data-plane rule: customer traffic must not
+  require an aggregation gateway or hosted control plane.
+- The first adapter set covers OpenAI, Anthropic, Gemini, Vertex AI, Bedrock,
+  Azure OpenAI, Ollama, configurable OpenAI-compatible APIs, NexoRoute
+  Inference, and xAI. `grok` is an alias for xAI.
+- Compatible adapters use response passthrough. Native adapters translate text
+  chat; Bedrock streaming, native tools, and native multimodal content remain
+  explicit follow-up work.
 - Standard Go tests and `httptest` provide unit and end-to-end coverage.
 - Go 1.26 is the tested baseline; the implementation uses only standard HTTP
   features available since Go 1.22.
@@ -77,6 +85,8 @@
 - Cost Autopilot with model cascades and an explicit quality floor
 - Agent and MCP governance with tool policies and human approval
 - Provider compatibility monitoring and drift alerts
+- Bedrock binary event-stream decoding and normalization
+- Native tool-call and multimodal normalization
 - Pro implementation: cost tracking, budgets, rate limiting, analytics, and
   managed operations
 - Enterprise implementation: SSO, SCIM, RBAC, audit exports, policy controls,

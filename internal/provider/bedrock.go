@@ -115,8 +115,8 @@ func (a *bedrockAdapter) normalizeResponse(response *http.Response, model string
 			TotalTokens  int `json:"totalTokens"`
 		} `json:"usage"`
 	}
-	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("decode Bedrock response: %w", err)
+	if err := decodeResponseJSON(response, &result, "Bedrock"); err != nil {
+		return nil, err
 	}
 	var text strings.Builder
 	for _, part := range result.Output.Message.Content {

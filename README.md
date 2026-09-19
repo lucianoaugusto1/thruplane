@@ -13,7 +13,7 @@ cost controls, governance, high availability, and support.
 ## Why NexoRoute
 
 - Keep application code independent from provider URLs and credentials.
-- Route one public model alias to ordered OpenAI or Ollama targets.
+- Route one public model alias to ordered direct-provider targets.
 - Preserve unknown JSON fields and opaque provider responses.
 - Relay SSE data incrementally without a global stream timeout.
 - Run a small, stateless binary with one external Go dependency.
@@ -23,7 +23,9 @@ cost controls, governance, high availability, and support.
 
 - `POST /v1/chat/completions`, including SSE streaming
 - `GET /v1/models` and `GET /v1/models/{model}`
-- OpenAI and Ollama through OpenAI-compatible upstream APIs
+- Direct adapters for OpenAI, Anthropic, Gemini, Vertex AI, Amazon Bedrock,
+  Azure OpenAI, Ollama, xAI, custom OpenAI-compatible APIs, and NexoRoute
+  Inference
 - Bounded retries and ordered fallback for transient failures
 - Strict YAML configuration with environment expansion
 - Optional inbound bearer authentication
@@ -46,7 +48,7 @@ for the proposed commercial boundary and the
 ## Requirements
 
 - Go 1.26 or newer
-- An OpenAI API key, a running Ollama server, or both
+- Credentials for at least one configured provider, or a local Ollama server
 - Optional: Docker for container builds
 
 ## Run locally
@@ -145,6 +147,9 @@ The gateway replaces only the upstream `model` field and preserves JSON fields
 it does not interpret. For Ollama, it also translates
 `max_completion_tokens` to `max_tokens`.
 
+See the [provider adapter guide](docs/providers.md) for direct endpoints,
+credentials, native translation behavior, and current feature limits.
+
 ### Configuration reference
 
 | Field | Meaning | Default |
@@ -154,9 +159,17 @@ it does not interpret. For Ollama, it also translates
 | `server.max_body_bytes` | Maximum chat request body | `1048576` |
 | `server.read_header_timeout` | Client header timeout | `5s` |
 | `server.shutdown_timeout` | Graceful shutdown limit | `10s` |
-| `providers.*.type` | `openai` or `ollama` | `openai` |
-| `providers.*.base_url` | Provider root URL without `/v1` | Required |
-| `providers.*.api_key` | Provider bearer token | Empty |
+| `providers.*.type` | Provider protocol name | `openai` |
+| `providers.*.base_url` | Provider root URL without an API path | Provider default or required for custom endpoints |
+| `providers.*.api_key` | Bearer, Azure, Anthropic, or Gemini key | Empty |
+| `providers.*.api_version` | Anthropic header or optional Azure query version | Provider default |
+| `providers.*.access_token` | Vertex OAuth access token | Empty |
+| `providers.*.project` | Google Cloud project for Vertex | Empty |
+| `providers.*.location` | Google Cloud region for Vertex | Empty |
+| `providers.*.region` | AWS region for Bedrock | Empty |
+| `providers.*.access_key_id` | AWS access key for Bedrock | Empty |
+| `providers.*.secret_access_key` | AWS secret key for Bedrock | Empty |
+| `providers.*.session_token` | Optional AWS temporary-session token | Empty |
 | `models.*.targets` | Ordered provider and model pairs | Required |
 | `routing.retries` | Extra attempts per target | `1` |
 | `routing.response_header_timeout` | Upstream header timeout | `30s` |
@@ -210,7 +223,10 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - NexoRoute implements Chat Completions, not Responses, embeddings, image,
   audio, or batch APIs.
 - `n` must be omitted or set to `1` so providers do not silently diverge.
-- Tool use, vision, and structured output remain provider- and model-specific.
+- Compatible adapters pass through tool use, vision, and structured-output
+  fields. Native adapters currently accept text messages only.
+- Bedrock supports buffered Converse responses; Bedrock streaming remains
+  deferred until the binary AWS event-stream decoder is available.
 - Ollama's OpenAI compatibility can vary by version and model.
 - Community does not yet include persistent usage history, dynamic reload,
   Prometheus metrics, distributed tracing, or tenant-level policies.

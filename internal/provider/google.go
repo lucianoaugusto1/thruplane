@@ -142,8 +142,8 @@ func (a *googleAdapter) normalizeResponse(response *http.Response, model string,
 		}), nil
 	}
 	var result googleResponse
-	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("decode Google response: %w", err)
+	if err := decodeResponseJSON(response, &result, "Google"); err != nil {
+		return nil, err
 	}
 	text, finish := googleTextAndFinish(result)
 	usage := tokenUsage{PromptTokens: result.Usage.PromptTokens, CompletionTokens: result.Usage.CompletionTokens, TotalTokens: result.Usage.TotalTokens}

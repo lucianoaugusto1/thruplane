@@ -127,6 +127,16 @@ func normalizedResponse(response *http.Response, id, model, text, finish string,
 	return response, nil
 }
 
+func decodeResponseJSON(response *http.Response, target any, providerName string) error {
+	upstream := response.Body
+	defer upstream.Close()
+	if err := json.NewDecoder(upstream).Decode(target); err != nil {
+		return fmt.Errorf("decode %s response: %w", providerName, err)
+	}
+	_, _ = io.Copy(io.Discard, upstream)
+	return nil
+}
+
 func writeChunk(w io.Writer, id, model string, role, content *string, finish *string, usage *tokenUsage) error {
 	delta := make(map[string]string, 2)
 	if role != nil {

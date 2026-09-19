@@ -105,8 +105,8 @@ func (a *anthropicAdapter) normalizeResponse(response *http.Response, model stri
 			OutputTokens int `json:"output_tokens"`
 		} `json:"usage"`
 	}
-	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("decode Anthropic response: %w", err)
+	if err := decodeResponseJSON(response, &result, "Anthropic"); err != nil {
+		return nil, err
 	}
 	var text strings.Builder
 	for _, part := range result.Content {

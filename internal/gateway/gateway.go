@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -51,6 +52,11 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 			response, err := client.Do(r.Context(), body, target.Model)
 			if err != nil {
 				if r.Context().Err() != nil {
+					return
+				}
+				var requestError *provider.RequestError
+				if errors.As(err, &requestError) {
+					writeError(w, http.StatusBadRequest, requestError.Message, "invalid_request_error", requestError.Code)
 					return
 				}
 				continue

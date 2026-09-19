@@ -421,6 +421,52 @@ func TestChatCompletionsReturnsOpenAIErrorWhenAllTransportsFail(t *testing.T) {
 	assertOpenAIError(t, response)
 }
 
+func TestChatCompletionsReturnsAdapterRequestErrorWithoutFallback(t *testing.T) {
+	t.Parallel()
+	var fallbackCalls atomic.Int32
+	fallback := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fallbackCalls.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(fallback.Close)
+	cfg := config.Config{
+		Server: config.ServerConfig{MaxBodyBytes: 1 << 20},
+		Providers: map[string]config.ProviderConfig{
+			"bedrock": {
+				Type: "bedrock", BaseURL: "https://bedrock-runtime.us-east-1.amazonaws.com",
+				Region: "us-east-1", AccessKeyID: "key", SecretAccessKey: "secret",
+			},
+			"fallback": {Type: "openai", BaseURL: fallback.URL},
+		},
+		Models: map[string]config.ModelConfig{
+			"public-alias": {Targets: []config.TargetConfig{
+				{Provider: "bedrock", Model: "bedrock-model"},
+				{Provider: "fallback", Model: "fallback-model"},
+			}},
+		},
+		Routing: config.RoutingConfig{Retries: 2, ResponseHeaderTimeout: config.Duration(time.Second)},
+	}
+	clients, err := provider.NewClients(cfg)
+	if err != nil {
+		t.Fatalf("NewClients() error = %v", err)
+	}
+	gateway := New(cfg, clients)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(validChatBody(true)))
+
+	gateway.ChatCompletions(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want 400; body = %s", response.Code, response.Body.String())
+	}
+	if !strings.Contains(response.Body.String(), "unsupported_streaming") {
+		t.Errorf("body = %s, want adapter error code", response.Body.String())
+	}
+	if fallbackCalls.Load() != 0 {
+		t.Fatalf("fallback calls = %d, want 0", fallbackCalls.Load())
+	}
+}
+
 type testTarget struct {
 	name  string
 	url   string
