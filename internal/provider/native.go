@@ -134,6 +134,21 @@ func nativeTools(request chatRequest) (nativeToolContract, error) {
 	if err != nil {
 		return nativeToolContract{}, err
 	}
+	if (choice.Mode == "required" || choice.Mode == "named") && len(contract.Definitions) == 0 {
+		return nativeToolContract{}, &RequestError{Code: "unsupported_tool_choice", Message: "tool_choice requires at least one function tool."}
+	}
+	if choice.Mode == "named" {
+		found := false
+		for _, definition := range contract.Definitions {
+			if definition.Function.Name == choice.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nativeToolContract{}, &RequestError{Code: "unsupported_tool_choice", Message: "The named tool_choice must reference a configured function tool."}
+		}
+	}
 	if request.ParallelToolCalls != nil && !*request.ParallelToolCalls {
 		choice.DisableParallel = true
 	}

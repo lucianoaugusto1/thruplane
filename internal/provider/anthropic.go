@@ -104,7 +104,12 @@ func (a *anthropicAdapter) buildRequest(ctx context.Context, body []byte, model 
 			}
 			payload.Messages = append(payload.Messages, anthropicMessage{Role: "assistant", Content: blocks})
 		case "tool":
-			payload.Messages = append(payload.Messages, anthropicMessage{Role: "user", Content: []anthropicBlock{{Type: "tool_result", ToolUseID: item.ToolCallID, Content: text}}})
+			result := anthropicBlock{Type: "tool_result", ToolUseID: item.ToolCallID, Content: text}
+			if last := len(payload.Messages) - 1; last >= 0 && anthropicToolResultMessage(payload.Messages[last]) {
+				payload.Messages[last].Content = append(payload.Messages[last].Content, result)
+			} else {
+				payload.Messages = append(payload.Messages, anthropicMessage{Role: "user", Content: []anthropicBlock{result}})
+			}
 		default:
 			return nil, &RequestError{Code: "unsupported_role", Message: "The Anthropic adapter supports system, developer, user, assistant, and tool messages."}
 		}
@@ -132,6 +137,10 @@ func (a *anthropicAdapter) buildRequest(ctx context.Context, body []byte, model 
 		request.Header.Set("x-api-key", a.apiKey)
 	}
 	return request, nil
+}
+
+func anthropicToolResultMessage(message anthropicMessage) bool {
+	return message.Role == "user" && len(message.Content) > 0 && message.Content[0].Type == "tool_result"
 }
 
 func anthropicChoice(choice nativeToolChoice, hasTools bool) *anthropicToolChoice {

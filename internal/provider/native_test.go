@@ -55,6 +55,8 @@ func TestNativeToolContractRejectsUnsupportedOrMalformedTools(t *testing.T) {
 		{"unknown result", `{"messages":[{"role":"tool","tool_call_id":"missing","content":"ok"}]}`, "unmatched_tool_result"},
 		{"legacy functions", `{"functions":[{"name":"weather"}]}`, "unsupported_legacy_functions"},
 		{"invalid choice", `{"tool_choice":{"type":"custom"}}`, "unsupported_tool_choice"},
+		{"unknown named choice", `{"tools":[{"type":"function","function":{"name":"weather"}}],"tool_choice":{"type":"function","function":{"name":"missing"}}}`, "unsupported_tool_choice"},
+		{"required without tools", `{"tool_choice":"required"}`, "unsupported_tool_choice"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -66,6 +68,51 @@ func TestNativeToolContractRejectsUnsupportedOrMalformedTools(t *testing.T) {
 			requestError, ok := err.(*RequestError)
 			if !ok || requestError.Code != tt.code {
 				t.Fatalf("nativeTools() error = %#v, want code %q", err, tt.code)
+			}
+		})
+	}
+}
+
+func TestNativeAdaptersGroupParallelToolResults(t *testing.T) {
+	t.Parallel()
+	requestBody := []byte(`{
+  "messages":[
+    {"role":"user","content":"compare"},
+    {"role":"assistant","content":null,"tool_calls":[
+      {"id":"call_1","type":"function","function":{"name":"weather","arguments":"{\"city\":\"Rio\"}"}},
+      {"id":"call_2","type":"function","function":{"name":"weather","arguments":"{\"city\":\"Recife\"}"}}
+    ]},
+    {"role":"tool","tool_call_id":"call_1","content":"{\"temperature\":24}"},
+    {"role":"tool","tool_call_id":"call_2","content":"{\"temperature\":29}"}
+  ],
+  "tools":[{"type":"function","function":{"name":"weather"}}]
+}`)
+	tests := []struct {
+		name   string
+		config config.ProviderConfig
+	}{
+		{"anthropic", config.ProviderConfig{Type: "anthropic", BaseURL: "https://example.com"}},
+		{"gemini", config.ProviderConfig{Type: "gemini", BaseURL: "https://example.com"}},
+		{"bedrock", config.ProviderConfig{Type: "bedrock", BaseURL: "https://example.com", Region: "us-east-1", AccessKeyID: "key", SecretAccessKey: "secret"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			adapter, err := newAdapter(tt.config)
+			if err != nil {
+				t.Fatalf("newAdapter() error = %v", err)
+			}
+			request, err := adapter.buildRequest(context.Background(), requestBody, "model")
+			if err != nil {
+				t.Fatalf("buildRequest() error = %v", err)
+			}
+			body, _ := io.ReadAll(request.Body)
+			if got := bytes.Count(body, []byte(`"role":"user"`)); got != 2 {
+				t.Errorf("user turns = %d, want 2; body = %s", got, body)
+			}
+			for _, callID := range []string{"call_1", "call_2"} {
+				if !bytes.Contains(body, []byte(callID)) {
+					t.Errorf("body = %s, want %s", body, callID)
+				}
 			}
 		})
 	}

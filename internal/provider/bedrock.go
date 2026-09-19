@@ -148,7 +148,12 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 			if err != nil {
 				return nil, err
 			}
-			payload.Messages = append(payload.Messages, bedrockMessage{Role: "user", Content: []bedrockContent{{ToolResult: &bedrockToolResult{ToolUseID: item.ToolCallID, Content: result}}}})
+			block := bedrockContent{ToolResult: &bedrockToolResult{ToolUseID: item.ToolCallID, Content: result}}
+			if last := len(payload.Messages) - 1; last >= 0 && bedrockToolResultMessage(payload.Messages[last]) {
+				payload.Messages[last].Content = append(payload.Messages[last].Content, block)
+			} else {
+				payload.Messages = append(payload.Messages, bedrockMessage{Role: "user", Content: []bedrockContent{block}})
+			}
 		default:
 			return nil, &RequestError{Code: "unsupported_role", Message: "The Bedrock adapter supports system, developer, user, assistant, and tool messages."}
 		}
@@ -181,6 +186,10 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 	request.Header.Set("Content-Type", "application/json")
 	a.sign(request, encoded, a.now().UTC())
 	return request, nil
+}
+
+func bedrockToolResultMessage(message bedrockMessage) bool {
+	return message.Role == "user" && len(message.Content) > 0 && message.Content[0].ToolResult != nil
 }
 
 func bedrockResultContent(content json.RawMessage) ([]bedrockToolResultContent, error) {

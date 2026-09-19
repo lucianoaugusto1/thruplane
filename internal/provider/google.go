@@ -140,9 +140,12 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 			if err != nil {
 				return nil, err
 			}
-			payload.Contents = append(payload.Contents, googleContent{Role: "user", Parts: []googlePart{{FunctionResponse: &googleFunctionResponse{
-				ID: item.ToolCallID, Name: tools.CallNames[item.ToolCallID], Response: result,
-			}}}})
+			part := googlePart{FunctionResponse: &googleFunctionResponse{ID: item.ToolCallID, Name: tools.CallNames[item.ToolCallID], Response: result}}
+			if last := len(payload.Contents) - 1; last >= 0 && googleToolResultContent(payload.Contents[last]) {
+				payload.Contents[last].Parts = append(payload.Contents[last].Parts, part)
+			} else {
+				payload.Contents = append(payload.Contents, googleContent{Role: "user", Parts: []googlePart{part}})
+			}
 		default:
 			return nil, &RequestError{Code: "unsupported_role", Message: "The Google adapters support system, developer, user, assistant, and tool messages."}
 		}
@@ -181,6 +184,10 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 		request.Header.Set("x-goog-api-key", a.apiKey)
 	}
 	return request, nil
+}
+
+func googleToolResultContent(content googleContent) bool {
+	return content.Role == "user" && len(content.Parts) > 0 && content.Parts[0].FunctionResponse != nil
 }
 
 func googleToolResult(content json.RawMessage) (json.RawMessage, error) {
