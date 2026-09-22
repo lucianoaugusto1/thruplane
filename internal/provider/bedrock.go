@@ -43,8 +43,25 @@ type bedrockToolResult struct {
 
 type bedrockContent struct {
 	Text       string             `json:"text,omitempty"`
+	Image      *bedrockImage      `json:"image,omitempty"`
+	Document   *bedrockDocument   `json:"document,omitempty"`
 	ToolUse    *bedrockToolUse    `json:"toolUse,omitempty"`
 	ToolResult *bedrockToolResult `json:"toolResult,omitempty"`
+}
+
+type bedrockImage struct {
+	Format string `json:"format"`
+	Source struct {
+		Bytes string `json:"bytes"`
+	} `json:"source"`
+}
+
+type bedrockDocument struct {
+	Format string `json:"format"`
+	Name   string `json:"name"`
+	Source struct {
+		Bytes string `json:"bytes"`
+	} `json:"source"`
 }
 
 type bedrockMessage struct {
@@ -121,16 +138,24 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 		ToolConfig *bedrockToolConfig `json:"toolConfig,omitempty"`
 	}{}
 	for _, item := range common.Messages {
-		text, err := textContent(item.Content)
-		if err != nil {
-			return nil, err
-		}
 		switch item.Role {
 		case "system", "developer":
+			text, err := textContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
 			payload.System = append(payload.System, content{Text: text})
 		case "user":
-			payload.Messages = append(payload.Messages, bedrockMessage{Role: "user", Content: []bedrockContent{{Text: text}}})
+			blocks, err := bedrockUserContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
+			payload.Messages = append(payload.Messages, bedrockMessage{Role: "user", Content: blocks})
 		case "assistant":
+			text, err := textContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
 			blocks := make([]bedrockContent, 0, 1+len(item.ToolCalls))
 			if text != "" {
 				blocks = append(blocks, bedrockContent{Text: text})
@@ -186,6 +211,34 @@ func (a *bedrockAdapter) buildRequest(ctx context.Context, body []byte, model st
 	request.Header.Set("Content-Type", "application/json")
 	a.sign(request, encoded, a.now().UTC())
 	return request, nil
+}
+
+func bedrockUserContent(raw json.RawMessage) ([]bedrockContent, error) {
+	parts, err := parseNativeContent(raw)
+	if err != nil {
+		return nil, err
+	}
+	blocks := make([]bedrockContent, 0, len(parts))
+	for _, part := range parts {
+		switch part.Kind {
+		case "text":
+			blocks = append(blocks, bedrockContent{Text: part.Text})
+		case "image":
+			if part.URL != "" {
+				return nil, unsupportedContent("Bedrock Converse requires inline image bytes in this Chat Completions adapter.")
+			}
+			image := &bedrockImage{Format: strings.TrimPrefix(part.MIMEType, "image/")}
+			image.Source.Bytes = part.Data
+			blocks = append(blocks, bedrockContent{Image: image})
+		case "document":
+			document := &bedrockDocument{Format: "pdf", Name: "document.pdf"}
+			document.Source.Bytes = part.Data
+			blocks = append(blocks, bedrockContent{Document: document})
+		default:
+			return nil, unsupportedContent("Bedrock Converse does not support this Chat Completions input modality.")
+		}
+	}
+	return blocks, nil
 }
 
 func bedrockToolResultMessage(message bedrockMessage) bool {
