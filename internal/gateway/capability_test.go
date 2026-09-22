@@ -12,7 +12,7 @@ import (
 	"nexoroute/internal/provider"
 )
 
-func TestCapabilityRoutingSkipsNativeMultimodalTarget(t *testing.T) {
+func TestCapabilityRoutingSkipsGoogleForRemoteImage(t *testing.T) {
 	t.Parallel()
 	var nativeCalls, compatibleCalls atomic.Int32
 	native := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,12 +27,17 @@ func TestCapabilityRoutingSkipsNativeMultimodalTarget(t *testing.T) {
 	t.Cleanup(compatible.Close)
 
 	cfg := capabilityTestConfig(native.URL, compatible.URL)
+	cfg.Providers["native"] = config.ProviderConfig{Type: "gemini", BaseURL: native.URL, APIKey: "test"}
+	cfg.Models["multimodal"] = config.ModelConfig{Targets: []config.TargetConfig{
+		{Provider: "native", Model: "gemini-3.8-flash"},
+		{Provider: "compatible", Model: "gpt-4o-mini"},
+	}}
 	g := capabilityTestGateway(t, cfg)
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{
 		"model":"multimodal","messages":[{"role":"user","content":[
 			{"type":"text","text":"Describe"},
-			{"type":"image_url","image_url":{"url":"data:image/png;base64,AA=="}}
+			{"type":"image_url","image_url":{"url":"https://images.example.com/photo.png"}}
 		]}]}`))
 	g.ChatCompletions(response, request)
 	if response.Code != http.StatusNoContent {
@@ -55,7 +60,7 @@ func TestCapabilityRoutingRejectsUnsupportedContentBeforeUpstream(t *testing.T) 
 	cfg.Models["native-only"] = config.ModelConfig{Targets: []config.TargetConfig{{Provider: "native", Model: "claude-sonnet-5"}}}
 	g := capabilityTestGateway(t, cfg)
 	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{
-		"model":"native-only","messages":[{"role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,AA=="}}]}]}`))
+		"model":"native-only","messages":[{"role":"user","content":[{"type":"input_audio","input_audio":{"data":"AQID","format":"wav"}}]}]}`))
 	response := httptest.NewRecorder()
 	g.ChatCompletions(response, request)
 	if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "unsupported_capability") {
@@ -63,6 +68,56 @@ func TestCapabilityRoutingRejectsUnsupportedContentBeforeUpstream(t *testing.T) 
 	}
 	if calls.Load() != 0 {
 		t.Fatalf("upstream calls = %d, want 0", calls.Load())
+	}
+}
+
+func TestCapabilityRoutingUsesAnthropicForInlineImage(t *testing.T) {
+	t.Parallel()
+	var nativeCalls, compatibleCalls atomic.Int32
+	native := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nativeCalls.Add(1)
+		_, _ = w.Write([]byte(`{"id":"msg_1","content":[{"type":"text","text":"image"}],"stop_reason":"end_turn","usage":{"input_tokens":4,"output_tokens":1}}`))
+	}))
+	t.Cleanup(native.Close)
+	compatible := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		compatibleCalls.Add(1)
+	}))
+	t.Cleanup(compatible.Close)
+	g := capabilityTestGateway(t, capabilityTestConfig(native.URL, compatible.URL))
+	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{
+		"model":"multimodal","messages":[{"role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,AQID"}}]}]}`))
+	response := httptest.NewRecorder()
+	g.ChatCompletions(response, request)
+	if response.Code != http.StatusOK || nativeCalls.Load() != 1 || compatibleCalls.Load() != 0 {
+		t.Fatalf("response=%d native=%d compatible=%d", response.Code, nativeCalls.Load(), compatibleCalls.Load())
+	}
+}
+
+func TestCapabilityRoutingUsesGeminiForInlineAudio(t *testing.T) {
+	t.Parallel()
+	var nativeCalls, compatibleCalls atomic.Int32
+	native := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nativeCalls.Add(1)
+		_, _ = w.Write([]byte(`{"responseId":"audio_1","candidates":[{"content":{"role":"model","parts":[{"text":"heard"}]},"finishReason":"STOP"}]}`))
+	}))
+	t.Cleanup(native.Close)
+	compatible := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		compatibleCalls.Add(1)
+	}))
+	t.Cleanup(compatible.Close)
+	cfg := capabilityTestConfig(native.URL, compatible.URL)
+	cfg.Providers["native"] = config.ProviderConfig{Type: "gemini", BaseURL: native.URL, APIKey: "test"}
+	cfg.Models["audio"] = config.ModelConfig{Targets: []config.TargetConfig{
+		{Provider: "native", Model: "gemini-3.8-flash"},
+		{Provider: "compatible", Model: "gpt-4o-mini"},
+	}}
+	g := capabilityTestGateway(t, cfg)
+	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{
+		"model":"audio","messages":[{"role":"user","content":[{"type":"input_audio","input_audio":{"data":"AQID","format":"wav"}}]}]}`))
+	response := httptest.NewRecorder()
+	g.ChatCompletions(response, request)
+	if response.Code != http.StatusOK || nativeCalls.Load() != 1 || compatibleCalls.Load() != 0 {
+		t.Fatalf("response=%d native=%d compatible=%d", response.Code, nativeCalls.Load(), compatibleCalls.Load())
 	}
 }
 

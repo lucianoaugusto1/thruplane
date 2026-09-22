@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 func InspectChatRequest(body []byte) (Requirements, error) {
@@ -46,7 +47,10 @@ func InspectChatRequest(body []byte) (Requirements, error) {
 			continue
 		}
 		var parts []struct {
-			Type string `json:"type"`
+			Type     string `json:"type"`
+			ImageURL struct {
+				URL string `json:"url"`
+			} `json:"image_url"`
 		}
 		if err := json.Unmarshal(trimmed, &parts); err != nil {
 			requirements.UnknownContent = true
@@ -58,6 +62,9 @@ func InspectChatRequest(body []byte) (Requirements, error) {
 				inputs["text"] = true
 			case "image_url", "input_image", "image":
 				inputs["image"] = true
+				if part.Type == "image_url" && !strings.HasPrefix(part.ImageURL.URL, "data:") {
+					requirements.RemoteImage = true
+				}
 			case "input_audio", "audio":
 				inputs["audio"] = true
 			case "file", "input_file", "document":

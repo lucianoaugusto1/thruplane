@@ -102,6 +102,7 @@ type Requirements struct {
 	StrictTools          bool
 	ParallelTools        bool
 	DisableParallelTools bool
+	RemoteImage          bool
 	Streaming            bool
 	StructuredOutputs    bool
 	UnknownContent       bool

@@ -73,3 +73,13 @@ func TestInspectChatRequestDetectsToolHistoryAndDisabledParallelCalls(t *testing
 		t.Fatalf("InspectChatRequest() = %#v, want tool history and disabled parallel calls", got)
 	}
 }
+
+func TestInspectChatRequestDetectsRemoteImageSource(t *testing.T) {
+	got, err := InspectChatRequest([]byte(`{"messages":[{"role":"user","content":[{"type":"image_url","image_url":{"url":"https://images.example.com/photo.png"}}]}]}`))
+	if err != nil {
+		t.Fatalf("InspectChatRequest() error = %v", err)
+	}
+	if !got.RemoteImage || !reflect.DeepEqual(got.InputModalities, []string{"image"}) {
+		t.Fatalf("InspectChatRequest() = %#v, want remote image", got)
+	}
+}

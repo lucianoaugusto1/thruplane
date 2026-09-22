@@ -130,11 +130,11 @@ func TestGetModelReturnsCatalogMetadataWithoutCredentials(t *testing.T) {
 	}
 }
 
-func TestGetModelDistinguishesNativeModelAndAdapterModalities(t *testing.T) {
+func TestGetModelDistinguishesGoogleModelAndAdapterModalities(t *testing.T) {
 	t.Parallel()
 	gateway := New(config.Config{
-		Providers: map[string]config.ProviderConfig{"claude": {Type: "anthropic"}},
-		Models:    map[string]config.ModelConfig{"assistant": {Targets: []config.TargetConfig{{Provider: "claude", Model: "claude-sonnet-5"}}}},
+		Providers: map[string]config.ProviderConfig{"google": {Type: "gemini"}},
+		Models:    map[string]config.ModelConfig{"assistant": {Targets: []config.TargetConfig{{Provider: "google", Model: "gemini-3.8-flash"}}}},
 	}, nil)
 	request := httptest.NewRequest(http.MethodGet, "/v1/models/assistant", nil)
 	request.SetPathValue("model", "assistant")
@@ -150,7 +150,7 @@ func TestGetModelDistinguishesNativeModelAndAdapterModalities(t *testing.T) {
 	if len(info.Targets[0].CatalogCapabilities.InputModalities) <= len(info.Targets[0].EffectiveCapabilities.InputModalities) {
 		t.Fatalf("native adapter should narrow modalities: %#v", info.Targets[0])
 	}
-	if len(info.Targets[0].EffectiveCapabilities.InputModalities) != 1 || info.Targets[0].EffectiveCapabilities.InputModalities[0] != "text" {
-		t.Fatalf("effective input modalities = %v, want text only", info.Targets[0].EffectiveCapabilities.InputModalities)
+	if got := info.Targets[0].EffectiveCapabilities.InputModalities; len(got) != 4 || got[0] != "text" || got[1] != "image" || got[2] != "audio" || got[3] != "document" {
+		t.Fatalf("effective input modalities = %v, want text/image/audio/document", got)
 	}
 }
