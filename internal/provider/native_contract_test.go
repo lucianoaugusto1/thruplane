@@ -22,6 +22,8 @@ func TestNativeDecoderRejectsUntranslatedFields(t *testing.T) {
 		{"nested tool definition", `{"tools":[{"type":"function","function":{"name":"save","extra":true}}]}`, "unsupported_field"},
 		{"nested tool call", `{"messages":[{"role":"assistant","tool_calls":[{"id":"call_1","type":"function","function":{"name":"save","arguments":"{}","extra":true}}]}]}`, "unsupported_field"},
 		{"unsupported sample count", `{"n":2}`, "unsupported_n"},
+		{"conflicting token limits", `{"max_tokens":10,"max_completion_tokens":20}`, "unsupported_field"},
+		{"zero token limit", `{"max_tokens":0}`, "invalid_max_tokens"},
 		{"audio output", `{"modalities":["audio"]}`, "unsupported_field"},
 		{"structured output", `{"response_format":{"type":"json_schema","json_schema":{"name":"answer"}}}`, "unsupported_field"},
 		{"extra text format setting", `{"response_format":{"type":"text","extra":true}}`, "unsupported_field"},
@@ -50,6 +52,7 @@ func TestNativeToolsRejectIgnoredToolCallAndChoiceFields(t *testing.T) {
 		code string
 	}{
 		{"custom assistant call", `{"messages":[{"role":"assistant","tool_calls":[{"id":"call_1","type":"custom","function":{"name":"save","arguments":"{}"}}]}]}`, "unsupported_tool_type"},
+		{"tool result ID on user message", `{"messages":[{"role":"user","content":"hi","tool_call_id":"call_1"}]}`, "unsupported_field"},
 		{"extra named choice", `{"tools":[{"type":"function","function":{"name":"save"}}],"tool_choice":{"type":"function","function":{"name":"save","extra":true}}}`, "unsupported_tool_choice"},
 	}
 	for _, test := range tests {

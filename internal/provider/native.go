@@ -98,6 +98,12 @@ func decodeChatRequest(body []byte) (chatRequest, error) {
 	if request.N != nil && *request.N != 1 {
 		return chatRequest{}, &RequestError{Code: "unsupported_n", Message: "Native adapters support n=1 only."}
 	}
+	if request.MaxTokens != nil && request.MaxCompletionTokens != nil {
+		return chatRequest{}, &RequestError{Code: "unsupported_field", Message: "Native adapters accept max_tokens or max_completion_tokens, not both."}
+	}
+	if (request.MaxTokens != nil && *request.MaxTokens <= 0) || (request.MaxCompletionTokens != nil && *request.MaxCompletionTokens <= 0) {
+		return chatRequest{}, &RequestError{Code: "invalid_max_tokens", Message: "The output token limit must be greater than zero."}
+	}
 	if hasJSONValue(request.Modalities) {
 		var modalities []string
 		if err := json.Unmarshal(request.Modalities, &modalities); err != nil || len(modalities) != 1 || modalities[0] != "text" {
@@ -161,6 +167,9 @@ func nativeTools(request chatRequest) (nativeToolContract, error) {
 	}
 
 	for _, message := range request.Messages {
+		if message.Role != "tool" && message.ToolCallID != "" {
+			return nativeToolContract{}, &RequestError{Code: "unsupported_field", Message: "tool_call_id is supported only on tool messages."}
+		}
 		for _, call := range message.ToolCalls {
 			if call.Type != "function" {
 				return nativeToolContract{}, &RequestError{Code: "unsupported_tool_type", Message: "Native adapters support function tool calls only."}
