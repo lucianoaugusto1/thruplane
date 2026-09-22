@@ -44,6 +44,9 @@ models:
 	if cfg.Routing.Retries != 1 {
 		t.Errorf("Routing.Retries = %d, want 1", cfg.Routing.Retries)
 	}
+	if cfg.Catalog.UnknownModels != "allow" {
+		t.Errorf("Catalog.UnknownModels = %q, want allow", cfg.Catalog.UnknownModels)
+	}
 	if got := time.Duration(cfg.Routing.ResponseHeaderTimeout); got != 30*time.Second {
 		t.Errorf("Routing.ResponseHeaderTimeout = %s, want %s", got, 30*time.Second)
 	}
@@ -162,6 +165,13 @@ func TestValidateRejectsInvalidValues(t *testing.T) {
 		wantErr string
 	}{
 		{
+			name: "invalid unknown model policy",
+			mutate: func(cfg *Config) {
+				cfg.Catalog.UnknownModels = "guess"
+			},
+			wantErr: "catalog unknown_models",
+		},
+		{
 			name: "negative retries",
 			mutate: func(cfg *Config) {
 				cfg.Routing.Retries = -1
@@ -185,6 +195,33 @@ func TestValidateRejectsInvalidValues(t *testing.T) {
 				t.Fatalf("Validate() error = %v, want error containing %q", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestLoadNormalizesCatalogTargetMapping(t *testing.T) {
+	path := writeConfig(t, `
+catalog:
+  unknown_models: REJECT
+providers:
+  azure:
+    type: azure-openai
+    base_url: https://customer.openai.azure.com
+models:
+  chat:
+    targets:
+      - provider: azure
+        model: customer-deployment
+        catalog_provider: OpenAI
+        catalog_model: GPT-5.6-Terra
+`)
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	target := cfg.Models["chat"].Targets[0]
+	if cfg.Catalog.UnknownModels != "reject" || target.CatalogProvider != "openai" || target.CatalogModel != "GPT-5.6-Terra" {
+		t.Fatalf("normalized catalog config = %#v, target = %#v", cfg.Catalog, target)
 	}
 }
 

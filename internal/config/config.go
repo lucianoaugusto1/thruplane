@@ -40,9 +40,14 @@ func (d *Duration) UnmarshalYAML(node *yaml.Node) error {
 
 type Config struct {
 	Server    ServerConfig              `yaml:"server"`
+	Catalog   CatalogConfig             `yaml:"catalog"`
 	Providers map[string]ProviderConfig `yaml:"providers"`
 	Models    map[string]ModelConfig    `yaml:"models"`
 	Routing   RoutingConfig             `yaml:"routing"`
+}
+
+type CatalogConfig struct {
+	UnknownModels string `yaml:"unknown_models"`
 }
 
 type ServerConfig struct {
@@ -72,8 +77,10 @@ type ModelConfig struct {
 }
 
 type TargetConfig struct {
-	Provider string `yaml:"provider"`
-	Model    string `yaml:"model"`
+	Provider        string `yaml:"provider"`
+	Model           string `yaml:"model"`
+	CatalogProvider string `yaml:"catalog_provider"`
+	CatalogModel    string `yaml:"catalog_model"`
 }
 
 type RoutingConfig struct {
@@ -111,6 +118,9 @@ func Load(path string) (Config, error) {
 }
 
 func (cfg Config) Validate() error {
+	if cfg.Catalog.UnknownModels != "" && cfg.Catalog.UnknownModels != "allow" && cfg.Catalog.UnknownModels != "reject" {
+		return errors.New("catalog unknown_models must be allow or reject")
+	}
 	if strings.TrimSpace(cfg.Server.Address) == "" {
 		return errors.New("server address must not be empty")
 	}
@@ -159,6 +169,9 @@ func (cfg Config) Validate() error {
 			if strings.TrimSpace(target.Model) == "" {
 				return fmt.Errorf("model %q target %d target model must not be empty", alias, index)
 			}
+			if target.CatalogProvider != "" && target.CatalogModel == "" {
+				return fmt.Errorf("model %q target %d catalog_provider requires catalog_model", alias, index)
+			}
 		}
 	}
 
@@ -167,6 +180,7 @@ func (cfg Config) Validate() error {
 
 func defaultConfig() Config {
 	return Config{
+		Catalog: CatalogConfig{UnknownModels: "allow"},
 		Server: ServerConfig{
 			Address:           defaultAddress,
 			MaxBodyBytes:      defaultMaxBodyBytes,
@@ -182,6 +196,10 @@ func defaultConfig() Config {
 
 func (cfg *Config) normalize() {
 	cfg.Server.Address = strings.TrimSpace(cfg.Server.Address)
+	cfg.Catalog.UnknownModels = strings.ToLower(strings.TrimSpace(cfg.Catalog.UnknownModels))
+	if cfg.Catalog.UnknownModels == "" {
+		cfg.Catalog.UnknownModels = "allow"
+	}
 
 	for name, provider := range cfg.Providers {
 		provider.Type = strings.ToLower(strings.TrimSpace(provider.Type))
@@ -205,6 +223,8 @@ func (cfg *Config) normalize() {
 		for index := range model.Targets {
 			model.Targets[index].Provider = strings.TrimSpace(model.Targets[index].Provider)
 			model.Targets[index].Model = strings.TrimSpace(model.Targets[index].Model)
+			model.Targets[index].CatalogProvider = strings.ToLower(strings.TrimSpace(model.Targets[index].CatalogProvider))
+			model.Targets[index].CatalogModel = strings.TrimSpace(model.Targets[index].CatalogModel)
 		}
 		cfg.Models[alias] = model
 	}
