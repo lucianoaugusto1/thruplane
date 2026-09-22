@@ -12,6 +12,8 @@ import (
 
 type chatRequest struct {
 	Messages            []chatMessage          `json:"messages"`
+	Model               string                 `json:"model"`
+	N                   *int                   `json:"n"`
 	MaxCompletionTokens *int                   `json:"max_completion_tokens"`
 	MaxTokens           *int                   `json:"max_tokens"`
 	Temperature         *float64               `json:"temperature"`
@@ -23,6 +25,8 @@ type chatRequest struct {
 	ParallelToolCalls   *bool                  `json:"parallel_tool_calls"`
 	LegacyFunctions     json.RawMessage        `json:"functions"`
 	LegacyFunctionCall  json.RawMessage        `json:"function_call"`
+	Modalities          json.RawMessage        `json:"modalities"`
+	ResponseFormat      json.RawMessage        `json:"response_format"`
 }
 
 type chatMessage struct {
@@ -82,10 +86,53 @@ type tokenUsage struct {
 
 func decodeChatRequest(body []byte) (chatRequest, error) {
 	var request chatRequest
-	if err := json.Unmarshal(body, &request); err != nil {
+	if trimmed := bytes.TrimSpace(body); len(trimmed) == 0 || trimmed[0] != '{' {
 		return chatRequest{}, &RequestError{Code: "invalid_json", Message: "The request body must be a JSON object."}
 	}
+	if err := decodeStrictJSON(body, &request); err != nil {
+		if isUnknownJSONField(err) {
+			return chatRequest{}, &RequestError{Code: "unsupported_field", Message: "Native adapters do not support " + strings.TrimPrefix(err.Error(), "json: unknown field ") + "."}
+		}
+		return chatRequest{}, &RequestError{Code: "invalid_json", Message: "The request body must be a JSON object with supported field types."}
+	}
+	if request.N != nil && *request.N != 1 {
+		return chatRequest{}, &RequestError{Code: "unsupported_n", Message: "Native adapters support n=1 only."}
+	}
+	if hasJSONValue(request.Modalities) {
+		var modalities []string
+		if err := json.Unmarshal(request.Modalities, &modalities); err != nil || len(modalities) != 1 || modalities[0] != "text" {
+			return chatRequest{}, &RequestError{Code: "unsupported_field", Message: "Native adapters support text-only output modalities."}
+		}
+	}
+	if hasJSONValue(request.ResponseFormat) {
+		var format struct {
+			Type string `json:"type"`
+		}
+		if err := decodeStrictJSON(request.ResponseFormat, &format); err != nil || format.Type != "text" {
+			return chatRequest{}, &RequestError{Code: "unsupported_field", Message: "Native adapters support response_format type text only."}
+		}
+	}
 	return request, nil
+}
+
+func decodeStrictJSON(data []byte, target any) error {
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(target); err != nil {
+		return err
+	}
+	var extra any
+	if err := decoder.Decode(&extra); err != io.EOF {
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("unexpected extra JSON value")
+	}
+	return nil
+}
+
+func isUnknownJSONField(err error) bool {
+	return strings.HasPrefix(err.Error(), "json: unknown field ")
 }
 
 func nativeTools(request chatRequest) (nativeToolContract, error) {
@@ -115,6 +162,9 @@ func nativeTools(request chatRequest) (nativeToolContract, error) {
 
 	for _, message := range request.Messages {
 		for _, call := range message.ToolCalls {
+			if call.Type != "function" {
+				return nativeToolContract{}, &RequestError{Code: "unsupported_tool_type", Message: "Native adapters support function tool calls only."}
+			}
 			if message.Role != "assistant" || call.ID == "" || call.Function.Name == "" {
 				return nativeToolContract{}, &RequestError{Code: "invalid_tool_call", Message: "Assistant tool calls require an id and function name."}
 			}
@@ -175,7 +225,7 @@ func parseNativeToolChoice(raw json.RawMessage) (nativeToolChoice, error) {
 			Name string `json:"name"`
 		} `json:"function"`
 	}
-	if err := json.Unmarshal(raw, &named); err != nil || named.Type != "function" || named.Function.Name == "" {
+	if err := decodeStrictJSON(raw, &named); err != nil || named.Type != "function" || named.Function.Name == "" {
 		return nativeToolChoice{}, &RequestError{Code: "unsupported_tool_choice", Message: "tool_choice must be auto, none, required, or a named function."}
 	}
 	return nativeToolChoice{Mode: "named", Name: named.Function.Name}, nil
