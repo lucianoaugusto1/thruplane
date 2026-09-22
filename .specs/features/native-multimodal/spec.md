@@ -8,11 +8,11 @@ these model capabilities through a direct NexoRoute integration.
 
 ## Goals
 
-- [ ] Preserve ordered text and media parts in native requests.
-- [ ] Translate supported media without another service or gateway-side fetch.
-- [ ] Reject unsupported media and formats before contacting the provider.
-- [ ] Expose only translated modalities as effective gateway capabilities.
-- [ ] Verify transformations and measure local adapter overhead.
+- [x] Preserve ordered text and media parts in native requests.
+- [x] Translate supported media without another service or gateway-side fetch.
+- [x] Reject unsupported media and formats before contacting the provider.
+- [x] Expose only translated modalities as effective gateway capabilities.
+- [x] Verify transformations and measure local adapter overhead.
 
 ## Out of scope
 
@@ -59,15 +59,16 @@ these model capabilities through a direct NexoRoute integration.
 - Inline media must have valid base64 and a supported MIME type.
 - A provider-specific file ID is not portable and must not be forwarded.
 - Media is accepted in user messages only; tool results remain text-only.
-- The gateway must not decode or log media contents.
+- The gateway validates base64 syntax but must not interpret or log media
+  contents.
 
 ## Traceability
 
 | ID | Requirement | Status |
 | --- | --- | --- |
-| MM-01 | Parse ordered, validated Chat Completions content parts. | Pending |
-| MM-02 | Translate Anthropic image and PDF input. | Pending |
-| MM-03 | Translate Gemini and Vertex image, PDF, and audio input. | Pending |
-| MM-04 | Translate Bedrock Converse image and PDF input. | Pending |
-| MM-05 | Publish accurate effective capabilities and rejection behavior. | Pending |
-| MM-06 | Document supported shapes and benchmark local overhead. | Pending |
+| MM-01 | Parse ordered, validated Chat Completions content parts. | Done |
+| MM-02 | Translate Anthropic image and PDF input. | Done |
+| MM-03 | Translate Gemini and Vertex image, PDF, and audio input. | Done |
+| MM-04 | Translate Bedrock Converse image and PDF input. | Done |
+| MM-05 | Publish accurate effective capabilities and rejection behavior. | Done |
+| MM-06 | Document supported shapes and benchmark local overhead. | Done |

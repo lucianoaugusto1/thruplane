@@ -1,7 +1,7 @@
 # Native multimodal chat tasks
 
 **Design**: `.specs/features/native-multimodal/design.md`
-**Status**: In progress
+**Status**: Implemented and locally validated
 
 `T1 -> {T2, T3, T4} -> T5 -> T6`
 

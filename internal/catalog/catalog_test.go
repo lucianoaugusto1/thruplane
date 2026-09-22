@@ -156,3 +156,18 @@ func TestBuiltInCatalogContainsInitialProviderModels(t *testing.T) {
 		})
 	}
 }
+
+func TestBuiltInOpenAIFileAndAudioStatus(t *testing.T) {
+	registry, err := BuiltIn()
+	if err != nil {
+		t.Fatalf("BuiltIn() error = %v", err)
+	}
+	model, ok := registry.Lookup("openai", "gpt-6-astra")
+	if !ok || !model.Supports(Requirements{Operation: "chat", InputModalities: []string{"document"}}) {
+		t.Fatalf("GPT-6 Astra PDF capability = %#v", model.Capabilities.InputModalities)
+	}
+	audio, ok := registry.Lookup("openai", "gpt-4o-mini-audio-preview")
+	if !ok || audio.Status != "deprecated" {
+		t.Fatalf("audio model status = %q, want deprecated", audio.Status)
+	}
+}

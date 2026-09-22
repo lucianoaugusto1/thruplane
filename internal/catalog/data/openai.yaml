@@ -12,6 +12,10 @@ provider:
       title: GPT-4o Mini model details
     - url: https://developers.openai.com/api/docs/models/gpt-4o-mini-audio-preview
       title: GPT-4o Mini Audio model details
+    - url: https://developers.openai.com/api/docs/guides/file-inputs
+      title: OpenAI PDF file input guide
+    - url: https://developers.openai.com/api/docs/models/all
+      title: OpenAI model status index
 models:
   - id: gpt-6-astra
     name: GPT-6 Astra
@@ -20,7 +24,7 @@ models:
     knowledge_cutoff: "2026-04-30"
     capabilities:
       operations: [chat, responses]
-      input_modalities: [text, image]
+      input_modalities: [text, image, document]
       output_modalities: [text]
       streaming: true
       structured_outputs: true
@@ -158,7 +162,7 @@ models:
   - id: gpt-4o-mini-audio-preview
     name: GPT-4o Mini Audio
     family: gpt-4o
-    status: preview
+    status: deprecated
     knowledge_cutoff: "2023-10-01"
     capabilities:
       operations: [chat, responses]

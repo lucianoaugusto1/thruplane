@@ -11,10 +11,10 @@ to the provider-specific model identifier configured in `models.*.targets`.
 | Type | Upstream protocol | Buffered | Streaming | Authentication |
 | --- | --- | --- | --- | --- |
 | `openai` | OpenAI Chat Completions | Yes | Yes | Bearer key |
-| `anthropic` | Anthropic Messages | Text and function tools | Text and function tools | `x-api-key` |
-| `gemini` | Gemini `generateContent` | Text and function tools | Text and function tools | `x-goog-api-key` |
-| `vertex` | Vertex `generateContent` | Text and function tools | Text and function tools | OAuth bearer token |
-| `bedrock` | Bedrock Converse | Text and function tools | Not yet | AWS Signature Version 4 |
+| `anthropic` | Anthropic Messages | Text, image, PDF, and function tools | Yes, text/tool output | `x-api-key` |
+| `gemini` | Gemini `generateContent` | Text, image, PDF, audio, and function tools | Yes, text/tool output | `x-goog-api-key` |
+| `vertex` | Vertex `generateContent` | Text, image, PDF, audio, and function tools | Yes, text/tool output | OAuth bearer token |
+| `bedrock` | Bedrock Converse | Text, image, PDF, and function tools | Not yet | AWS Signature Version 4 |
 | `azure-openai` | Azure OpenAI v1 chat | Yes | Yes | `api-key` |
 | `ollama` | Ollama OpenAI compatibility | Yes | Yes | Optional bearer key |
 | `openai-compatible` | Configurable OpenAI compatibility | Yes | Yes | Optional bearer key |
@@ -26,9 +26,70 @@ provider type. Grok is the model family; xAI is the API provider.
 
 Compatible adapters preserve request fields they don't interpret and relay
 successful response bodies without conversion. Native adapters translate
-text messages, client-executed function tools, tool results, and successful
-provider responses. They reject unsupported content instead of silently
-dropping it.
+text and supported media input, client-executed function tools, tool results,
+and successful provider responses. Streaming accepts the same input modalities
+as buffered calls, but only text and function tool output is normalized. Native
+adapters reject unsupported content instead of silently dropping it.
+
+## Native media input
+
+Native adapters accept media only in `role: user` messages on the Chat
+Completions endpoint. The gateway preserves the order of text and media parts
+and sends them directly in a single provider request; it does not download
+remote files, upload to provider Files APIs, inspect media content, or execute
+tools. The supported public shapes are:
+
+```json
+{
+  "role": "user",
+  "content": [
+    {"type": "text", "text": "Summarize these inputs"},
+    {"type": "image_url", "image_url": {
+      "url": "data:image/png;base64,<base64>"
+    }},
+    {"type": "file", "file": {
+      "filename": "report.pdf",
+      "file_data": "data:application/pdf;base64,<base64>"
+    }},
+    {"type": "input_audio", "input_audio": {
+      "data": "<base64>", "format": "wav"
+    }}
+  ]
+}
+```
+
+Replace `<base64>` with encoded bytes. The example combines all shapes to
+show their syntax; only Gemini and Vertex accept the full combination.
+
+| Input | Anthropic | Gemini/Vertex | Bedrock |
+| --- | --- | --- | --- |
+| `text` or `input_text` | Yes | Yes | Yes |
+| `image_url` data URI | Yes | Yes | Yes |
+| `image_url` HTTPS URL | Yes, passed through | No | No |
+| PDF `file.file_data` data URI | Yes | Yes | Yes |
+| `input_audio` base64 | No | WAV or MP3 | No |
+
+Inline images support PNG, JPEG, GIF, and WebP. PDF is the only supported
+document MIME type. Provider-specific `file_id`, non-HTTPS image URLs, other
+audio formats, video, media in other roles, and multimodal tool results are
+not portable. The gateway returns `400 unsupported_content` or
+`400 invalid_media` for unsupported shapes or malformed base64 before
+contacting the provider. For a cataloged model lacking the modality, routing
+returns `400 unsupported_capability` if no suitable target remains. Individual
+providers may impose smaller media or page limits than the gateway's
+`server.max_body_bytes` setting, which defaults to 1 MiB.
+
+Compatible adapters preserve the request body instead of translating it;
+actual media support depends on the selected upstream model and endpoint.
+The gateway does not currently normalize generated image or audio output.
+For local translation overhead, run:
+
+```sh
+go test ./internal/provider -run '^$' \
+  -bench BenchmarkNativeInlineImageTranslation -benchmem
+```
+
+The benchmark excludes HTTP, provider latency, and network transfer.
 
 ## Function tools
 

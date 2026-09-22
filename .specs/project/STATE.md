@@ -50,9 +50,9 @@
 - The first adapter set covers OpenAI, Anthropic, Gemini, Vertex AI, Bedrock,
   Azure OpenAI, Ollama, configurable OpenAI-compatible APIs, NexoRoute
   Inference, and xAI. `grok` is an alias for xAI.
-- Compatible adapters use response passthrough. Native adapters translate text
-  chat; Bedrock streaming and native multimodal content remain explicit
-  follow-up work.
+- Compatible adapters use response passthrough. Native adapters translate
+  text, image, and PDF input; Gemini and Vertex also translate inline audio.
+  Bedrock streaming and native media output remain follow-up work.
 - Native adapters translate client-executed function definitions, tool choice,
   assistant tool calls, parallel tool results, and normalized buffered
   responses. Anthropic, Gemini, and Vertex also normalize streamed tool calls.
@@ -91,7 +91,7 @@
 - Agent and MCP governance with tool policies and human approval
 - Provider compatibility monitoring and drift alerts
 - Bedrock binary event-stream decoding and normalization
-- Native multimodal normalization and provider-hosted tool adapters
+- Native media output normalization and provider-hosted tool adapters
 - Pro implementation: cost tracking, budgets, rate limiting, analytics, and
   managed operations
 - Enterprise implementation: SSO, SCIM, RBAC, audit exports, policy controls,

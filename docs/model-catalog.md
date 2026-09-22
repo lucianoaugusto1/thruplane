@@ -75,11 +75,21 @@ exists.
 NexoRoute inspects Chat Completions requests for input and output modalities,
 function tools, strict schemas, parallel calls, structured output, and
 streaming. Known models are eligible only if both the catalog entry and the
-adapter support every required feature. Native adapters currently translate
-text and function tools, not image, audio, video, or document parts. Bedrock
-streaming and portable strict tool schemas are also unavailable. Incompatible
-targets are skipped before any upstream call; if none remain, the gateway
-returns HTTP 400 with `unsupported_capability`.
+adapter support every required feature. Native Anthropic and Bedrock adapters
+translate text, images, and PDFs. Gemini and Vertex additionally translate
+inline WAV and MP3 audio. These are input modalities; native output remains
+text-only. HTTPS image URLs work through Anthropic but not Gemini, Vertex, or
+Bedrock in this portable contract. Bedrock streaming and portable strict tool
+schemas are also unavailable. Incompatible targets are skipped before any
+upstream call; if none remain, the gateway returns HTTP 400 with
+`unsupported_capability`.
+
+`GET /v1/models/{model}` reports both catalog and effective capabilities.
+The latter is the intersection of model and adapter support, not a promise
+that every source format or provider deployment accepts the same media size.
+Inspect [provider media input rules](providers.md#native-media-input) for
+source-specific restrictions. The default request-body limit is 1 MiB and
+can be raised with `server.max_body_bytes` for inline media.
 
 Unknown model IDs pass through by default to preserve private endpoints and
 new provider releases. This mode cannot guarantee capability-safe routing for
@@ -108,6 +118,8 @@ GPT-5.6 Sol prices are promotional through at least November 21, 2026.
 
 - [OpenAI models](https://developers.openai.com/api/docs/models)
 - [OpenAI model comparison](https://developers.openai.com/api/docs/models/compare)
+- [OpenAI file inputs](https://developers.openai.com/api/docs/guides/file-inputs)
+- [OpenAI model status index](https://developers.openai.com/api/docs/models/all)
 - [Claude models overview](https://platform.claude.com/docs/en/models/overview)
 - [Claude API pricing](https://platform.claude.com/docs/en/about-claude/pricing)
 - [Gemini models](https://ai.google.dev/gemini-api/docs/models)

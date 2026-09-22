@@ -152,9 +152,11 @@ See the [provider adapter guide](docs/providers.md) for direct endpoints,
 credentials, native translation behavior, and current feature limits.
 
 For cataloged targets, NexoRoute checks the request against both model support
-and adapter support before sending it upstream. For example, the Anthropic
-adapter currently translates text and function tools, but not image or PDF
-content. An image request can skip that target and use a compatible fallback.
+and adapter support before sending it upstream. Native adapters translate
+supported image and PDF inputs; Gemini and Vertex also translate inline audio.
+For example, an audio request skips an Anthropic target and can use a Gemini
+fallback. HTTPS image URLs are portable to Anthropic but not Gemini, Vertex,
+or Bedrock through the current adapters.
 When no target qualifies, the gateway returns `unsupported_capability`.
 
 Unknown model IDs pass through by default so private deployments keep working.
@@ -240,8 +242,10 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
   audio, or batch APIs.
 - `n` must be omitted or set to `1` so providers do not silently diverge.
 - Compatible adapters pass through tool use, vision, and structured-output
-  fields. Native adapters translate text messages and client-executed function
-  tools; native multimodal content remains planned.
+  fields. Native adapters translate user-message image and PDF input, plus WAV
+  and MP3 audio input on Gemini and Vertex, and client-executed function tools.
+  They do not normalize image or audio output, video, provider file IDs, or
+  multimodal tool results.
 - Catalog entries describe provider model features; `effective_capabilities`
   in `GET /v1/models/{model}` shows the subset this gateway can use today.
 - Unknown models in `allow` mode bypass capability filtering. Use `reject`
