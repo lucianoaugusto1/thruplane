@@ -45,6 +45,8 @@ Core routing, protocols, provider adapters, streaming, and basic observability
 remain part of Community. See [edition principles and roadmap](docs/editions.md)
 for the proposed commercial boundary and the
 [product strategy](docs/product-strategy.md) for the longer-term direction.
+The [delivery plan](docs/next-steps.md) explains what remains to build and
+the validation gates before public and paid releases.
 
 ## Requirements
 

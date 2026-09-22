@@ -1,7 +1,13 @@
 # Roadmap
 
-**Current milestone:** Public Community launch
-**Status:** In Progress
+**Current milestone:** Gateway assurance
+**Status:** Planning
+**Updated:** September 22, 2026
+
+This page tracks shippable outcomes. The detailed
+[delivery plan](../../docs/next-steps.md) lists required work, artifacts,
+dependencies, and acceptance gates. Planned
+capabilities are not available product claims or release-date commitments.
 
 ---
 
@@ -33,6 +39,37 @@ OpenAI or Ollama with predictable failure behavior.
 
 ---
 
+## Gateway assurance
+
+**Goal:** Verify the initial provider adapters and the public compatibility
+contract before making broad production claims.
+
+### Features
+
+**Initial direct-provider adapters and native tools/media input** - COMPLETE
+
+- OpenAI, Anthropic, Gemini, Vertex AI, Bedrock, Azure OpenAI, Ollama,
+  xAI/Grok, and configurable compatible protocols.
+- Native function tools; native image and PDF input; Gemini and Vertex
+  inline audio input; capability-aware routing.
+
+**Contract enforcement and provider conformance** - PLANNED
+
+- Version accepted fields and reject untranslated native fields explicitly.
+- Add golden fixtures and opt-in live smoke tests per provider and modality.
+- Record model, region, auth mode, and verification date in a report.
+
+**Performance and failure baseline** - PLANNED
+
+- Measure added p50/p95/p99 latency, first SSE chunk, throughput,
+  allocations, memory, and behavior under retries and disconnects.
+- Add refreshable credentials and complete Bedrock streaming.
+
+**Exit gate:** Deterministic and opt-in live conformance evidence, documented
+exceptions, repeatable benchmarks, and passing Go build/vet/race checks.
+
+---
+
 ## Public Community launch
 
 **Goal:** Publish a credible open-source foundation under the NexoRoute working
@@ -55,8 +92,10 @@ brand without overstating commercial readiness.
 **Release hardening** - PLANNED
 
 - Add CI, signed release artifacts, checksums, and a versioning policy.
+- Document catalog maintenance, upgrades, rollback, and security contact.
 - Complete legal, domain, social-handle, and package-registry clearance.
 - Publish a public repository and first tagged release.
+- Complete the Gateway assurance exit gate first.
 
 ---
 
@@ -67,19 +106,21 @@ for broader production adoption.
 
 ### Features
 
-**Protocol and provider expansion** - PLANNED
+**API and protocol expansion** - PLANNED
 
-- Add Responses, embeddings, and priority provider adapters.
-- Normalize streaming, tool calls, and structured outputs.
+- Add Responses and embeddings through separate direct-API contracts.
+- Extend structured outputs, strict tools, and media output only where
+  semantics can be preserved and verified.
 
 **Reliability and access controls** - PLANNED
 
-- Add circuit breakers, weighted routing, multiple local keys, and local
-  limits.
+- Add circuit breakers, retry budgets, weighted routing, readiness, multiple
+  local keys, local limits, and secure secret sources.
 
 **Open observability and packaging** - PLANNED
 
 - Add Prometheus, OpenTelemetry, cost estimates, hot reload, and Helm.
+- Prove privacy and redaction defaults under load and failure.
 
 ---
 
@@ -133,6 +174,9 @@ rollout.
 ### Features
 
 **Flight Recorder capture and replay** - PLANNED
+
+- Require tenant identity, usage accounting, opt-in capture, and redaction.
+- Prevent replay from duplicating side-effecting tool calls by default.
 
 **Shadow traffic, canary rollout, and rollback** - PLANNED
 

@@ -40,27 +40,31 @@ fallback behavior otherwise leak into every application.
 
 ## Scope
 
-**Community v1 includes:**
+**Community implementation includes:**
 
 - `POST /v1/chat/completions` with non-streaming and SSE streaming responses
 - `GET /v1/models` with configured model aliases
-- OpenAI-compatible upstream adapters for OpenAI and Ollama
+- Direct initial adapters for OpenAI, Anthropic, Gemini, Vertex AI, Bedrock,
+  Azure OpenAI, Ollama, xAI/Grok, and configurable compatible APIs
+- Native function-tool translation, image and PDF input, and Gemini/Vertex
+  WAV and MP3 input; capability-aware model routing
 - Ordered fallbacks, bounded retries, timeouts, optional inbound API key, health
   checks, request IDs, and structured logs
 - One executable, Docker packaging, example configuration, and automated tests
 
-**Explicitly out of scope:**
+**Not in the current implementation:**
 
 - Shipping or charging for Pro and Enterprise before their features exist
 - Billing, budgets, cost accounting, and persistent usage history in v1
 - Per-tenant rate limits or an administrative UI
-- Native provider protocols that are not OpenAI-compatible
+- Provider-hosted tools, media output normalization, and Bedrock streaming
 - Embeddings, image, audio, batch, and Responses API endpoints
 - Dynamic configuration reload and distributed state
 
 ## Constraints
 
-- Technical: Preserve JSON fields the gateway does not understand.
+- Technical: Compatible adapters preserve unknown JSON fields; native
+  adapters must reject fields they cannot translate without data loss.
 - Technical: Never expose upstream credentials in logs or error messages.
 - Resources: Prefer the standard library and keep the dependency surface small.
 - Compatibility: Focus on the practical OpenAI-compatible subset, not a claim of
@@ -68,3 +72,5 @@ fallback behavior otherwise leak into every application.
 - Commercial: Label roadmap capabilities as planned until they are implemented
   and validated.
 - Brand: Treat NexoRoute as a working name until legal and registry clearance.
+- Validation: Local protocol tests do not replace live, region-specific
+  provider conformance or end-to-end latency measurements.

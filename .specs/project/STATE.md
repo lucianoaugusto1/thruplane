@@ -1,6 +1,8 @@
 # Project state
 
-**Updated:** September 19, 2026
+**Updated:** September 22, 2026
+**Current work:** Planning the next delivery sequence before implementing more
+gateway features.
 
 ## Decisions
 
@@ -65,7 +67,20 @@
 
 ## Blockers
 
-- None.
+- No blocker to local development. Live provider conformance requires scoped,
+  capped test credentials and selected model/region pairs. Public release
+  requires legal, brand, and security-contact decisions.
+
+## Next implementation slice
+
+- Version the Chat Completions compatibility contract for native versus
+  passthrough adapters.
+- Reject untranslated native fields even for unknown catalog models.
+- Build deterministic provider fixtures, then opt-in live smoke tests.
+- Establish end-to-end gateway overhead and failure baselines before claiming
+  performance or implementing adaptive routing.
+- Use [the delivery plan](../../docs/next-steps.md) for dependencies, artifacts,
+  and acceptance gates. The plan is proposed until prioritized with the user.
 
 ## Launch prerequisites
 
