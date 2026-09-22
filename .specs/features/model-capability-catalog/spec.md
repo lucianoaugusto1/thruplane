@@ -8,10 +8,10 @@ limits, prices, cache rates, and published performance information.
 
 ## Goals
 
-- [ ] Ship an auditable, embedded YAML catalog for the initial providers.
-- [ ] Detect chat request requirements and route only to compatible targets.
-- [ ] Expose model capabilities and commercial metadata through the model API.
-- [ ] Preserve compatibility for private and newly released model IDs.
+- [x] Ship an auditable, embedded YAML catalog for the initial providers.
+- [x] Detect chat request requirements and route only to compatible targets.
+- [x] Expose model capabilities and commercial metadata through the model API.
+- [x] Preserve compatibility for private and newly released model IDs.
 
 ## Out of scope
 
@@ -79,10 +79,9 @@ select a compatible alias before sending a request.
 
 | Requirement ID | Requirement | Status |
 | --- | --- | --- |
-| CAT-01 | Load and validate embedded YAML catalogs. | Implementing |
-| CAT-02 | Store sourced capabilities, limits, pricing, cache, and performance. | Implementing |
-| CAT-03 | Detect request capabilities and filter targets. | Implementing |
-| CAT-04 | Return explicit errors when no target matches. | Implementing |
-| CAT-05 | Expose catalog data through model details. | Implementing |
-| CAT-06 | Support deployment-to-catalog-model mapping. | Implementing |
-
+| CAT-01 | Load and validate embedded YAML catalogs. | Complete |
+| CAT-02 | Store sourced capabilities, limits, pricing, cache, and performance. | Complete |
+| CAT-03 | Detect request capabilities and filter targets. | Complete |
+| CAT-04 | Return explicit errors when no target matches. | Complete |
+| CAT-05 | Expose catalog data through model details. | Complete |
+| CAT-06 | Support deployment-to-catalog-model mapping. | Complete |

@@ -5,6 +5,13 @@ catalog records facts that the gateway needs for capability-safe routing and
 model discovery. The files are embedded in the executable and parsed once at
 startup, so they don't add file I/O or YAML parsing to the request path.
 
+`GET /v1/models/{alias}` returns each configured target's catalog identity,
+limits, pricing, performance, source URLs, and two capability sets:
+`catalog_capabilities` describes the provider model and
+`effective_capabilities` shows what the current adapter implements. The public
+gateway endpoint is Chat Completions only; an operation such as `responses` in
+the catalog is not a gateway endpoint.
+
 The catalog is curated, not exhaustive. Providers release, rename, and retire
 models independently of NexoRoute releases. Use the provider's live model API
 or console to confirm availability in your account and region.
@@ -62,6 +69,40 @@ exists.
   its models and semantics.
 - NexoRoute Inference: No built-in model entries until the hosted service has a
   published, versioned model contract.
+
+## Routing policy
+
+NexoRoute inspects Chat Completions requests for input and output modalities,
+function tools, strict schemas, parallel calls, structured output, and
+streaming. Known models are eligible only if both the catalog entry and the
+adapter support every required feature. Native adapters currently translate
+text and function tools, not image, audio, video, or document parts. Bedrock
+streaming and portable strict tool schemas are also unavailable. Incompatible
+targets are skipped before any upstream call; if none remain, the gateway
+returns HTTP 400 with `unsupported_capability`.
+
+Unknown model IDs pass through by default to preserve private endpoints and
+new provider releases. This mode cannot guarantee capability-safe routing for
+unknown IDs. Set `catalog.unknown_models: reject` for a closed catalog; if all
+targets are unknown, the gateway returns `model_not_cataloged`.
+
+Deployment identifiers can map to a catalog entry without changing the
+upstream request:
+
+```yaml
+models:
+  production:
+    targets:
+      - provider: azure
+        model: production-deployment
+        catalog_model: gpt-4o-mini
+```
+
+The optional `catalog_provider` field overrides the provider namespace for
+lookup. Use it only when the target API actually serves that model contract.
+Catalog pricing is reference metadata, not a live bill or a cost router.
+Regional, tier, and contract prices may differ. OpenAI's published
+GPT-5.6 Sol prices are promotional through at least November 21, 2026.
 
 ## Primary sources
 

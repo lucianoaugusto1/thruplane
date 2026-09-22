@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"nexoroute/internal/config"
@@ -90,4 +91,66 @@ func TestGetModelReturnsOpenAIErrorForUnknownAlias(t *testing.T) {
 		t.Fatalf("status = %d, want 404", response.Code)
 	}
 	assertOpenAIError(t, response)
+}
+
+func TestGetModelReturnsCatalogMetadataWithoutCredentials(t *testing.T) {
+	t.Parallel()
+	gateway := New(config.Config{
+		Providers: map[string]config.ProviderConfig{
+			"deployment": {Type: "azure-openai", APIKey: "private-secret"},
+		},
+		Models: map[string]config.ModelConfig{
+			"team-model": {Targets: []config.TargetConfig{{
+				Provider: "deployment", Model: "prod-2026", CatalogModel: "gpt-6-astra",
+			}}},
+		},
+	}, nil)
+	request := httptest.NewRequest(http.MethodGet, "/v1/models/team-model", nil)
+	request.SetPathValue("model", "team-model")
+	response := httptest.NewRecorder()
+	gateway.GetModel(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("response = %d %s", response.Code, response.Body.String())
+	}
+	var info modelInfo
+	if err := json.Unmarshal(response.Body.Bytes(), &info); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if len(info.Targets) != 1 || !info.Targets[0].Cataloged || info.Targets[0].CatalogModel != "gpt-6-astra" {
+		t.Fatalf("targets = %#v, want mapped catalog model", info.Targets)
+	}
+	if info.Targets[0].Limits == nil || info.Targets[0].Limits.ContextTokens == 0 || info.Targets[0].EffectiveCapabilities == nil {
+		t.Fatalf("target lacks limits or effective capabilities: %#v", info.Targets[0])
+	}
+	if len(info.Targets[0].EffectiveCapabilities.Operations) != 1 || info.Targets[0].EffectiveCapabilities.Operations[0] != "chat" {
+		t.Fatalf("effective operations = %v, want chat only", info.Targets[0].EffectiveCapabilities.Operations)
+	}
+	if strings.Contains(response.Body.String(), "private-secret") {
+		t.Fatal("response disclosed provider credential")
+	}
+}
+
+func TestGetModelDistinguishesNativeModelAndAdapterModalities(t *testing.T) {
+	t.Parallel()
+	gateway := New(config.Config{
+		Providers: map[string]config.ProviderConfig{"claude": {Type: "anthropic"}},
+		Models:    map[string]config.ModelConfig{"assistant": {Targets: []config.TargetConfig{{Provider: "claude", Model: "claude-sonnet-5"}}}},
+	}, nil)
+	request := httptest.NewRequest(http.MethodGet, "/v1/models/assistant", nil)
+	request.SetPathValue("model", "assistant")
+	response := httptest.NewRecorder()
+	gateway.GetModel(response, request)
+	var info modelInfo
+	if err := json.Unmarshal(response.Body.Bytes(), &info); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if len(info.Targets) != 1 || info.Targets[0].CatalogCapabilities == nil || info.Targets[0].EffectiveCapabilities == nil {
+		t.Fatalf("targets = %#v, want catalog and effective capabilities", info.Targets)
+	}
+	if len(info.Targets[0].CatalogCapabilities.InputModalities) <= len(info.Targets[0].EffectiveCapabilities.InputModalities) {
+		t.Fatalf("native adapter should narrow modalities: %#v", info.Targets[0])
+	}
+	if len(info.Targets[0].EffectiveCapabilities.InputModalities) != 1 || info.Targets[0].EffectiveCapabilities.InputModalities[0] != "text" {
+		t.Fatalf("effective input modalities = %v, want text only", info.Targets[0].EffectiveCapabilities.InputModalities)
+	}
 }

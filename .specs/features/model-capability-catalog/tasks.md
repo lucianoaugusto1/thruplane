@@ -1,7 +1,7 @@
 # Model capability catalog tasks
 
 **Design**: `.specs/features/model-capability-catalog/design.md`
-**Status**: In progress
+**Status**: Complete
 
 ## Execution plan
 
@@ -59,4 +59,3 @@
 | Task granularity | Each task has one cohesive deliverable. |
 | Dependency diagram | Every dependency appears in the sequential diagram. |
 | Test co-location | Code tasks include the test type required by `TESTING.md`. |
-

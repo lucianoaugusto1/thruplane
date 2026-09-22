@@ -28,6 +28,7 @@ cost controls, governance, high availability, and support.
   Inference
 - Bounded retries and ordered fallback for transient failures
 - Strict YAML configuration with environment expansion
+- Sourced model catalog with capability-aware routing and model metadata
 - Optional inbound bearer authentication
 - Request IDs, structured JSON logs, health checks, and graceful shutdown
 - Distroless, non-root container image
@@ -150,6 +151,18 @@ it does not interpret. For Ollama, it also translates
 See the [provider adapter guide](docs/providers.md) for direct endpoints,
 credentials, native translation behavior, and current feature limits.
 
+For cataloged targets, NexoRoute checks the request against both model support
+and adapter support before sending it upstream. For example, the Anthropic
+adapter currently translates text and function tools, but not image or PDF
+content. An image request can skip that target and use a compatible fallback.
+When no target qualifies, the gateway returns `unsupported_capability`.
+
+Unknown model IDs pass through by default so private deployments keep working.
+Set `catalog.unknown_models: reject` to require a catalog match. Use
+`catalog_model` for an Azure deployment name or Bedrock inference-profile ID;
+`catalog_provider` optionally selects a different catalog namespace. See the
+[model catalog](docs/model-catalog.md) for data semantics and limitations.
+
 ### Configuration reference
 
 | Field | Meaning | Default |
@@ -159,6 +172,7 @@ credentials, native translation behavior, and current feature limits.
 | `server.max_body_bytes` | Maximum chat request body | `1048576` |
 | `server.read_header_timeout` | Client header timeout | `5s` |
 | `server.shutdown_timeout` | Graceful shutdown limit | `10s` |
+| `catalog.unknown_models` | `allow` passthrough or `reject` unknown target IDs | `allow` |
 | `providers.*.type` | Provider protocol name | `openai` |
 | `providers.*.base_url` | Provider root URL without an API path | Provider default or required for custom endpoints |
 | `providers.*.api_key` | Bearer, Azure, Anthropic, or Gemini key | Empty |
@@ -171,6 +185,8 @@ credentials, native translation behavior, and current feature limits.
 | `providers.*.secret_access_key` | AWS secret key for Bedrock | Empty |
 | `providers.*.session_token` | Optional AWS temporary-session token | Empty |
 | `models.*.targets` | Ordered provider and model pairs | Required |
+| `models.*.targets[].catalog_model` | Catalog ID for a deployment ID | Upstream model ID |
+| `models.*.targets[].catalog_provider` | Override catalog provider namespace | Provider type |
 | `routing.retries` | Extra attempts per target | `1` |
 | `routing.response_header_timeout` | Upstream header timeout | `30s` |
 
@@ -226,6 +242,10 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - Compatible adapters pass through tool use, vision, and structured-output
   fields. Native adapters translate text messages and client-executed function
   tools; native multimodal content remains planned.
+- Catalog entries describe provider model features; `effective_capabilities`
+  in `GET /v1/models/{model}` shows the subset this gateway can use today.
+- Unknown models in `allow` mode bypass capability filtering. Use `reject`
+  for a closed, capability-checked deployment.
 - Bedrock supports buffered Converse responses; Bedrock streaming remains
   deferred until the binary AWS event-stream decoder is available.
 - Ollama's OpenAI compatibility can vary by version and model.
