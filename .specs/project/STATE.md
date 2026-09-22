@@ -1,8 +1,8 @@
 # Project state
 
 **Updated:** September 22, 2026
-**Current work:** Planning the next delivery sequence before implementing more
-gateway features.
+**Current work:** Native Chat Completions field enforcement is implemented;
+provider conformance fixtures and live validation are next.
 
 ## Decisions
 
@@ -44,7 +44,9 @@ gateway features.
 - Enterprise focuses on governance, security, scale, assurance, and support.
 - The MVP is stateless and uses one YAML file as its source of truth.
 - The public API is an OpenAI-compatible subset centered on chat completions.
-- Request bodies are minimally inspected so unknown fields pass through.
+- OpenAI-compatible request bodies retain unknown fields. Native adapters
+  strictly reject fields they cannot translate, including for uncataloged
+  models; a native contract error does not trigger cross-target fallback.
 - Provider support begins with OpenAI-compatible HTTP APIs, specifically
   OpenAI and Ollama.
 - Direct provider calls are the data-plane rule: customer traffic must not
@@ -73,10 +75,8 @@ gateway features.
 
 ## Next implementation slice
 
-- Version the Chat Completions compatibility contract for native versus
-  passthrough adapters.
-- Reject untranslated native fields even for unknown catalog models.
-- Build deterministic provider fixtures, then opt-in live smoke tests.
+- Complete the versioned response compatibility matrix and deterministic
+  provider fixtures, then opt-in live smoke tests.
 - Establish end-to-end gateway overhead and failure baselines before claiming
   performance or implementing adaptive routing.
 - Use [the delivery plan](../../docs/next-steps.md) for dependencies, artifacts,
@@ -96,6 +96,8 @@ gateway features.
   directories with the same name.
 - Streaming middleware must expose its wrapped writer through `Unwrap` so
   `http.ResponseController` can flush SSE chunks.
+- Native `file.filename` was previously accepted but discarded; reject it
+  explicitly until a portable translation exists.
 
 ## Deferred ideas
 

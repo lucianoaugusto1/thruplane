@@ -8,10 +8,10 @@ filtering. This violates the gateway's promise to preserve request semantics.
 
 ## Goals
 
-- [ ] Reject untranslated native request fields before upstream I/O.
-- [ ] Reject unsupported nested message, tool, and content-part fields.
-- [ ] Keep OpenAI-compatible adapters' passthrough behavior unchanged.
-- [ ] Document the precise native subset and intentional no-op defaults.
+- [x] Reject untranslated native request fields before upstream I/O.
+- [x] Reject unsupported nested message, tool, and content-part fields.
+- [x] Keep OpenAI-compatible adapters' passthrough behavior unchanged.
+- [x] Document the precise native subset and intentional no-op defaults.
 
 ## Out of scope
 
@@ -39,7 +39,7 @@ filtering. This violates the gateway's promise to preserve request semantics.
 
 | ID | Requirement | Status |
 | --- | --- | --- |
-| NC-01 | Strict root, message, and tool validation | Pending |
-| NC-02 | Strict user and text content-part validation | Pending |
-| NC-03 | Unknown-model and passthrough regression coverage | Pending |
-| NC-04 | Published field contract and migration note | Pending |
+| NC-01 | Strict root, message, and tool validation | Done |
+| NC-02 | Strict user and text content-part validation | Done |
+| NC-03 | Unknown-model and passthrough regression coverage | Done |
+| NC-04 | Published field contract and migration note | Done |

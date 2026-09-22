@@ -1,7 +1,7 @@
 # Native Chat Completions contract tasks
 
 **Design:** `.specs/features/native-contract/design.md`  
-**Status:** In progress
+**Status:** Complete
 
 `T1 -> T2 -> T3 -> T4`
 
@@ -35,3 +35,11 @@ co-located tests and affected media fixtures.
 **Where:** `docs/`, `README.md`, `.specs/`.
 **Depends on:** T3. **Requirement:** NC-04.
 **Tests:** Race, vet, build, diff check. **Gate:** Build.
+
+## Verification
+
+- `go test ./...` and `go test -race ./...` passed on September 22, 2026.
+- `go vet ./...`, `go build -o /dev/null ./cmd/nexoroute`, and
+  `git diff --check` passed.
+- Public gateway tests cover uncataloged native rejection before network I/O
+  and compatible passthrough. Live provider conformance is a separate task.

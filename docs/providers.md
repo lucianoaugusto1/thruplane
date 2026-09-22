@@ -30,6 +30,8 @@ text and supported media input, client-executed function tools, tool results,
 and successful provider responses. Streaming accepts the same input modalities
 as buffered calls, but only text and function tool output is normalized. Native
 adapters reject unsupported content instead of silently dropping it.
+The [Chat Completions compatibility contract](api-compatibility.md) lists
+accepted native fields, errors, and migration guidance.
 
 ## Native media input
 
@@ -48,7 +50,6 @@ tools. The supported public shapes are:
       "url": "data:image/png;base64,<base64>"
     }},
     {"type": "file", "file": {
-      "filename": "report.pdf",
       "file_data": "data:application/pdf;base64,<base64>"
     }},
     {"type": "input_audio", "input_audio": {
@@ -78,6 +79,11 @@ contacting the provider. For a cataloged model lacking the modality, routing
 returns `400 unsupported_capability` if no suitable target remains. Individual
 providers may impose smaller media or page limits than the gateway's
 `server.max_body_bytes` setting, which defaults to 1 MiB.
+
+Native adapters reject `file.filename` because they cannot preserve it
+consistently; earlier versions silently discarded it. They also reject
+untranslated content properties such as `image_url.detail`. Use an
+OpenAI-compatible target if the upstream requires those fields.
 
 Compatible adapters preserve the request body instead of translating it;
 actual media support depends on the selected upstream model and endpoint.

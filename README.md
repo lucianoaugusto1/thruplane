@@ -14,7 +14,8 @@ cost controls, governance, high availability, and support.
 
 - Keep application code independent from provider URLs and credentials.
 - Route one public model alias to ordered direct-provider targets.
-- Preserve unknown JSON fields and opaque provider responses.
+- Preserve unknown JSON fields and opaque responses on OpenAI-compatible
+  routes; reject untranslatable fields on native routes.
 - Relay SSE data incrementally without a global stream timeout.
 - Run a small, stateless binary with one external Go dependency.
 - Inspect, self-host, modify, and redistribute the Community source.
@@ -146,9 +147,12 @@ retries HTTP `408`, `429`, `500`, `502`, `503`, and `504`, plus transport
 errors. It returns other `4xx` responses immediately because another provider
 cannot fix an invalid request or credential.
 
-The gateway replaces only the upstream `model` field and preserves JSON fields
-it does not interpret. For Ollama, it also translates
-`max_completion_tokens` to `max_tokens`.
+OpenAI-compatible adapters replace the upstream `model` field and preserve
+other JSON fields they do not interpret. For Ollama, the gateway also
+translates `max_completion_tokens` to `max_tokens`. Native adapters translate
+only their documented subset and return `400` for untranslatable fields,
+including when a model is not cataloged. See the
+[Chat Completions compatibility contract](docs/api-compatibility.md).
 
 See the [provider adapter guide](docs/providers.md) for direct endpoints,
 credentials, native translation behavior, and current feature limits.
