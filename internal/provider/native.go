@@ -256,18 +256,18 @@ func textContent(raw json.RawMessage) (string, error) {
 		return text, nil
 	}
 	var parts []struct {
-		Type string `json:"type"`
-		Text string `json:"text"`
+		Type string  `json:"type"`
+		Text *string `json:"text"`
 	}
-	if err := json.Unmarshal(raw, &parts); err != nil {
+	if err := decodeStrictJSON(raw, &parts); err != nil {
 		return "", &RequestError{Code: "unsupported_content", Message: "Native provider adapters currently support text message content only."}
 	}
 	var builder strings.Builder
 	for _, part := range parts {
-		if part.Type != "text" && part.Type != "input_text" {
+		if (part.Type != "text" && part.Type != "input_text") || part.Text == nil {
 			return "", &RequestError{Code: "unsupported_content", Message: "Native provider adapters currently support text message content only."}
 		}
-		builder.WriteString(part.Text)
+		builder.WriteString(*part.Text)
 	}
 	return builder.String(), nil
 }

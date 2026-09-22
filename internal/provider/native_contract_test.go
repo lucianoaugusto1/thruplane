@@ -84,6 +84,33 @@ func TestNativeAdaptersRejectUnknownRootFieldBeforeNetwork(t *testing.T) {
 	}
 }
 
+func TestNativeAdaptersRejectUntranslatedContentBeforeNetwork(t *testing.T) {
+	t.Parallel()
+	for _, providerType := range []string{"anthropic", "gemini", "vertex", "bedrock"} {
+		t.Run(providerType, func(t *testing.T) {
+			var calls atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1) }))
+			t.Cleanup(server.Close)
+			client := testProviderClient(t, config.ProviderConfig{
+				Type: providerType, BaseURL: server.URL, Project: "project", Location: "us-central1",
+				Region: "us-east-1", AccessKeyID: "key", SecretAccessKey: "secret",
+			})
+			for _, content := range []string{
+				`[{"type":"image_url","image_url":{"url":"data:image/png;base64,AQID","detail":"high"}}]`,
+				`[{"type":"file","file":{"filename":"report.pdf","file_data":"data:application/pdf;base64,JVBERg=="}}]`,
+				`[{"type":"text","text":"hi","prompt_cache_breakpoint":true}]`,
+			} {
+				body := []byte(`{"messages":[{"role":"user","content":` + content + `}]}`)
+				_, err := client.Do(context.Background(), body, "uncataloged-model")
+				assertNativeContractError(t, err, "unsupported_content")
+			}
+			if calls.Load() != 0 {
+				t.Fatalf("upstream calls = %d, want 0", calls.Load())
+			}
+		})
+	}
+}
+
 func assertNativeContractError(t *testing.T, err error, code string) {
 	t.Helper()
 	requestError, ok := err.(*RequestError)

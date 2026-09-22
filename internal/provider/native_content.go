@@ -28,23 +28,29 @@ func parseNativeContent(raw json.RawMessage) ([]nativeContentPart, error) {
 	var input []struct {
 		Type     string  `json:"type"`
 		Text     *string `json:"text"`
-		ImageURL struct {
+		ImageURL *struct {
 			URL string `json:"url"`
 		} `json:"image_url"`
-		File struct {
+		File *struct {
 			FileData string `json:"file_data"`
 			FileID   string `json:"file_id"`
 		} `json:"file"`
-		InputAudio struct {
+		InputAudio *struct {
 			Data   string `json:"data"`
 			Format string `json:"format"`
 		} `json:"input_audio"`
 	}
-	if err := json.Unmarshal(trimmed, &input); err != nil {
+	if err := decodeStrictJSON(trimmed, &input); err != nil {
 		return nil, unsupportedContent("Message content must be text or an array of supported content parts.")
 	}
 	parts := make([]nativeContentPart, 0, len(input))
 	for _, item := range input {
+		if (item.Type != "text" && item.Type != "input_text" && item.Text != nil) ||
+			(item.Type != "image_url" && item.ImageURL != nil) ||
+			(item.Type != "file" && item.File != nil) ||
+			(item.Type != "input_audio" && item.InputAudio != nil) {
+			return nil, unsupportedContent("Content parts cannot mix fields from different types.")
+		}
 		switch item.Type {
 		case "text", "input_text":
 			if item.Text == nil {
@@ -52,12 +58,18 @@ func parseNativeContent(raw json.RawMessage) ([]nativeContentPart, error) {
 			}
 			parts = append(parts, nativeContentPart{Kind: "text", Text: *item.Text})
 		case "image_url":
+			if item.ImageURL == nil {
+				return nil, unsupportedContent("Image content parts require only an image_url.url field.")
+			}
 			image, err := parseImageSource(item.ImageURL.URL)
 			if err != nil {
 				return nil, err
 			}
 			parts = append(parts, image)
 		case "file":
+			if item.File == nil {
+				return nil, unsupportedContent("Native adapters require inline PDF file_data; provider file IDs are not portable.")
+			}
 			if item.File.FileID != "" || item.File.FileData == "" {
 				return nil, unsupportedContent("Native adapters require inline PDF file_data; provider file IDs are not portable.")
 			}
@@ -70,6 +82,9 @@ func parseNativeContent(raw json.RawMessage) ([]nativeContentPart, error) {
 			}
 			parts = append(parts, nativeContentPart{Kind: "document", MIMEType: mime, Data: data})
 		case "input_audio":
+			if item.InputAudio == nil {
+				return nil, unsupportedContent("Audio content parts require only data and format fields.")
+			}
 			mime := ""
 			switch item.InputAudio.Format {
 			case "wav":

@@ -32,7 +32,7 @@ func TestGoogleAdaptersTranslateInlineImagePDFAudio(t *testing.T) {
 			body := []byte(`{"messages":[{"role":"user","content":[
 				{"type":"text","text":"summarize"},
 				{"type":"image_url","image_url":{"url":"data:image/jpeg;base64,AQID"}},
-				{"type":"file","file":{"filename":"report.pdf","file_data":"data:application/pdf;base64,JVBERg=="}},
+				{"type":"file","file":{"file_data":"data:application/pdf;base64,JVBERg=="}},
 				{"type":"input_audio","input_audio":{"data":"AQID","format":"mp3"}},
 				{"type":"text","text":"now"}
 			]}]}`)

@@ -33,7 +33,7 @@ func TestBedrockAdapterTranslatesInlineImageAndPDF(t *testing.T) {
 	body := []byte(`{"messages":[{"role":"user","content":[
 		{"type":"text","text":"summarize"},
 		{"type":"image_url","image_url":{"url":"data:image/webp;base64,AQID"}},
-		{"type":"file","file":{"filename":"unsafe-name.pdf","file_data":"data:application/pdf;base64,JVBERg=="}},
+		{"type":"file","file":{"file_data":"data:application/pdf;base64,JVBERg=="}},
 		{"type":"text","text":"now"}
 	]}]}`)
 	response, err := client.Do(context.Background(), body, "amazon.nova-2-lite-v1:0")

@@ -28,7 +28,7 @@ func TestAnthropicAdapterTranslatesImageAndPDFInOrder(t *testing.T) {
 		{"type":"text","text":"compare"},
 		{"type":"image_url","image_url":{"url":"data:image/png;base64,AQID"}},
 		{"type":"image_url","image_url":{"url":"https://images.example.com/photo.png"}},
-		{"type":"file","file":{"filename":"report.pdf","file_data":"data:application/pdf;base64,JVBERg=="}},
+		{"type":"file","file":{"file_data":"data:application/pdf;base64,JVBERg=="}},
 		{"type":"text","text":"please"}
 	]}]}`)
 	response, err := client.Do(context.Background(), body, "claude-sonnet-5")

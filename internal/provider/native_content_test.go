@@ -10,7 +10,7 @@ func TestParseNativeContentPreservesOrderedMedia(t *testing.T) {
 	got, err := parseNativeContent(json.RawMessage(`[
 		{"type":"text","text":"first"},
 		{"type":"image_url","image_url":{"url":"data:image/png;base64,AQID"}},
-		{"type":"file","file":{"filename":"report.pdf","file_data":"data:application/pdf;base64,JVBERg=="}},
+		{"type":"file","file":{"file_data":"data:application/pdf;base64,JVBERg=="}},
 		{"type":"input_audio","input_audio":{"data":"AQID","format":"wav"}},
 		{"type":"text","text":"last"}
 	]`))
@@ -52,6 +52,12 @@ func TestParseNativeContentRejectsInvalidMedia(t *testing.T) {
 		{"non PDF file", `[{"type":"file","file":{"file_data":"data:text/plain;base64,AQID"}}]`, "unsupported_content"},
 		{"unknown part", `[{"type":"video_url","video_url":"https://example.com/a.mp4"}]`, "unsupported_content"},
 		{"unsupported audio format", `[{"type":"input_audio","input_audio":{"data":"AQID","format":"flac"}}]`, "unsupported_content"},
+		{"ignored text field", `[{"type":"text","text":"hi","metadata":"lost"}]`, "unsupported_content"},
+		{"ignored image detail", `[{"type":"image_url","image_url":{"url":"data:image/png;base64,AQID","detail":"high"}}]`, "unsupported_content"},
+		{"ignored image sibling", `[{"type":"image_url","image_url":{"url":"data:image/png;base64,AQID"},"extra":true}]`, "unsupported_content"},
+		{"ignored document filename", `[{"type":"file","file":{"filename":"report.pdf","file_data":"data:application/pdf;base64,JVBERg=="}}]`, "unsupported_content"},
+		{"ignored audio field", `[{"type":"input_audio","input_audio":{"data":"AQID","format":"wav","extra":true}}]`, "unsupported_content"},
+		{"ignored cache hint", `[{"type":"text","text":"hi","prompt_cache_breakpoint":true}]`, "unsupported_content"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -61,5 +67,13 @@ func TestParseNativeContentRejectsInvalidMedia(t *testing.T) {
 				t.Fatalf("error = %v, want RequestError %q", err, test.code)
 			}
 		})
+	}
+}
+
+func TestTextContentRejectsIgnoredPartFields(t *testing.T) {
+	_, err := textContent(json.RawMessage(`[{"type":"text","text":"system instruction","extra":true}]`))
+	requestError, ok := err.(*RequestError)
+	if !ok || requestError.Code != "unsupported_content" {
+		t.Fatalf("textContent() error = %v, want unsupported_content", err)
 	}
 }
