@@ -37,8 +37,14 @@ type googleFunctionResponse struct {
 
 type googlePart struct {
 	Text             string                  `json:"text,omitempty"`
+	InlineData       *googleInlineData       `json:"inlineData,omitempty"`
 	FunctionCall     *googleFunctionCall     `json:"functionCall,omitempty"`
 	FunctionResponse *googleFunctionResponse `json:"functionResponse,omitempty"`
+}
+
+type googleInlineData struct {
+	MIMEType string `json:"mimeType"`
+	Data     string `json:"data"`
 }
 
 type googleContent struct {
@@ -113,16 +119,24 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 	}{}
 	var systems []string
 	for _, item := range common.Messages {
-		text, err := textContent(item.Content)
-		if err != nil {
-			return nil, err
-		}
 		switch item.Role {
 		case "system", "developer":
+			text, err := textContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
 			systems = append(systems, text)
 		case "user":
-			payload.Contents = append(payload.Contents, googleContent{Role: "user", Parts: []googlePart{{Text: text}}})
+			parts, err := googleUserParts(item.Content)
+			if err != nil {
+				return nil, err
+			}
+			payload.Contents = append(payload.Contents, googleContent{Role: "user", Parts: parts})
 		case "assistant":
+			text, err := textContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
 			parts := make([]googlePart, 0, 1+len(item.ToolCalls))
 			if text != "" {
 				parts = append(parts, googlePart{Text: text})
@@ -184,6 +198,28 @@ func (a *googleAdapter) buildRequest(ctx context.Context, body []byte, model str
 		request.Header.Set("x-goog-api-key", a.apiKey)
 	}
 	return request, nil
+}
+
+func googleUserParts(raw json.RawMessage) ([]googlePart, error) {
+	parts, err := parseNativeContent(raw)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]googlePart, 0, len(parts))
+	for _, part := range parts {
+		switch part.Kind {
+		case "text":
+			result = append(result, googlePart{Text: part.Text})
+		case "image", "document", "audio":
+			if part.URL != "" {
+				return nil, unsupportedContent("Gemini and Vertex require inline media in this Chat Completions adapter.")
+			}
+			result = append(result, googlePart{InlineData: &googleInlineData{MIMEType: part.MIMEType, Data: part.Data}})
+		default:
+			return nil, unsupportedContent("Gemini and Vertex do not support this Chat Completions input modality.")
+		}
+	}
+	return result, nil
 }
 
 func googleToolResultContent(content googleContent) bool {
