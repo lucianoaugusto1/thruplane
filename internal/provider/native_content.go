@@ -105,7 +105,7 @@ func parseImageSource(source string) (nativeContentPart, error) {
 	}
 	parsed, err := url.Parse(source)
 	if err != nil || parsed.Scheme != "https" || parsed.Host == "" || parsed.User != nil {
-		return nativeContentPart{}, unsupportedContent("Image URLs must be absolute HTTPS URLs or supported data URIs.")
+		return nativeContentPart{}, unsupportedContent("Native adapters accept text message content and valid media; image URLs must be absolute HTTPS URLs or supported data URIs.")
 	}
 	return nativeContentPart{Kind: "image", URL: source}, nil
 }

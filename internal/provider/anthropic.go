@@ -20,13 +20,21 @@ type anthropicAdapter struct {
 }
 
 type anthropicBlock struct {
-	Type      string          `json:"type"`
-	Text      string          `json:"text,omitempty"`
-	ID        string          `json:"id,omitempty"`
-	Name      string          `json:"name,omitempty"`
-	Input     json.RawMessage `json:"input,omitempty"`
-	ToolUseID string          `json:"tool_use_id,omitempty"`
-	Content   string          `json:"content,omitempty"`
+	Type      string           `json:"type"`
+	Text      string           `json:"text,omitempty"`
+	Source    *anthropicSource `json:"source,omitempty"`
+	ID        string           `json:"id,omitempty"`
+	Name      string           `json:"name,omitempty"`
+	Input     json.RawMessage  `json:"input,omitempty"`
+	ToolUseID string           `json:"tool_use_id,omitempty"`
+	Content   string           `json:"content,omitempty"`
+}
+
+type anthropicSource struct {
+	Type      string `json:"type"`
+	MediaType string `json:"media_type,omitempty"`
+	Data      string `json:"data,omitempty"`
+	URL       string `json:"url,omitempty"`
 }
 
 type anthropicMessage struct {
@@ -81,16 +89,24 @@ func (a *anthropicAdapter) buildRequest(ctx context.Context, body []byte, model 
 	}{Model: model, MaxTokens: maxOutputTokens(common, 1024), Temperature: common.Temperature, TopP: common.TopP, Stream: common.Stream}
 	var systems []string
 	for _, item := range common.Messages {
-		text, err := textContent(item.Content)
-		if err != nil {
-			return nil, err
-		}
 		switch item.Role {
 		case "system", "developer":
+			text, err := textContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
 			systems = append(systems, text)
 		case "user":
-			payload.Messages = append(payload.Messages, anthropicMessage{Role: "user", Content: []anthropicBlock{{Type: "text", Text: text}}})
+			blocks, err := anthropicUserContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
+			payload.Messages = append(payload.Messages, anthropicMessage{Role: "user", Content: blocks})
 		case "assistant":
+			text, err := textContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
 			blocks := make([]anthropicBlock, 0, 1+len(item.ToolCalls))
 			if text != "" {
 				blocks = append(blocks, anthropicBlock{Type: "text", Text: text})
@@ -104,6 +120,10 @@ func (a *anthropicAdapter) buildRequest(ctx context.Context, body []byte, model 
 			}
 			payload.Messages = append(payload.Messages, anthropicMessage{Role: "assistant", Content: blocks})
 		case "tool":
+			text, err := textContent(item.Content)
+			if err != nil {
+				return nil, err
+			}
 			result := anthropicBlock{Type: "tool_result", ToolUseID: item.ToolCallID, Content: text}
 			if last := len(payload.Messages) - 1; last >= 0 && anthropicToolResultMessage(payload.Messages[last]) {
 				payload.Messages[last].Content = append(payload.Messages[last].Content, result)
@@ -137,6 +157,29 @@ func (a *anthropicAdapter) buildRequest(ctx context.Context, body []byte, model 
 		request.Header.Set("x-api-key", a.apiKey)
 	}
 	return request, nil
+}
+
+func anthropicUserContent(raw json.RawMessage) ([]anthropicBlock, error) {
+	parts, err := parseNativeContent(raw)
+	if err != nil {
+		return nil, err
+	}
+	blocks := make([]anthropicBlock, 0, len(parts))
+	for _, part := range parts {
+		switch part.Kind {
+		case "text":
+			blocks = append(blocks, anthropicBlock{Type: "text", Text: part.Text})
+		case "image", "document":
+			source := &anthropicSource{Type: "base64", MediaType: part.MIMEType, Data: part.Data}
+			if part.URL != "" {
+				source = &anthropicSource{Type: "url", URL: part.URL}
+			}
+			blocks = append(blocks, anthropicBlock{Type: part.Kind, Source: source})
+		default:
+			return nil, unsupportedContent("Anthropic Messages does not support this Chat Completions input modality.")
+		}
+	}
+	return blocks, nil
 }
 
 func anthropicToolResultMessage(message anthropicMessage) bool {
