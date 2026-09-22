@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"nexoroute/internal/catalog"
 	"nexoroute/internal/config"
 	"nexoroute/internal/provider"
 )
@@ -16,10 +17,19 @@ const streamBufferSize = 32 * 1024
 type Gateway struct {
 	config  config.Config
 	clients map[string]*provider.Client
+	catalog *catalog.Registry
 }
 
 func New(cfg config.Config, clients map[string]*provider.Client) *Gateway {
-	return &Gateway{config: cfg, clients: clients}
+	registry, err := catalog.BuiltIn()
+	if err != nil {
+		panic("invalid embedded model catalog: " + err.Error())
+	}
+	return NewWithCatalog(cfg, clients, registry)
+}
+
+func NewWithCatalog(cfg config.Config, clients map[string]*provider.Client, registry *catalog.Registry) *Gateway {
+	return &Gateway{config: cfg, clients: clients, catalog: registry}
 }
 
 func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +47,36 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "The requested model is not configured.", "invalid_request_error", "model_not_found")
 		return
 	}
+	requirements, err := catalog.InspectChatRequest(body)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "The request body must be valid JSON.", "invalid_request_error", "invalid_json")
+		return
+	}
+	eligible := make([]config.TargetConfig, 0, len(model.Targets))
+	var unknown int
+	for _, target := range model.Targets {
+		catalogModel, known := g.lookupTarget(target)
+		if known {
+			catalogModel.Capabilities = provider.EffectiveCapabilities(g.config.Providers[target.Provider], catalogModel)
+			if !catalogModel.Supports(requirements) || !provider.SupportsRequirements(g.config.Providers[target.Provider], requirements) {
+				continue
+			}
+		} else if g.config.Catalog.UnknownModels == "reject" {
+			unknown++
+			continue
+		}
+		eligible = append(eligible, target)
+	}
+	if len(eligible) == 0 {
+		if unknown == len(model.Targets) {
+			writeError(w, http.StatusBadRequest, "No target model is present in the model catalog.", "invalid_request_error", "model_not_cataloged")
+			return
+		}
+		writeError(w, http.StatusBadRequest, "No configured target supports the requested capabilities.", "invalid_request_error", "unsupported_capability")
+		return
+	}
 
-	for targetIndex, target := range model.Targets {
+	for targetIndex, target := range eligible {
 		client := g.clients[target.Provider]
 		if client == nil {
 			continue
@@ -68,7 +106,7 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 			}
 
 			lastAttempt := attempt == g.config.Routing.Retries
-			lastTarget := targetIndex == len(model.Targets)-1
+			lastTarget := targetIndex == len(eligible)-1
 			if lastAttempt && lastTarget {
 				relayResponse(w, response, stream)
 				return
@@ -83,6 +121,18 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeError(w, http.StatusBadGateway, "The gateway could not reach an upstream provider.", "api_error", "upstream_unavailable")
+}
+
+func (g *Gateway) lookupTarget(target config.TargetConfig) (catalog.Model, bool) {
+	providerID := g.config.Providers[target.Provider].Type
+	modelID := target.Model
+	if target.CatalogProvider != "" {
+		providerID = target.CatalogProvider
+	}
+	if target.CatalogModel != "" {
+		modelID = target.CatalogModel
+	}
+	return g.catalog.Lookup(providerID, modelID)
 }
 
 func readBody(w http.ResponseWriter, r *http.Request, maxBytes int64) ([]byte, bool) {

@@ -95,15 +95,16 @@ type Model struct {
 }
 
 type Requirements struct {
-	Operation         string
-	InputModalities   []string
-	OutputModalities  []string
-	Tools             bool
-	StrictTools       bool
-	ParallelTools     bool
-	Streaming         bool
-	StructuredOutputs bool
-	UnknownContent    bool
+	Operation            string
+	InputModalities      []string
+	OutputModalities     []string
+	Tools                bool
+	StrictTools          bool
+	ParallelTools        bool
+	DisableParallelTools bool
+	Streaming            bool
+	StructuredOutputs    bool
+	UnknownContent       bool
 }
 
 func (m Model) Supports(requirements Requirements) bool {

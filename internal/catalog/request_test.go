@@ -57,3 +57,19 @@ func TestInspectChatRequestRejectsInvalidJSON(t *testing.T) {
 		t.Fatal("InspectChatRequest() error = nil")
 	}
 }
+
+func TestInspectChatRequestDetectsToolHistoryAndDisabledParallelCalls(t *testing.T) {
+	got, err := InspectChatRequest([]byte(`{
+		"messages":[
+			{"role":"assistant","tool_calls":[{"id":"call_1","type":"function","function":{"name":"f","arguments":"{}"}}]},
+			{"role":"tool","tool_call_id":"call_1","content":"done"}
+		],
+		"parallel_tool_calls":false
+	}`))
+	if err != nil {
+		t.Fatalf("InspectChatRequest() error = %v", err)
+	}
+	if !got.Tools || !got.DisableParallelTools || got.ParallelTools {
+		t.Fatalf("InspectChatRequest() = %#v, want tool history and disabled parallel calls", got)
+	}
+}

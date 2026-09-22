@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"nexoroute/internal/catalog"
 	"nexoroute/internal/config"
 	"nexoroute/internal/gateway"
 	"nexoroute/internal/httpapi"
@@ -34,6 +35,10 @@ func run(configPath string, logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	registry, err := catalog.BuiltIn()
+	if err != nil {
+		return fmt.Errorf("load model catalog: %w", err)
+	}
 
 	clients, err := provider.NewClients(cfg)
 	if err != nil {
@@ -42,7 +47,7 @@ func run(configPath string, logger *slog.Logger) error {
 
 	server := &http.Server{
 		Addr:              cfg.Server.Address,
-		Handler:           httpapi.New(cfg, gateway.New(cfg, clients), logger),
+		Handler:           httpapi.New(cfg, gateway.NewWithCatalog(cfg, clients, registry), logger),
 		ReadHeaderTimeout: time.Duration(cfg.Server.ReadHeaderTimeout),
 		IdleTimeout:       2 * time.Minute,
 	}

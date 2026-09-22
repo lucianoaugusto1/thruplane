@@ -9,7 +9,9 @@ import (
 func InspectChatRequest(body []byte) (Requirements, error) {
 	var request struct {
 		Messages []struct {
-			Content json.RawMessage `json:"content"`
+			Role      string            `json:"role"`
+			Content   json.RawMessage   `json:"content"`
+			ToolCalls []json.RawMessage `json:"tool_calls"`
 		} `json:"messages"`
 		Tools []struct {
 			Type     string `json:"type"`
@@ -31,6 +33,9 @@ func InspectChatRequest(body []byte) (Requirements, error) {
 	requirements := Requirements{Operation: "chat", Streaming: request.Stream}
 	inputs := make(map[string]bool)
 	for _, message := range request.Messages {
+		if message.Role == "tool" || len(message.ToolCalls) > 0 {
+			requirements.Tools = true
+		}
 		trimmed := bytes.TrimSpace(message.Content)
 		if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) {
 			continue
@@ -91,6 +96,7 @@ func InspectChatRequest(body []byte) (Requirements, error) {
 		}
 	}
 	requirements.ParallelTools = request.ParallelToolCalls != nil && *request.ParallelToolCalls
+	requirements.DisableParallelTools = request.ParallelToolCalls != nil && !*request.ParallelToolCalls
 	requirements.StructuredOutputs = request.ResponseFormat.Type != "" && request.ResponseFormat.Type != "text"
 	return requirements, nil
 }

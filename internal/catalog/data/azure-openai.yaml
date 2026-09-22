@@ -19,7 +19,7 @@ models:
     knowledge_cutoff: "2026-04"
     capabilities: &azure_capabilities
       operations: [chat, responses]
-      input_modalities: [text, image, document]
+      input_modalities: [text, image]
       output_modalities: [text]
       streaming: true
       structured_outputs: true
@@ -78,4 +78,3 @@ models:
     limits: {context_tokens: 128000, max_input_tokens: 128000, max_output_tokens: 16384}
     pricing: {currency: USD, notes: "Query the Azure pricing calculator for the deployment region and tier."}
     performance: {latency_class: fast, notes: "Latency depends on deployment configuration; no comparable TPS is published."}
-

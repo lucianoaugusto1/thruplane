@@ -2,12 +2,16 @@ schema_version: 1
 provider:
   id: openai
   name: OpenAI
-  updated_at: "2026-09-19"
+  updated_at: "2026-09-22"
   sources:
     - url: https://developers.openai.com/api/docs/models
       title: OpenAI models
     - url: https://developers.openai.com/api/docs/models/compare
       title: OpenAI model comparison
+    - url: https://developers.openai.com/api/docs/models/gpt-4o-mini
+      title: GPT-4o Mini model details
+    - url: https://developers.openai.com/api/docs/models/gpt-4o-mini-audio-preview
+      title: GPT-4o Mini Audio model details
 models:
   - id: gpt-6-astra
     name: GPT-6 Astra
@@ -16,7 +20,7 @@ models:
     knowledge_cutoff: "2026-04-30"
     capabilities:
       operations: [chat, responses]
-      input_modalities: [text, image, document]
+      input_modalities: [text, image]
       output_modalities: [text]
       streaming: true
       structured_outputs: true
@@ -46,7 +50,7 @@ models:
     knowledge_cutoff: "2026-02-16"
     capabilities:
       operations: [chat, responses]
-      input_modalities: [text, image, document]
+      input_modalities: [text, image]
       output_modalities: [text]
       streaming: true
       structured_outputs: true
@@ -56,6 +60,7 @@ models:
     limits: {context_tokens: 1050000, max_output_tokens: 128000}
     pricing:
       currency: USD
+      notes: Published promotional rates available at least through 2026-11-21.
       rates:
         - {kind: input, modality: text, unit: million_tokens, price: 4}
         - {kind: cache_read, modality: text, unit: million_tokens, price: 0.4}
@@ -76,7 +81,7 @@ models:
     knowledge_cutoff: "2026-02-16"
     capabilities:
       operations: [chat, responses]
-      input_modalities: [text, image, document]
+      input_modalities: [text, image]
       output_modalities: [text]
       streaming: true
       structured_outputs: true
@@ -105,7 +110,7 @@ models:
     knowledge_cutoff: "2026-02-16"
     capabilities:
       operations: [chat, responses]
-      input_modalities: [text, image, document]
+      input_modalities: [text, image]
       output_modalities: [text]
       streaming: true
       structured_outputs: true
@@ -127,3 +132,49 @@ models:
       latency_class: fastest
       notes: OpenAI doesn't publish comparable TTFT or output tokens per second.
 
+  - id: gpt-4o-mini
+    name: GPT-4o Mini
+    family: gpt-4o
+    status: active
+    knowledge_cutoff: "2023-10-01"
+    capabilities:
+      operations: [chat, responses]
+      input_modalities: [text, image]
+      output_modalities: [text]
+      streaming: true
+      structured_outputs: true
+      prompt_caching: true
+      reasoning: false
+      tools: {function_calling: true, parallel_calls: true, strict_schema: true}
+    limits: {context_tokens: 128000, max_output_tokens: 16384}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 0.15}
+        - {kind: cache_read, modality: text, unit: million_tokens, price: 0.075}
+        - {kind: output, modality: text, unit: million_tokens, price: 0.6}
+    performance: {latency_class: fast, notes: "OpenAI doesn't publish comparable TTFT or output TPS."}
+
+  - id: gpt-4o-mini-audio-preview
+    name: GPT-4o Mini Audio
+    family: gpt-4o
+    status: preview
+    knowledge_cutoff: "2023-10-01"
+    capabilities:
+      operations: [chat, responses]
+      input_modalities: [text, audio]
+      output_modalities: [text, audio]
+      streaming: true
+      structured_outputs: false
+      prompt_caching: false
+      reasoning: false
+      tools: {function_calling: true, parallel_calls: false, strict_schema: false}
+    limits: {context_tokens: 128000, max_output_tokens: 16384}
+    pricing:
+      currency: USD
+      rates:
+        - {kind: input, modality: text, unit: million_tokens, price: 0.15}
+        - {kind: output, modality: text, unit: million_tokens, price: 0.6}
+        - {kind: input, modality: audio, unit: million_tokens, price: 10}
+        - {kind: output, modality: audio, unit: million_tokens, price: 20}
+    performance: {notes: "OpenAI doesn't publish comparable TTFT or output TPS."}
