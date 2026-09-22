@@ -1,6 +1,8 @@
 package gateway
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -140,6 +142,66 @@ func TestCapabilityRoutingRejectsUnknownModelInStrictMode(t *testing.T) {
 	}
 	if calls.Load() != 0 {
 		t.Fatalf("upstream calls = %d, want 0", calls.Load())
+	}
+}
+
+func TestUnknownNativeModelRejectsUntranslatedFieldsBeforeUpstream(t *testing.T) {
+	t.Parallel()
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+	}))
+	t.Cleanup(server.Close)
+	cfg := capabilityTestConfig(server.URL, server.URL)
+	cfg.Models["unknown-native"] = config.ModelConfig{Targets: []config.TargetConfig{{Provider: "native", Model: "future-native-model"}}}
+	g := capabilityTestGateway(t, cfg)
+	for _, test := range []struct {
+		name, body, code string
+	}{
+		{"root option", `{"model":"unknown-native","messages":[{"role":"user","content":"hi"}],"seed":42}`, "unsupported_field"},
+		{"nested media option", `{"model":"unknown-native","messages":[{"role":"user","content":[{"type":"file","file":{"filename":"report.pdf","file_data":"data:application/pdf;base64,JVBERg=="}}]}]}`, "unsupported_content"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			response := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(test.body))
+			g.ChatCompletions(response, request)
+			if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), `"code":"`+test.code+`"`) {
+				t.Fatalf("response = %d %s, want %s", response.Code, response.Body.String(), test.code)
+			}
+		})
+	}
+	if calls.Load() != 0 {
+		t.Fatalf("upstream calls = %d, want 0", calls.Load())
+	}
+}
+
+func TestUnknownCompatibleModelPreservesExtraFields(t *testing.T) {
+	t.Parallel()
+	received := make(chan []byte, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		received <- body
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+	cfg := capabilityTestConfig(server.URL, server.URL)
+	cfg.Models["unknown-compatible"] = config.ModelConfig{Targets: []config.TargetConfig{{Provider: "compatible", Model: "future-compatible-model"}}}
+	g := capabilityTestGateway(t, cfg)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{
+		"model":"unknown-compatible","messages":[{"role":"user","content":"hi","name":"alice"}],
+		"seed":42,"vendor_option":{"enabled":true}
+	}`))
+	g.ChatCompletions(response, request)
+	if response.Code != http.StatusNoContent {
+		t.Fatalf("response = %d %s, want 204", response.Code, response.Body.String())
+	}
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(<-received, &body); err != nil {
+		t.Fatalf("upstream body: %v", err)
+	}
+	if string(body["model"]) != `"future-compatible-model"` || string(body["seed"]) != "42" || string(body["vendor_option"]) != `{"enabled":true}` || !strings.Contains(string(body["messages"]), `"name":"alice"`) {
+		t.Fatalf("upstream body lost fields: %s", body)
 	}
 }
 
