@@ -19,6 +19,9 @@ const (
 	defaultShutdownTimeout       = 10 * time.Second
 	defaultRetries               = 1
 	defaultResponseHeaderTimeout = 30 * time.Second
+	defaultRetryBaseDelay        = 200 * time.Millisecond
+	defaultRetryMaxDelay         = 5 * time.Second
+	defaultRetryBudget           = 15 * time.Second
 )
 
 type Duration time.Duration
@@ -77,15 +80,35 @@ type ModelConfig struct {
 }
 
 type TargetConfig struct {
-	Provider        string `yaml:"provider"`
-	Model           string `yaml:"model"`
-	CatalogProvider string `yaml:"catalog_provider"`
-	CatalogModel    string `yaml:"catalog_model"`
+	Provider        string          `yaml:"provider"`
+	Model           string          `yaml:"model"`
+	CatalogProvider string          `yaml:"catalog_provider"`
+	CatalogModel    string          `yaml:"catalog_model"`
+	RateLimit       RateLimitConfig `yaml:"rate_limit"`
 }
 
 type RoutingConfig struct {
-	Retries               int      `yaml:"retries"`
-	ResponseHeaderTimeout Duration `yaml:"response_header_timeout"`
+	Retries               int         `yaml:"retries"`
+	ResponseHeaderTimeout Duration    `yaml:"response_header_timeout"`
+	Retry                 RetryConfig `yaml:"retry"`
+}
+
+type RetryConfig struct {
+	BaseDelay Duration `yaml:"base_delay"`
+	MaxDelay  Duration `yaml:"max_delay"`
+	Budget    Duration `yaml:"budget"`
+}
+
+type RateLimitConfig struct {
+	RequestsPerMinute int      `yaml:"requests_per_minute"`
+	Burst             int      `yaml:"burst"`
+	MaxConcurrency    int      `yaml:"max_concurrency"`
+	QueueTimeout      Duration `yaml:"queue_timeout"`
+}
+
+type targetIdentity struct {
+	provider string
+	model    string
 }
 
 func Load(path string) (Config, error) {
@@ -139,6 +162,18 @@ func (cfg Config) Validate() error {
 	if time.Duration(cfg.Routing.ResponseHeaderTimeout) <= 0 {
 		return errors.New("routing response_header_timeout must be greater than zero")
 	}
+	baseDelay := time.Duration(cfg.Routing.Retry.BaseDelay)
+	maxDelay := time.Duration(cfg.Routing.Retry.MaxDelay)
+	retryBudget := time.Duration(cfg.Routing.Retry.Budget)
+	if baseDelay <= 0 {
+		return errors.New("routing retry base_delay must be greater than zero")
+	}
+	if maxDelay < baseDelay {
+		return errors.New("routing retry max_delay must be greater than or equal to base_delay")
+	}
+	if retryBudget < baseDelay {
+		return errors.New("routing retry budget must be greater than or equal to base_delay")
+	}
 	if len(cfg.Providers) == 0 {
 		return errors.New("at least one provider is required")
 	}
@@ -155,6 +190,7 @@ func (cfg Config) Validate() error {
 	if len(cfg.Models) == 0 {
 		return errors.New("at least one model is required")
 	}
+	sharedLimits := make(map[targetIdentity]RateLimitConfig)
 	for alias, model := range cfg.Models {
 		if strings.TrimSpace(alias) == "" {
 			return errors.New("model alias must not be empty")
@@ -172,6 +208,14 @@ func (cfg Config) Validate() error {
 			if target.CatalogProvider != "" && target.CatalogModel == "" {
 				return fmt.Errorf("model %q target %d catalog_provider requires catalog_model", alias, index)
 			}
+			if err := validateRateLimit(alias, index, target.RateLimit); err != nil {
+				return err
+			}
+			key := targetIdentity{provider: target.Provider, model: target.Model}
+			if previous, exists := sharedLimits[key]; exists && previous != target.RateLimit {
+				return fmt.Errorf("model %q target %d has conflicting rate_limit for shared provider/model target %q/%q", alias, index, target.Provider, target.Model)
+			}
+			sharedLimits[key] = target.RateLimit
 		}
 	}
 
@@ -190,6 +234,11 @@ func defaultConfig() Config {
 		Routing: RoutingConfig{
 			Retries:               defaultRetries,
 			ResponseHeaderTimeout: Duration(defaultResponseHeaderTimeout),
+			Retry: RetryConfig{
+				BaseDelay: Duration(defaultRetryBaseDelay),
+				MaxDelay:  Duration(defaultRetryMaxDelay),
+				Budget:    Duration(defaultRetryBudget),
+			},
 		},
 	}
 }
@@ -225,9 +274,35 @@ func (cfg *Config) normalize() {
 			model.Targets[index].Model = strings.TrimSpace(model.Targets[index].Model)
 			model.Targets[index].CatalogProvider = strings.ToLower(strings.TrimSpace(model.Targets[index].CatalogProvider))
 			model.Targets[index].CatalogModel = strings.TrimSpace(model.Targets[index].CatalogModel)
+			if model.Targets[index].RateLimit.RequestsPerMinute > 0 && model.Targets[index].RateLimit.Burst == 0 {
+				model.Targets[index].RateLimit.Burst = 1
+			}
 		}
 		cfg.Models[alias] = model
 	}
+}
+
+func validateRateLimit(alias string, index int, limit RateLimitConfig) error {
+	prefix := fmt.Sprintf("model %q target %d rate_limit", alias, index)
+	if limit.RequestsPerMinute < 0 {
+		return fmt.Errorf("%s requests_per_minute must not be negative", prefix)
+	}
+	if limit.Burst < 0 {
+		return fmt.Errorf("%s burst must not be negative", prefix)
+	}
+	if limit.RequestsPerMinute == 0 && limit.Burst != 0 {
+		return fmt.Errorf("%s burst requires requests_per_minute", prefix)
+	}
+	if limit.RequestsPerMinute > 0 && limit.Burst == 0 {
+		return fmt.Errorf("%s burst must be greater than zero when requests_per_minute is configured", prefix)
+	}
+	if limit.MaxConcurrency < 0 {
+		return fmt.Errorf("%s max_concurrency must not be negative", prefix)
+	}
+	if time.Duration(limit.QueueTimeout) < 0 {
+		return fmt.Errorf("%s queue_timeout must not be negative", prefix)
+	}
+	return nil
 }
 
 func validateProvider(name string, provider ProviderConfig) error {

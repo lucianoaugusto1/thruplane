@@ -27,7 +27,7 @@ cost controls, governance, high availability, and support.
 - Direct adapters for OpenAI, Anthropic, Gemini, Vertex AI, Amazon Bedrock,
   Azure OpenAI, Ollama, xAI, custom OpenAI-compatible APIs, and NexoRoute
   Inference
-- Bounded retries and ordered fallback for transient failures
+- Rate-aware retries, per-target admission control, and ordered fallback
 - Strict YAML configuration with environment expansion
 - Sourced model catalog with capability-aware routing and model metadata
 - Optional inbound bearer authentication
@@ -143,9 +143,43 @@ models:
 ```
 
 NexoRoute retries the current target before moving to the next target. It
-retries HTTP `408`, `429`, `500`, `502`, `503`, and `504`, plus transport
-errors. It returns other `4xx` responses immediately because another provider
-cannot fix an invalid request or credential.
+retries temporary HTTP `408`, `429`, `500`, `502`, `503`, and `504` responses,
+plus transport errors. Retries honor `Retry-After`; otherwise they use bounded
+exponential backoff with jitter. Quota, billing, and spend-limit `429` errors
+skip same-target retries but can still use an independent fallback. Other
+`4xx` responses return immediately because another provider cannot fix an
+invalid request or credential.
+
+Each physical provider/model target can also enforce an in-process request
+rate, burst, concurrency ceiling, and queue timeout:
+
+```yaml
+models:
+  fast:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+        rate_limit:
+          requests_per_minute: 500
+          burst: 10
+          max_concurrency: 32
+          queue_timeout: 250ms
+
+routing:
+  retries: 1
+  retry:
+    base_delay: 200ms
+    max_delay: 5s
+    budget: 15s
+```
+
+Aliases that name the same configured provider and upstream model share one
+limiter. Zero request rate or concurrency means that dimension is unlimited;
+zero queue timeout fails over immediately. Set limits from the actual quota for
+the provider account, region, and model. Exact local token-per-minute
+accounting is not implemented because token reservation differs by provider;
+NexoRoute does observe supported upstream remaining/reset headers. See the
+[rate-limit operations guide](docs/rate-limits.md).
 
 OpenAI-compatible adapters replace the upstream `model` field and preserve
 other JSON fields they do not interpret. For Ollama, the gateway also
@@ -197,8 +231,15 @@ Set `catalog.unknown_models: reject` to require a catalog match. Use
 | `models.*.targets` | Ordered provider and model pairs | Required |
 | `models.*.targets[].catalog_model` | Catalog ID for a deployment ID | Upstream model ID |
 | `models.*.targets[].catalog_provider` | Override catalog provider namespace | Provider type |
+| `models.*.targets[].rate_limit.requests_per_minute` | Local request token-bucket rate; `0` disables | `0` |
+| `models.*.targets[].rate_limit.burst` | Immediate request burst when RPM is enabled | `1` with RPM, otherwise `0` |
+| `models.*.targets[].rate_limit.max_concurrency` | Maximum in-flight responses/streams; `0` disables | `0` |
+| `models.*.targets[].rate_limit.queue_timeout` | Maximum admission wait; `0` fails over immediately | `0s` |
 | `routing.retries` | Extra attempts per target | `1` |
 | `routing.response_header_timeout` | Upstream header timeout | `30s` |
+| `routing.retry.base_delay` | Initial fallback delay without `Retry-After` | `200ms` |
+| `routing.retry.max_delay` | Maximum fallback backoff delay | `5s` |
+| `routing.retry.budget` | Total retry time per target, including attempts | `15s` |
 
 The loader expands `${VARIABLE}` placeholders before validation and rejects
 unknown YAML fields or multiple YAML documents.
@@ -261,8 +302,9 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - Bedrock supports buffered Converse responses; Bedrock streaming remains
   deferred until the binary AWS event-stream decoder is available.
 - Ollama's OpenAI compatibility can vary by version and model.
-- Community does not yet include persistent usage history, dynamic reload,
-  Prometheus metrics, distributed tracing, or tenant-level policies.
+- Local limits are process-local. Community does not yet include persistent
+  usage history, dynamic reload, Prometheus metrics, distributed tracing,
+  tenant-level policies, or distributed limits across replicas.
 - If an upstream stream fails after headers are sent, NexoRoute closes the
   stream without inventing a `[DONE]` event.
 

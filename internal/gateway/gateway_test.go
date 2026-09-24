@@ -31,6 +31,7 @@ func TestChatCompletionsRewritesOnlyModelAndRelaysResponse(t *testing.T) {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Retry-After", "3")
 		w.Header().Set("X-RateLimit-Limit-Requests", "100")
+		w.Header().Set("Anthropic-RateLimit-Requests-Remaining", "9")
 		w.Header().Set("X-Request-Id", "upstream-request")
 		w.Header().Set("X-Ignored", "secret-metadata")
 		w.WriteHeader(http.StatusCreated)
@@ -55,6 +56,7 @@ func TestChatCompletionsRewritesOnlyModelAndRelaysResponse(t *testing.T) {
 	assertHeader(t, response.Header(), "Cache-Control", "no-cache")
 	assertHeader(t, response.Header(), "Retry-After", "3")
 	assertHeader(t, response.Header(), "X-RateLimit-Limit-Requests", "100")
+	assertHeader(t, response.Header(), "Anthropic-RateLimit-Requests-Remaining", "9")
 	assertHeader(t, response.Header(), "X-Upstream-Request-Id", "upstream-request")
 	if got := response.Header().Get("X-Ignored"); got != "" {
 		t.Errorf("X-Ignored = %q, want omitted", got)

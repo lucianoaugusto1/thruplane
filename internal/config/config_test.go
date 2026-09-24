@@ -50,6 +50,15 @@ models:
 	if got := time.Duration(cfg.Routing.ResponseHeaderTimeout); got != 30*time.Second {
 		t.Errorf("Routing.ResponseHeaderTimeout = %s, want %s", got, 30*time.Second)
 	}
+	if got := time.Duration(cfg.Routing.Retry.BaseDelay); got != 200*time.Millisecond {
+		t.Errorf("Routing.Retry.BaseDelay = %s, want %s", got, 200*time.Millisecond)
+	}
+	if got := time.Duration(cfg.Routing.Retry.MaxDelay); got != 5*time.Second {
+		t.Errorf("Routing.Retry.MaxDelay = %s, want %s", got, 5*time.Second)
+	}
+	if got := time.Duration(cfg.Routing.Retry.Budget); got != 15*time.Second {
+		t.Errorf("Routing.Retry.Budget = %s, want %s", got, 15*time.Second)
+	}
 	if got := cfg.Providers["openai"].APIKey; got != "expanded-secret" {
 		t.Errorf("Providers[openai].APIKey = %q, want expanded value", got)
 	}
@@ -179,6 +188,27 @@ func TestValidateRejectsInvalidValues(t *testing.T) {
 			wantErr: "routing retries",
 		},
 		{
+			name: "retry base delay is zero",
+			mutate: func(cfg *Config) {
+				cfg.Routing.Retry.BaseDelay = 0
+			},
+			wantErr: "routing retry base_delay",
+		},
+		{
+			name: "retry maximum below base",
+			mutate: func(cfg *Config) {
+				cfg.Routing.Retry.MaxDelay = Duration(100 * time.Millisecond)
+			},
+			wantErr: "routing retry max_delay",
+		},
+		{
+			name: "retry budget below base",
+			mutate: func(cfg *Config) {
+				cfg.Routing.Retry.Budget = Duration(100 * time.Millisecond)
+			},
+			wantErr: "routing retry budget",
+		},
+		{
 			name: "empty target model",
 			mutate: func(cfg *Config) {
 				cfg.Models["chat"] = ModelConfig{Targets: []TargetConfig{{Provider: "local"}}}
@@ -195,6 +225,99 @@ func TestValidateRejectsInvalidValues(t *testing.T) {
 				t.Fatalf("Validate() error = %v, want error containing %q", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestLoadNormalizesAndValidatesTargetRateLimits(t *testing.T) {
+	path := writeConfig(t, `
+providers:
+  openai: {type: openai}
+models:
+  chat:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+        rate_limit:
+          requests_per_minute: 120
+          max_concurrency: 8
+          queue_timeout: 250ms
+`)
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	got := cfg.Models["chat"].Targets[0].RateLimit
+	if got.RequestsPerMinute != 120 || got.Burst != 1 || got.MaxConcurrency != 8 || time.Duration(got.QueueTimeout) != 250*time.Millisecond {
+		t.Fatalf("rate limit = %#v, want normalized target policy", got)
+	}
+}
+
+func TestLoadRejectsInvalidTargetRateLimits(t *testing.T) {
+	tests := []struct {
+		name    string
+		fields  string
+		wantErr string
+	}{
+		{name: "negative requests", fields: "requests_per_minute: -1", wantErr: "requests_per_minute"},
+		{name: "burst without rate", fields: "burst: 2", wantErr: "burst requires"},
+		{name: "negative concurrency", fields: "max_concurrency: -1", wantErr: "max_concurrency"},
+		{name: "negative queue", fields: "queue_timeout: -1s", wantErr: "queue_timeout"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := writeConfig(t, "providers:\n  openai: {type: openai}\nmodels:\n  chat:\n    targets:\n      - provider: openai\n        model: gpt-4o-mini\n        rate_limit:\n          "+tt.fields+"\n")
+			_, err := Load(path)
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("Load() error = %v, want error containing %q", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestLoadRejectsConflictingPoliciesForSharedTarget(t *testing.T) {
+	path := writeConfig(t, `
+providers:
+  openai: {type: openai}
+models:
+  fast:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+        rate_limit: {max_concurrency: 8}
+  smart:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+        rate_limit: {max_concurrency: 4}
+`)
+
+	_, err := Load(path)
+	if err == nil || !strings.Contains(err.Error(), "conflicting rate_limit") {
+		t.Fatalf("Load() error = %v, want conflicting shared-target policy", err)
+	}
+}
+
+func TestLoadAcceptsIdenticalPoliciesForSharedTarget(t *testing.T) {
+	path := writeConfig(t, `
+providers:
+  openai: {type: openai}
+models:
+  fast:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+        rate_limit: {requests_per_minute: 60, burst: 5, max_concurrency: 8}
+  smart:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+        rate_limit: {requests_per_minute: 60, burst: 5, max_concurrency: 8}
+`)
+
+	if _, err := Load(path); err != nil {
+		t.Fatalf("Load() error = %v, want identical shared-target policies accepted", err)
 	}
 }
 
@@ -351,6 +474,11 @@ func validConfig() Config {
 		Routing: RoutingConfig{
 			Retries:               1,
 			ResponseHeaderTimeout: Duration(30 * time.Second),
+			Retry: RetryConfig{
+				BaseDelay: Duration(200 * time.Millisecond),
+				MaxDelay:  Duration(5 * time.Second),
+				Budget:    Duration(15 * time.Second),
+			},
 		},
 	}
 }

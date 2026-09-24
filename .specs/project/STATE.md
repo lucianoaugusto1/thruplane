@@ -1,8 +1,9 @@
 # Project state
 
-**Updated:** September 22, 2026
-**Current work:** Native provider fixtures and the opt-in live runner are
-implemented; credentialed live validation is next.
+**Updated:** September 24, 2026
+**Current work:** Provider-aware retry budgets and process-local target limits
+are implemented; credentialed live validation and performance baselines are
+next.
 
 ## Decisions
 
@@ -70,6 +71,14 @@ implemented; credentialed live validation is next.
 - Go 1.26 is the tested baseline; the implementation uses only standard HTTP
   features available since Go 1.22.
 - The container uses a multi-stage Go build and a non-root distroless runtime.
+- Provider/model targets share process-local request-rate, concurrency, queue,
+  and adaptive cooldown state across aliases. Limits remain isolated between
+  configured provider names.
+- Retry behavior honors `Retry-After`, otherwise uses cancelable exponential
+  backoff with jitter, and never shortens a provider hint to fit the target
+  retry budget.
+- Known provider quota, billing, and spend-limit errors skip same-target
+  retries but can still use an independent fallback.
 
 ## Blockers
 
@@ -104,6 +113,8 @@ implemented; credentialed live validation is next.
   `http.ResponseController` can flush SSE chunks.
 - Native `file.filename` was previously accepted but discarded; reject it
   explicitly until a portable translation exists.
+- A concurrency permit must live until response EOF or Close; releasing at
+  response headers would allow long SSE streams to bypass admission limits.
 
 ## Deferred ideas
 
@@ -115,8 +126,8 @@ implemented; credentialed live validation is next.
 - Provider compatibility monitoring and drift alerts
 - Bedrock binary event-stream decoding and normalization
 - Native media output normalization and provider-hosted tool adapters
-- Pro implementation: cost tracking, budgets, rate limiting, analytics, and
-  managed operations
+- Pro implementation: cost tracking, budgets, distributed tenant rate limits,
+  analytics, and managed operations
 - Enterprise implementation: SSO, SCIM, RBAC, audit exports, policy controls,
   high availability, and support workflows
 - Responses API and embeddings

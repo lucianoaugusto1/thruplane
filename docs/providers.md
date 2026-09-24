@@ -269,3 +269,7 @@ All providers share one concurrency-safe HTTP transport with HTTP/2 enabled,
 connection pooling, 512 total idle connections, and 64 idle connections per
 host. NexoRoute applies a response-header timeout but no global response-body
 timeout, so request cancellation controls long-running streams.
+
+Per-target request rate, concurrency, queueing, adaptive provider cooldown,
+and retry budgets are configured independently from the transport. See
+[rate limits and retry operations](rate-limits.md).

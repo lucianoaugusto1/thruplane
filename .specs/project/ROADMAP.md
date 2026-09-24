@@ -112,10 +112,12 @@ for broader production adoption.
 - Extend structured outputs, strict tools, and media output only where
   semantics can be preserved and verified.
 
-**Reliability and access controls** - PLANNED
+**Reliability and access controls** - IN PROGRESS
 
-- Add circuit breakers, retry budgets, weighted routing, readiness, multiple
-  local keys, local limits, and secure secret sources.
+- Retry budgets, jittered backoff, provider cooldown, bounded queues, and local
+  provider/model request and concurrency limits are complete.
+- Circuit breakers, weighted routing, readiness, multiple local keys,
+  token-aware quotas, and secure secret sources remain planned.
 
 **Open observability and packaging** - PLANNED
 

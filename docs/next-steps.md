@@ -116,12 +116,18 @@ latency or TPS claim based on one laptop benchmark.
 
 ### 5. Reliability, safety, and observability
 
-**Create:** Per-target health and circuit breakers, bounded retry budgets with
-jitter and `Retry-After` handling, weighted routing, readiness checks, multiple
-local keys with scopes and expiry, in-memory rate limits, and clear fail-open
-versus fail-closed policies. Add Prometheus-compatible metrics and
-OpenTelemetry traces without prompt, response, or credential content by
-default. Define retention, redaction, and high-cardinality label rules.
+**Progress:** Bounded per-target retry budgets, cancelable jittered backoff,
+`Retry-After`, permanent quota classification, process-local request and
+concurrency admission, bounded queues, and shared provider cooldown are
+implemented. Distributed or tenant quotas, circuit breakers, and telemetry
+exporters remain open.
+
+**Create:** Per-target health and circuit breakers, weighted routing, readiness
+checks, multiple local keys with scopes and expiry, token-aware local quotas,
+and clear fail-open versus fail-closed policies. Add Prometheus-compatible
+metrics and OpenTelemetry traces without prompt, response, or credential
+content by default. Define retention, redaction, and high-cardinality label
+rules.
 
 **Done when:** Chaos tests cover a slow provider, retryable errors, partial
 streams, client disconnects, and mixed healthy/unhealthy targets. Operators

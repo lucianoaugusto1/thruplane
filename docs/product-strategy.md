@@ -93,7 +93,8 @@ workloads. Planned capabilities include:
 - Retries, fallbacks, timeouts, circuit breakers, health checks, and weighted
   load balancing.
 - Multiple local API keys with simple scopes and expiration.
-- In-memory rate limits and quotas.
+- In-memory provider/model request and concurrency limits (implemented);
+  token-aware and tenant quotas remain planned.
 - Per-request token and cost estimates.
 - Prometheus metrics and OpenTelemetry traces.
 - Validated YAML or GitOps configuration with hot reload.
@@ -342,7 +343,8 @@ through NexoRoute infrastructure.
 ### v0.2: Community production foundation
 
 - Add priority providers and the Responses and embeddings APIs.
-- Add circuit breakers, weighted routing, virtual keys, and local limits.
+- Add circuit breakers, weighted routing, virtual keys, and token-aware local
+  quotas; provider/model request and concurrency limits are implemented.
 - Add Prometheus, OpenTelemetry, cost estimates, and hot reload.
 - Add release automation, compatibility tests, and a Helm chart.
 

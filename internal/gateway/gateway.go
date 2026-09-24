@@ -1,23 +1,30 @@
 package gateway
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"nexoroute/internal/catalog"
 	"nexoroute/internal/config"
 	"nexoroute/internal/provider"
+	"nexoroute/internal/ratelimit"
 )
 
 const streamBufferSize = 32 * 1024
 
 type Gateway struct {
-	config  config.Config
-	clients map[string]*provider.Client
-	catalog *catalog.Registry
+	config   config.Config
+	clients  map[string]*provider.Client
+	catalog  *catalog.Registry
+	limiters map[targetKey]*ratelimit.Limiter
+	now      func() time.Time
+	jitter   func(time.Duration) time.Duration
+	wait     func(context.Context, time.Duration) error
 }
 
 func New(cfg config.Config, clients map[string]*provider.Client) *Gateway {
@@ -29,7 +36,19 @@ func New(cfg config.Config, clients map[string]*provider.Client) *Gateway {
 }
 
 func NewWithCatalog(cfg config.Config, clients map[string]*provider.Client, registry *catalog.Registry) *Gateway {
-	return &Gateway{config: cfg, clients: clients, catalog: registry}
+	return newWithCatalogAndClock(cfg, clients, registry, time.Now)
+}
+
+func newWithCatalogAndClock(cfg config.Config, clients map[string]*provider.Client, registry *catalog.Registry, now func() time.Time) *Gateway {
+	return &Gateway{
+		config:   cfg,
+		clients:  clients,
+		catalog:  registry,
+		limiters: buildLimiters(cfg, now),
+		now:      now,
+		jitter:   equalJitter,
+		wait:     waitContext,
+	}
 }
 
 func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
@@ -76,19 +95,53 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for targetIndex, target := range eligible {
-		client := g.clients[target.Provider]
-		if client == nil {
-			continue
+	routable := eligible[:0]
+	for _, target := range eligible {
+		if g.clients[target.Provider] != nil {
+			routable = append(routable, target)
 		}
+	}
+
+	var localDenial *ratelimit.Denial
+	attemptedUpstream := false
+	for targetIndex, target := range routable {
+		client := g.clients[target.Provider]
+		limiter := g.limiters[targetKey{provider: target.Provider, model: target.Model}]
+		var targetStart time.Time
 
 		for attempt := 0; attempt <= g.config.Routing.Retries; attempt++ {
 			if r.Context().Err() != nil {
 				return
 			}
+			queueTimeout := time.Duration(target.RateLimit.QueueTimeout)
+			if attempt > 0 {
+				remaining, limited := remainingRetryBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget))
+				if limited && remaining <= 0 {
+					break
+				}
+				if limited && queueTimeout > 0 && remaining < queueTimeout {
+					queueTimeout = remaining
+				}
+			}
+			permit, denied, err := limiter.Acquire(r.Context(), queueTimeout)
+			if err != nil {
+				return
+			}
+			if denied != nil {
+				localDenial = earlierDenial(localDenial, denied)
+				break
+			}
+			if targetStart.IsZero() {
+				targetStart = g.now()
+			} else if remaining, limited := remainingRetryBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget)); limited && remaining <= 0 {
+				permit.Release()
+				break
+			}
+			attemptedUpstream = true
 
 			response, err := client.Do(r.Context(), body, target.Model)
 			if err != nil {
+				permit.Release()
 				if r.Context().Err() != nil {
 					return
 				}
@@ -97,30 +150,81 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 					writeError(w, http.StatusBadRequest, requestError.Message, "invalid_request_error", requestError.Code)
 					return
 				}
+				if attempt == g.config.Routing.Retries {
+					break
+				}
+				delay := retryDelay(g.config.Routing.Retry, attempt, nil, g.now(), g.jitter)
+				if !retryFitsBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget), delay) {
+					break
+				}
+				if err := g.wait(r.Context(), delay); err != nil {
+					return
+				}
 				continue
 			}
+			wrapPermit(response, permit)
+			limiter.Observe(g.config.Providers[target.Provider].Type, response.StatusCode, response.Header)
 
-			if !isRetryable(response.StatusCode) {
+			decision := classifyResponse(g.config.Providers[target.Provider].Type, response)
+			if !decision.fallback {
 				relayResponse(w, response, stream)
 				return
 			}
 
 			lastAttempt := attempt == g.config.Routing.Retries
-			lastTarget := targetIndex == len(eligible)-1
-			if lastAttempt && lastTarget {
-				relayResponse(w, response, stream)
-				return
+			lastTarget := targetIndex == len(routable)-1
+			if !decision.retryTarget || lastAttempt {
+				if lastTarget {
+					relayResponse(w, response, stream)
+					return
+				}
+				drainAndClose(response)
+				break
 			}
 
-			_, _ = io.Copy(io.Discard, io.LimitReader(response.Body, 64<<10))
-			response.Body.Close()
+			delay := retryDelay(g.config.Routing.Retry, attempt, response, g.now(), g.jitter)
+			if !retryFitsBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget), delay) {
+				if lastTarget {
+					relayResponse(w, response, stream)
+					return
+				}
+				drainAndClose(response)
+				break
+			}
+
+			drainAndClose(response)
+			if err := g.wait(r.Context(), delay); err != nil {
+				return
+			}
 		}
 	}
 
 	if r.Context().Err() != nil {
 		return
 	}
+	if !attemptedUpstream && localDenial != nil {
+		writeRateLimitError(w, localDenial)
+		return
+	}
 	writeError(w, http.StatusBadGateway, "The gateway could not reach an upstream provider.", "api_error", "upstream_unavailable")
+}
+
+func earlierDenial(current, candidate *ratelimit.Denial) *ratelimit.Denial {
+	if current == nil {
+		return candidate
+	}
+	if candidate.RetryAfter > 0 && (current.RetryAfter <= 0 || candidate.RetryAfter < current.RetryAfter) {
+		return candidate
+	}
+	return current
+}
+
+func writeRateLimitError(w http.ResponseWriter, denied *ratelimit.Denial) {
+	if retryAfter := retryAfterSeconds(denied.RetryAfter); retryAfter != "" {
+		w.Header().Set("Retry-After", retryAfter)
+	}
+	w.Header().Set("X-NexoRoute-RateLimit-Reason", denied.Reason)
+	writeError(w, http.StatusTooManyRequests, "All eligible upstream targets are currently rate limited.", "rate_limit_error", "gateway_rate_limited")
 }
 
 func (g *Gateway) lookupTarget(target config.TargetConfig) (catalog.Model, bool) {
@@ -189,20 +293,6 @@ func validateChatRequest(w http.ResponseWriter, body []byte) (string, bool, bool
 	return model, stream, true
 }
 
-func isRetryable(status int) bool {
-	switch status {
-	case http.StatusRequestTimeout,
-		http.StatusTooManyRequests,
-		http.StatusInternalServerError,
-		http.StatusBadGateway,
-		http.StatusServiceUnavailable,
-		http.StatusGatewayTimeout:
-		return true
-	default:
-		return false
-	}
-}
-
 func relayResponse(w http.ResponseWriter, response *http.Response, stream bool) {
 	defer response.Body.Close()
 	relayHeaders(w.Header(), response.Header)
@@ -233,7 +323,8 @@ func relayHeaders(destination, source http.Header) {
 		copyHeader(destination, source, name, name)
 	}
 	for name := range source {
-		if strings.HasPrefix(strings.ToLower(name), "x-ratelimit-") {
+		lower := strings.ToLower(name)
+		if strings.HasPrefix(lower, "x-ratelimit-") || strings.HasPrefix(lower, "anthropic-ratelimit-") {
 			copyHeader(destination, source, name, name)
 		}
 	}

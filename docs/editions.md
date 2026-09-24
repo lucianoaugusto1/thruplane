@@ -28,7 +28,7 @@ not generally available features or contractual commitments.
 | Structured logs and health checks | Included | Included | Included |
 | Prometheus and OpenTelemetry integration | Planned open source | Included | Included |
 | Multiple local keys and simple scopes | Planned open source | Managed | Managed |
-| Local rate limits and quotas | Planned open source | Distributed | Distributed |
+| Local provider/model rate and concurrency limits | Included | Distributed | Distributed |
 | Per-request token and cost estimates | Planned open source | Included | Included |
 | Persistent usage and cost analytics | Not planned | Planned | Planned |
 | Budgets, distributed quotas, and alerts | Not planned | Planned | Planned |
@@ -54,8 +54,8 @@ modification, and redistribution under its terms.
 
 Community must remain useful without a commercial subscription. Future open
 work includes additional providers, standard metrics and traces, multiple
-local keys, basic local limits, more endpoint families, and stronger routing
-primitives.
+local keys, token-aware local quotas, more endpoint families, and stronger
+routing primitives.
 
 ## NexoRoute Pro
 
