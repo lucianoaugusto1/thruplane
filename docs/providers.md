@@ -32,6 +32,8 @@ as buffered calls, but only text and function tool output is normalized. Native
 adapters reject unsupported content instead of silently dropping it.
 The [Chat Completions compatibility contract](api-compatibility.md) lists
 accepted native fields, errors, and migration guidance.
+The [provider validation guide](provider-validation.md) separates deterministic
+fixture coverage from opt-in live evidence.
 
 ## Native media input
 

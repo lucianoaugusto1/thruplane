@@ -1,7 +1,7 @@
 # Native provider conformance tasks
 
 **Design:** `.specs/features/provider-conformance/design.md`  
-**Status:** In progress
+**Status:** Complete
 
 `T1 -> T2 -> T3 -> T4`
 
@@ -31,7 +31,7 @@ scenarios with explicit credentials and token limits.
 **Tests:** Compile by default; execute only with the `live` build tag.
 **Gate:** Full.
 
-## T4: Publish the validation matrix
+## T4: Publish the validation matrix — Complete
 
 **What:** Document commands, environment variables, evidence semantics,
 current coverage, and the next validation work; update project state.
@@ -39,3 +39,13 @@ current coverage, and the next validation work; update project state.
 `.specs/project/STATE.md`, and this feature specification.
 **Depends on:** T3. **Requirement:** PC-04.
 **Tests:** Race, vet, build, and diff check. **Gate:** Build.
+
+## Verification
+
+- `go test ./internal/provider -run TestNativeProviderConformanceFixtures
+  -count=1` passed on September 24, 2026.
+- `go test -race ./...`, `go vet ./...`, `go build -o /dev/null
+  ./cmd/nexoroute`, and `git diff --check` passed.
+- `go test -tags=live -run '^$' ./tests/provider-live` compiled the live
+  runner without executing network tests.
+- No credentialed provider call was made; live status remains unverified.

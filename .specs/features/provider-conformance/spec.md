@@ -8,13 +8,13 @@ to summarize, and live validation hard to run consistently.
 
 ## Goals
 
-- [ ] Store deterministic protocol fixtures outside Go source for Anthropic,
+- [x] Store deterministic protocol fixtures outside Go source for Anthropic,
   Gemini, Vertex AI, and Amazon Bedrock.
-- [ ] Verify request method, path, authentication shape, translated JSON,
+- [x] Verify request method, path, authentication shape, translated JSON,
   normalized buffered responses, streaming, and upstream errors.
-- [ ] Keep live provider tests opt-in, bounded, and absent from the default
+- [x] Keep live provider tests opt-in, bounded, and absent from the default
   test path.
-- [ ] Publish a capability matrix that distinguishes fixture coverage from
+- [x] Publish a capability matrix that distinguishes fixture coverage from
   live verification.
 
 ## Out of scope
@@ -54,4 +54,4 @@ to summarize, and live validation hard to run consistently.
 | PC-01 | External deterministic native fixtures | Done |
 | PC-02 | Buffered, media, tool, stream, and error assertions | Done |
 | PC-03 | Explicit opt-in live runner | Done |
-| PC-04 | Evidence-based validation matrix | Pending |
+| PC-04 | Evidence-based validation matrix | Done |

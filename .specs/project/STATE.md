@@ -1,8 +1,8 @@
 # Project state
 
 **Updated:** September 22, 2026
-**Current work:** Native Chat Completions field enforcement is implemented;
-provider conformance fixtures and live validation are next.
+**Current work:** Native provider fixtures and the opt-in live runner are
+implemented; credentialed live validation is next.
 
 ## Decisions
 
@@ -63,6 +63,10 @@ provider conformance fixtures and live validation are next.
 - Portable native tools intentionally exclude provider-hosted tools,
   `strict: true`, legacy function fields, and multimodal tool results.
 - Standard Go tests and `httptest` provide unit and end-to-end coverage.
+- External JSON fixtures now verify native adapter text, media, tools,
+  streaming or explicit rejection, upstream errors, and response
+  normalization. Live evidence remains unverified until credentialed runs are
+  recorded.
 - Go 1.26 is the tested baseline; the implementation uses only standard HTTP
   features available since Go 1.22.
 - The container uses a multi-stage Go build and a non-root distroless runtime.
@@ -75,8 +79,10 @@ provider conformance fixtures and live validation are next.
 
 ## Next implementation slice
 
-- Complete the versioned response compatibility matrix and deterministic
-  provider fixtures, then opt-in live smoke tests.
+- Select test models and regions, then run the opt-in native-provider smoke
+  suite with scoped credentials and a spending cap.
+- Complete the versioned normalized response compatibility matrix and add
+  equivalent fixture evidence for OpenAI-compatible adapters.
 - Establish end-to-end gateway overhead and failure baselines before claiming
   performance or implementing adaptive routing.
 - Use [the delivery plan](../../docs/next-steps.md) for dependencies, artifacts,

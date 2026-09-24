@@ -156,6 +156,8 @@ including when a model is not cataloged. See the
 
 See the [provider adapter guide](docs/providers.md) for direct endpoints,
 credentials, native translation behavior, and current feature limits.
+See [provider validation](docs/provider-validation.md) for deterministic
+fixture coverage and the opt-in live smoke-test procedure.
 
 For cataloged targets, NexoRoute checks the request against both model support
 and adapter support before sending it upstream. Native adapters translate
