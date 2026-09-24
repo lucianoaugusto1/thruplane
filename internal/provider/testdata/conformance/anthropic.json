@@ -1,0 +1,209 @@
+{
+  "provider": "anthropic",
+  "model": "claude-fixture",
+  "cases": [
+    {
+      "name": "buffered-text",
+      "request": {
+        "model": "public-alias",
+        "messages": [
+          {"role": "system", "content": "Be concise."},
+          {"role": "user", "content": "Hello"}
+        ],
+        "max_completion_tokens": 32,
+        "temperature": 0.2,
+        "top_p": 0.8,
+        "stop": ["END"]
+      },
+      "want_request": {
+        "path": "/v1/messages",
+        "headers": {
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+          "x-api-key": "fixture-anthropic-key"
+        },
+        "json": {
+          "model": "claude-fixture",
+          "messages": [
+            {"role": "user", "content": [{"type": "text", "text": "Hello"}]}
+          ],
+          "system": "Be concise.",
+          "max_tokens": 32,
+          "temperature": 0.2,
+          "top_p": 0.8,
+          "stop_sequences": ["END"]
+        }
+      },
+      "upstream": {
+        "headers": {"Content-Type": "application/json"},
+        "body_json": {
+          "id": "msg_text",
+          "model": "claude-fixture",
+          "content": [{"type": "text", "text": "Hello from Claude"}],
+          "stop_reason": "end_turn",
+          "usage": {"input_tokens": 6, "output_tokens": 3}
+        }
+      },
+      "want_response": {
+        "headers": {"Content-Type": "application/json"},
+        "json_subset": {
+          "id": "msg_text",
+          "object": "chat.completion",
+          "model": "claude-fixture",
+          "choices": [{
+            "index": 0,
+            "message": {"role": "assistant", "content": "Hello from Claude"},
+            "finish_reason": "stop"
+          }],
+          "usage": {"prompt_tokens": 6, "completion_tokens": 3, "total_tokens": 9}
+        }
+      }
+    },
+    {
+      "name": "buffered-media",
+      "request": {
+        "messages": [{
+          "role": "user",
+          "content": [
+            {"type": "text", "text": "Compare"},
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,AQID"}},
+            {"type": "image_url", "image_url": {"url": "https://images.example.com/photo.png"}},
+            {"type": "file", "file": {"file_data": "data:application/pdf;base64,JVBERg=="}}
+          ]
+        }],
+        "max_tokens": 24
+      },
+      "want_request": {
+        "path": "/v1/messages",
+        "headers": {"x-api-key": "fixture-anthropic-key"},
+        "json": {
+          "model": "claude-fixture",
+          "messages": [{
+            "role": "user",
+            "content": [
+              {"type": "text", "text": "Compare"},
+              {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": "AQID"}},
+              {"type": "image", "source": {"type": "url", "url": "https://images.example.com/photo.png"}},
+              {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": "JVBERg=="}}
+            ]
+          }],
+          "max_tokens": 24
+        }
+      },
+      "upstream": {
+        "body_json": {
+          "id": "msg_media",
+          "content": [{"type": "text", "text": "Compared"}],
+          "stop_reason": "end_turn",
+          "usage": {"input_tokens": 20, "output_tokens": 2}
+        }
+      },
+      "want_response": {
+        "json_subset": {
+          "id": "msg_media",
+          "model": "claude-fixture",
+          "choices": [{"message": {"content": "Compared"}, "finish_reason": "stop"}],
+          "usage": {"prompt_tokens": 20, "completion_tokens": 2, "total_tokens": 22}
+        }
+      }
+    },
+    {
+      "name": "buffered-tools",
+      "request": {
+        "messages": [
+          {"role": "user", "content": "Weather?"},
+          {"role": "assistant", "content": null, "tool_calls": [{
+            "id": "call_1",
+            "type": "function",
+            "function": {"name": "forecast", "arguments": "{\"city\":\"Sao Paulo\"}"}
+          }]},
+          {"role": "tool", "tool_call_id": "call_1", "content": "{\"temperature\":24}"}
+        ],
+        "tools": [{
+          "type": "function",
+          "function": {
+            "name": "forecast",
+            "description": "Weather forecast",
+            "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+          }
+        }],
+        "tool_choice": {"type": "function", "function": {"name": "forecast"}},
+        "parallel_tool_calls": false,
+        "max_completion_tokens": 16
+      },
+      "want_request": {
+        "path": "/v1/messages",
+        "json": {
+          "model": "claude-fixture",
+          "messages": [
+            {"role": "user", "content": [{"type": "text", "text": "Weather?"}]},
+            {"role": "assistant", "content": [{"type": "tool_use", "id": "call_1", "name": "forecast", "input": {"city": "Sao Paulo"}}]},
+            {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "call_1", "content": "{\"temperature\":24}"}]}
+          ],
+          "max_tokens": 16,
+          "tools": [{
+            "name": "forecast",
+            "description": "Weather forecast",
+            "input_schema": {"type": "object", "properties": {"city": {"type": "string"}}}
+          }],
+          "tool_choice": {"type": "tool", "name": "forecast", "disable_parallel_tool_use": true}
+        }
+      },
+      "upstream": {
+        "body_json": {
+          "id": "msg_tool",
+          "model": "claude-fixture",
+          "content": [
+            {"type": "text", "text": "Checking"},
+            {"type": "tool_use", "id": "call_2", "name": "forecast", "input": {"city": "Rio"}}
+          ],
+          "stop_reason": "tool_use",
+          "usage": {"input_tokens": 11, "output_tokens": 5}
+        }
+      },
+      "want_response": {
+        "json_subset": {
+          "id": "msg_tool",
+          "model": "claude-fixture",
+          "choices": [{
+            "message": {
+              "content": "Checking",
+              "tool_calls": [{
+                "id": "call_2",
+                "type": "function",
+                "function": {"name": "forecast", "arguments": "{\"city\": \"Rio\"}"}
+              }]
+            },
+            "finish_reason": "tool_calls"
+          }],
+          "usage": {"prompt_tokens": 11, "completion_tokens": 5, "total_tokens": 16}
+        }
+      }
+    },
+    {
+      "name": "upstream-error",
+      "request": {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "max_tokens": 8
+      },
+      "want_request": {
+        "path": "/v1/messages",
+        "json": {
+          "model": "claude-fixture",
+          "messages": [{"role": "user", "content": [{"type": "text", "text": "Hello"}]}],
+          "max_tokens": 8
+        }
+      },
+      "upstream": {
+        "status": 429,
+        "headers": {"Content-Type": "application/json", "Retry-After": "2"},
+        "body_json": {"type": "error", "error": {"type": "rate_limit_error", "message": "slow down"}}
+      },
+      "want_response": {
+        "status": 429,
+        "headers": {"Content-Type": "application/json", "Retry-After": "2"},
+        "json_subset": {"type": "error", "error": {"type": "rate_limit_error", "message": "slow down"}}
+      }
+    }
+  ]
+}

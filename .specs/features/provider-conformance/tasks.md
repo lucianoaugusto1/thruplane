@@ -5,7 +5,7 @@
 
 `T1 -> T2 -> T3 -> T4`
 
-## T1: Add fixture harness and buffered scenarios
+## T1: Add fixture harness and buffered scenarios — Complete
 
 **What:** Load external JSON fixtures and verify translated requests,
 authentication shape, buffered responses, media, tools, and upstream errors.

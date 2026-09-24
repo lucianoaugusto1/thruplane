@@ -1,0 +1,207 @@
+{
+  "provider": "gemini",
+  "model": "gemini-fixture",
+  "cases": [
+    {
+      "name": "buffered-text",
+      "request": {
+        "messages": [
+          {"role": "developer", "content": "Be concise."},
+          {"role": "user", "content": "Hello"}
+        ],
+        "max_completion_tokens": 32,
+        "temperature": 0.2,
+        "top_p": 0.8,
+        "stop": ["END"]
+      },
+      "want_request": {
+        "path": "/v1beta/models/gemini-fixture:generateContent",
+        "headers": {
+          "Content-Type": "application/json",
+          "x-goog-api-key": "fixture-gemini-key"
+        },
+        "json": {
+          "contents": [{"role": "user", "parts": [{"text": "Hello"}]}],
+          "systemInstruction": {"parts": [{"text": "Be concise."}]},
+          "generationConfig": {
+            "maxOutputTokens": 32,
+            "temperature": 0.2,
+            "topP": 0.8,
+            "stopSequences": ["END"]
+          }
+        }
+      },
+      "upstream": {
+        "headers": {"Content-Type": "application/json"},
+        "body_json": {
+          "responseId": "google-text",
+          "modelVersion": "gemini-fixture",
+          "candidates": [{
+            "content": {"role": "model", "parts": [{"text": "Hello"}, {"text": " from Gemini"}]},
+            "finishReason": "STOP"
+          }],
+          "usageMetadata": {"promptTokenCount": 5, "candidatesTokenCount": 3, "totalTokenCount": 8}
+        }
+      },
+      "want_response": {
+        "json_subset": {
+          "id": "google-text",
+          "object": "chat.completion",
+          "model": "gemini-fixture",
+          "choices": [{
+            "index": 0,
+            "message": {"role": "assistant", "content": "Hello from Gemini"},
+            "finish_reason": "stop"
+          }],
+          "usage": {"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8}
+        }
+      }
+    },
+    {
+      "name": "buffered-media",
+      "request": {
+        "messages": [{
+          "role": "user",
+          "content": [
+            {"type": "text", "text": "Summarize"},
+            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,AQID"}},
+            {"type": "file", "file": {"file_data": "data:application/pdf;base64,JVBERg=="}},
+            {"type": "input_audio", "input_audio": {"data": "AQID", "format": "mp3"}}
+          ]
+        }],
+        "max_tokens": 24
+      },
+      "want_request": {
+        "path": "/v1beta/models/gemini-fixture:generateContent",
+        "json": {
+          "contents": [{
+            "role": "user",
+            "parts": [
+              {"text": "Summarize"},
+              {"inlineData": {"mimeType": "image/jpeg", "data": "AQID"}},
+              {"inlineData": {"mimeType": "application/pdf", "data": "JVBERg=="}},
+              {"inlineData": {"mimeType": "audio/mp3", "data": "AQID"}}
+            ]
+          }],
+          "generationConfig": {"maxOutputTokens": 24}
+        }
+      },
+      "upstream": {
+        "body_json": {
+          "responseId": "google-media",
+          "modelVersion": "gemini-fixture",
+          "candidates": [{"content": {"parts": [{"text": "Summarized"}]}, "finishReason": "STOP"}],
+          "usageMetadata": {"promptTokenCount": 15, "candidatesTokenCount": 2, "totalTokenCount": 17}
+        }
+      },
+      "want_response": {
+        "json_subset": {
+          "id": "google-media",
+          "choices": [{"message": {"content": "Summarized"}, "finish_reason": "stop"}],
+          "usage": {"prompt_tokens": 15, "completion_tokens": 2, "total_tokens": 17}
+        }
+      }
+    },
+    {
+      "name": "buffered-tools",
+      "request": {
+        "messages": [
+          {"role": "user", "content": "Weather?"},
+          {"role": "assistant", "content": null, "tool_calls": [{
+            "id": "call_1",
+            "type": "function",
+            "function": {"name": "forecast", "arguments": "{\"city\":\"Sao Paulo\"}"}
+          }]},
+          {"role": "tool", "tool_call_id": "call_1", "content": "{\"temperature\":24}"}
+        ],
+        "tools": [{
+          "type": "function",
+          "function": {
+            "name": "forecast",
+            "description": "Weather forecast",
+            "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+          }
+        }],
+        "tool_choice": {"type": "function", "function": {"name": "forecast"}},
+        "max_completion_tokens": 16
+      },
+      "want_request": {
+        "path": "/v1beta/models/gemini-fixture:generateContent",
+        "json": {
+          "contents": [
+            {"role": "user", "parts": [{"text": "Weather?"}]},
+            {"role": "model", "parts": [{"functionCall": {"id": "call_1", "name": "forecast", "args": {"city": "Sao Paulo"}}}]},
+            {"role": "user", "parts": [{"functionResponse": {"id": "call_1", "name": "forecast", "response": {"temperature": 24}}}]}
+          ],
+          "generationConfig": {"maxOutputTokens": 16},
+          "tools": [{
+            "functionDeclarations": [{
+              "name": "forecast",
+              "description": "Weather forecast",
+              "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+            }]
+          }],
+          "toolConfig": {
+            "functionCallingConfig": {"mode": "ANY", "allowedFunctionNames": ["forecast"]}
+          }
+        }
+      },
+      "upstream": {
+        "body_json": {
+          "responseId": "google-tool",
+          "modelVersion": "gemini-fixture",
+          "candidates": [{
+            "content": {"role": "model", "parts": [
+              {"text": "Checking"},
+              {"functionCall": {"id": "call_2", "name": "forecast", "args": {"city": "Rio"}}}
+            ]},
+            "finishReason": "STOP"
+          }],
+          "usageMetadata": {"promptTokenCount": 9, "candidatesTokenCount": 4, "totalTokenCount": 13}
+        }
+      },
+      "want_response": {
+        "json_subset": {
+          "id": "google-tool",
+          "model": "gemini-fixture",
+          "choices": [{
+            "message": {
+              "content": "Checking",
+              "tool_calls": [{
+                "id": "call_2",
+                "type": "function",
+                "function": {"name": "forecast", "arguments": "{\"city\": \"Rio\"}"}
+              }]
+            },
+            "finish_reason": "tool_calls"
+          }],
+          "usage": {"prompt_tokens": 9, "completion_tokens": 4, "total_tokens": 13}
+        }
+      }
+    },
+    {
+      "name": "upstream-error",
+      "request": {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "max_tokens": 8
+      },
+      "want_request": {
+        "path": "/v1beta/models/gemini-fixture:generateContent",
+        "json": {
+          "contents": [{"role": "user", "parts": [{"text": "Hello"}]}],
+          "generationConfig": {"maxOutputTokens": 8}
+        }
+      },
+      "upstream": {
+        "status": 503,
+        "headers": {"Content-Type": "application/json", "Retry-After": "1"},
+        "body_json": {"error": {"code": 503, "message": "temporarily unavailable", "status": "UNAVAILABLE"}}
+      },
+      "want_response": {
+        "status": 503,
+        "headers": {"Content-Type": "application/json", "Retry-After": "1"},
+        "json_subset": {"error": {"code": 503, "message": "temporarily unavailable", "status": "UNAVAILABLE"}}
+      }
+    }
+  ]
+}
