@@ -53,5 +53,5 @@ to summarize, and live validation hard to run consistently.
 | --- | --- | --- |
 | PC-01 | External deterministic native fixtures | Done |
 | PC-02 | Buffered, media, tool, stream, and error assertions | Done |
-| PC-03 | Explicit opt-in live runner | Pending |
+| PC-03 | Explicit opt-in live runner | Done |
 | PC-04 | Evidence-based validation matrix | Pending |

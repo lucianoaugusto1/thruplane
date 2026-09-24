@@ -22,7 +22,7 @@ and Bedrock's explicit pre-network streaming rejection.
 **Depends on:** T1. **Requirement:** PC-02.
 **Tests:** Integration with `httptest`. **Gate:** Full.
 
-## T3: Add the opt-in live runner
+## T3: Add the opt-in live runner — Complete
 
 **What:** Add build-tagged, environment-driven text, media, and tool smoke
 scenarios with explicit credentials and token limits.
