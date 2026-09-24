@@ -14,7 +14,7 @@ authentication shape, buffered responses, media, tools, and upstream errors.
 **Depends on:** None. **Requirements:** PC-01, PC-02.
 **Tests:** Integration with `httptest`. **Gate:** Full.
 
-## T2: Add streaming conformance scenarios
+## T2: Add streaming conformance scenarios — Complete
 
 **What:** Cover normalized text/tool SSE for Anthropic and Google protocols,
 and Bedrock's explicit pre-network streaming rejection.

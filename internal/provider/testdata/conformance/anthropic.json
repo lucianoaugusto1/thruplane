@@ -204,6 +204,51 @@
         "headers": {"Content-Type": "application/json", "Retry-After": "2"},
         "json_subset": {"type": "error", "error": {"type": "rate_limit_error", "message": "slow down"}}
       }
+    },
+    {
+      "name": "stream-text-tools",
+      "request": {
+        "messages": [{"role": "user", "content": "Weather?"}],
+        "tools": [{"type": "function", "function": {
+          "name": "forecast",
+          "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+        }}],
+        "tool_choice": {"type": "function", "function": {"name": "forecast"}},
+        "max_completion_tokens": 16,
+        "stream": true
+      },
+      "want_request": {
+        "path": "/v1/messages",
+        "json": {
+          "model": "claude-fixture",
+          "messages": [{"role": "user", "content": [{"type": "text", "text": "Weather?"}]}],
+          "max_tokens": 16,
+          "stream": true,
+          "tools": [{"name": "forecast", "input_schema": {
+            "type": "object", "properties": {"city": {"type": "string"}}
+          }}],
+          "tool_choice": {"type": "tool", "name": "forecast"}
+        }
+      },
+      "upstream": {
+        "headers": {"Content-Type": "text/event-stream"},
+        "body_text": "data: {\"type\":\"message_start\",\"message\":{\"id\":\"msg_stream\",\"model\":\"claude-fixture\",\"usage\":{\"input_tokens\":7}}}\n\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"Checking\"}}\n\ndata: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"tool_use\",\"id\":\"call_stream\",\"name\":\"forecast\",\"input\":{}}}\n\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"{\\\"city\\\":\"}}\n\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"\\\"Rio\\\"}\"}}\n\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"tool_use\"},\"usage\":{\"output_tokens\":4}}\n\ndata: {\"type\":\"message_stop\"}\n\n"
+      },
+      "want_response": {
+        "headers": {"Content-Type": "text/event-stream"},
+        "contains": [
+          "\"role\":\"assistant\"",
+          "\"content\":\"Checking\"",
+          "\"id\":\"call_stream\"",
+          "\"name\":\"forecast\"",
+          "\"arguments\":\"{\\\"city\\\":\"",
+          "\"arguments\":\"\\\"Rio\\\"}\"",
+          "\"finish_reason\":\"tool_calls\"",
+          "\"prompt_tokens\":7",
+          "\"completion_tokens\":4",
+          "data: [DONE]"
+        ]
+      }
     }
   ]
 }

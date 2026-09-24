@@ -166,6 +166,49 @@
         "status": 429,
         "json_subset": {"error": {"code": 429, "message": "quota exceeded", "status": "RESOURCE_EXHAUSTED"}}
       }
+    },
+    {
+      "name": "stream-text-tools",
+      "request": {
+        "messages": [{"role": "user", "content": "Weather?"}],
+        "tools": [{"type": "function", "function": {
+          "name": "forecast",
+          "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+        }}],
+        "tool_choice": "required",
+        "max_completion_tokens": 16,
+        "stream": true
+      },
+      "want_request": {
+        "path": "/v1/projects/fixture-project/locations/us-central1/publishers/google/models/gemini-fixture:streamGenerateContent",
+        "raw_query": "alt=sse",
+        "headers": {"Authorization": "Bearer fixture-google-token"},
+        "json": {
+          "contents": [{"role": "user", "parts": [{"text": "Weather?"}]}],
+          "generationConfig": {"maxOutputTokens": 16},
+          "tools": [{"functionDeclarations": [{
+            "name": "forecast",
+            "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+          }]}],
+          "toolConfig": {"functionCallingConfig": {"mode": "ANY"}}
+        }
+      },
+      "upstream": {
+        "headers": {"Content-Type": "text/event-stream"},
+        "body_text": "data: {\"responseId\":\"vertex-stream\",\"modelVersion\":\"gemini-fixture\",\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"Checking\"}]}}]}\n\ndata: {\"responseId\":\"vertex-stream\",\"candidates\":[{\"content\":{\"parts\":[{\"functionCall\":{\"id\":\"call_vertex_stream\",\"name\":\"forecast\",\"args\":{\"city\":\"Rio\"}}}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":8,\"candidatesTokenCount\":3,\"totalTokenCount\":11}}\n\n"
+      },
+      "want_response": {
+        "headers": {"Content-Type": "text/event-stream"},
+        "contains": [
+          "\"content\":\"Checking\"",
+          "\"id\":\"call_vertex_stream\"",
+          "\"name\":\"forecast\"",
+          "\"arguments\":\"{\\\"city\\\":\\\"Rio\\\"}\"",
+          "\"finish_reason\":\"tool_calls\"",
+          "\"total_tokens\":11",
+          "data: [DONE]"
+        ]
+      }
     }
   ]
 }

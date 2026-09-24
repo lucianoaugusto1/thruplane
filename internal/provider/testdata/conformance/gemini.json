@@ -202,6 +202,50 @@
         "headers": {"Content-Type": "application/json", "Retry-After": "1"},
         "json_subset": {"error": {"code": 503, "message": "temporarily unavailable", "status": "UNAVAILABLE"}}
       }
+    },
+    {
+      "name": "stream-text-tools",
+      "request": {
+        "messages": [{"role": "user", "content": "Weather?"}],
+        "tools": [{"type": "function", "function": {
+          "name": "forecast",
+          "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+        }}],
+        "tool_choice": {"type": "function", "function": {"name": "forecast"}},
+        "max_completion_tokens": 16,
+        "stream": true
+      },
+      "want_request": {
+        "path": "/v1beta/models/gemini-fixture:streamGenerateContent",
+        "raw_query": "alt=sse",
+        "json": {
+          "contents": [{"role": "user", "parts": [{"text": "Weather?"}]}],
+          "generationConfig": {"maxOutputTokens": 16},
+          "tools": [{"functionDeclarations": [{
+            "name": "forecast",
+            "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+          }]}],
+          "toolConfig": {"functionCallingConfig": {"mode": "ANY", "allowedFunctionNames": ["forecast"]}}
+        }
+      },
+      "upstream": {
+        "headers": {"Content-Type": "text/event-stream"},
+        "body_text": "data: {\"responseId\":\"gemini-stream\",\"modelVersion\":\"gemini-fixture\",\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"Checking\"}]}}]}\n\ndata: {\"responseId\":\"gemini-stream\",\"candidates\":[{\"content\":{\"parts\":[{\"functionCall\":{\"id\":\"call_stream\",\"name\":\"forecast\",\"args\":{\"city\":\"Rio\"}}}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":7,\"candidatesTokenCount\":4,\"totalTokenCount\":11}}\n\n"
+      },
+      "want_response": {
+        "headers": {"Content-Type": "text/event-stream"},
+        "contains": [
+          "\"role\":\"assistant\"",
+          "\"content\":\"Checking\"",
+          "\"id\":\"call_stream\"",
+          "\"name\":\"forecast\"",
+          "\"arguments\":\"{\\\"city\\\":\\\"Rio\\\"}\"",
+          "\"finish_reason\":\"tool_calls\"",
+          "\"prompt_tokens\":7",
+          "\"completion_tokens\":4",
+          "data: [DONE]"
+        ]
+      }
     }
   ]
 }

@@ -91,6 +91,13 @@ func TestNativeProviderConformanceFixtures(t *testing.T) {
 					runConformanceCase(t, fixture, testCase)
 				})
 			}
+			streamCase := "stream-text-tools"
+			if providerType == "bedrock" {
+				streamCase = "streaming-unsupported"
+			}
+			if !names[streamCase] {
+				t.Errorf("fixture is missing required case %q", streamCase)
+			}
 		})
 	}
 }

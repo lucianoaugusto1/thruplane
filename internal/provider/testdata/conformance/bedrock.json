@@ -195,6 +195,18 @@
         "headers": {"Retry-After": "1"},
         "json_subset": {"message": "Too many requests"}
       }
+    },
+    {
+      "name": "streaming-unsupported",
+      "request": {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "max_completion_tokens": 16,
+        "stream": true
+      },
+      "want_request": {},
+      "upstream": {},
+      "want_response": {},
+      "want_error_code": "unsupported_streaming"
     }
   ]
 }
