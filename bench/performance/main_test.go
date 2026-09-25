@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -71,5 +74,88 @@ func TestRunRejectsInvalidOptions(t *testing.T) {
 		if err := run(args, &stdout, &stderr); err == nil {
 			t.Fatalf("run(%v) error = nil", args)
 		}
+	}
+}
+
+func TestRunWritesRepeatedArtifact(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "candidate.json")
+	var stdout, stderr bytes.Buffer
+	err := run([]string{
+		"-scenario", "text",
+		"-requests", "1",
+		"-concurrency", "1",
+		"-warmup", "0",
+		"-runs", "3",
+		"-artifact", path,
+		"-revision", "abc123",
+		"-environment", "test-runner",
+	}, &stdout, &stderr)
+	if err != nil {
+		t.Fatalf("run() error = %v, stderr = %s", err, stderr.String())
+	}
+	artifact, err := readBenchmarkArtifact(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(artifact.Runs) != 3 || artifact.Revision != "abc123" || artifact.Environment != "test-runner" {
+		t.Fatalf("artifact = %#v", artifact)
+	}
+}
+
+func TestRunRequiresThreeRunsForArtifact(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	err := run([]string{
+		"-scenario", "text",
+		"-runs", "2",
+		"-artifact", filepath.Join(t.TempDir(), "invalid.json"),
+	}, &stdout, &stderr)
+	if err == nil || !strings.Contains(err.Error(), "at least 3") {
+		t.Fatalf("run() error = %v", err)
+	}
+}
+
+func TestRunCompareWritesReportAndReturnsRegression(t *testing.T) {
+	directory := t.TempDir()
+	baselinePath := filepath.Join(directory, "baseline.json")
+	candidatePath := filepath.Join(directory, "candidate.json")
+	outputPath := filepath.Join(directory, "comparison.json")
+	baseline := comparisonArtifact(t, []float64{1, 1, 1, 1, 1})
+	candidate := comparisonArtifact(t, []float64{2, 2, 2, 2, 2})
+	if err := writeBenchmarkArtifact(baselinePath, baseline); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeBenchmarkArtifact(candidatePath, candidate); err != nil {
+		t.Fatal(err)
+	}
+
+	var stdout, stderr bytes.Buffer
+	err := run([]string{
+		"compare",
+		"-baseline", baselinePath,
+		"-candidate", candidatePath,
+		"-thresholds", "thresholds.json",
+		"-output", outputPath,
+	}, &stdout, &stderr)
+	if !errors.Is(err, errPerformanceRegression) {
+		t.Fatalf("run(compare) error = %v", err)
+	}
+	if !strings.Contains(stdout.String(), "REGRESSION") {
+		t.Fatalf("compare output = %q", stdout.String())
+	}
+	var report comparisonReport
+	readJSONFile(t, outputPath, &report)
+	if report.Passed {
+		t.Fatalf("comparison report = %#v", report)
+	}
+}
+
+func readJSONFile(t *testing.T, path string, target any) {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(data, target); err != nil {
+		t.Fatal(err)
 	}
 }

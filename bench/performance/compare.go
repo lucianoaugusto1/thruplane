@@ -117,6 +117,9 @@ func validateThresholdPolicy(policy thresholdPolicy) error {
 		if scenario == "" {
 			return errors.New("scenario threshold name is required")
 		}
+		if _, err := scenarioByName(scenario); err != nil {
+			return fmt.Errorf("threshold override: %w", err)
+		}
 		if err := validateThresholdLimits(policy.limitsFor(scenario)); err != nil {
 			return fmt.Errorf("scenario %q thresholds: %w", scenario, err)
 		}
@@ -203,12 +206,6 @@ func compareBenchmarkArtifacts(baseline, candidate benchmarkArtifact, policy thr
 	if err := compareArtifactShapes(baselineShapes, candidateShapes); err != nil {
 		return comparisonReport{}, fmt.Errorf("artifacts are incompatible: %w", err)
 	}
-	for scenario := range policy.Scenarios {
-		if _, exists := baselineShapes[scenario]; !exists {
-			return comparisonReport{}, fmt.Errorf("threshold override references unknown scenario %q", scenario)
-		}
-	}
-
 	baselineReports := reportsByScenario(baseline.Runs)
 	candidateReports := reportsByScenario(candidate.Runs)
 	names := make([]string, 0, len(baselineReports))

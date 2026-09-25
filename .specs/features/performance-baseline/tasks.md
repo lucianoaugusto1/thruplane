@@ -76,7 +76,7 @@ thresholds, explain every failure, and support JSON threshold overrides.
 **Requirements:** PERF-13, PERF-15.
 **Tests:** Unit. **Gate:** Package test.
 
-### T8: Expose CLI modes and add the CI gate
+### T8: Expose CLI modes and add the CI gate — Complete
 
 **What:** Add repeated runs, artifact output, the `compare` subcommand, and a
 pull-request workflow that benchmarks base and candidate on one runner.

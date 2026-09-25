@@ -1,0 +1,111 @@
+name: Performance regression
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      baseline_ref:
+        description: Git revision to use as the baseline
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: Compare base and candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PERF_DIRECTORY: ${{ runner.temp }}/nexoroute-performance
+      NEXOROUTE_PERF_ENVIRONMENT: github-ubuntu-24.04-x64
+
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Prepare base worktree
+        id: baseline
+        env:
+          PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          DISPATCH_BASE_REF: ${{ inputs.baseline_ref }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${PERF_DIRECTORY}"
+          if [[ -n "${PULL_REQUEST_BASE_SHA}" ]]; then
+            baseline_sha="${PULL_REQUEST_BASE_SHA}"
+          elif [[ -n "${DISPATCH_BASE_REF}" ]]; then
+            baseline_sha="$(git rev-parse "${DISPATCH_BASE_REF}^{commit}")"
+          else
+            baseline_sha="$(git rev-parse HEAD^1)"
+          fi
+          git worktree add --detach "${PERF_DIRECTORY}/base" "${baseline_sha}"
+          echo "sha=${baseline_sha}" >> "${GITHUB_OUTPUT}"
+          if [[ -f "${PERF_DIRECTORY}/base/bench/performance/artifact.go" ]]; then
+            echo "supported=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "supported=false" >> "${GITHUB_OUTPUT}"
+            echo "::warning::Base revision predates versioned performance artifacts; comparison is skipped for this bootstrap run."
+          fi
+
+      - name: Measure base revision
+        if: steps.baseline.outputs.supported == 'true'
+        working-directory: ${{ runner.temp }}/nexoroute-performance/base
+        env:
+          BASELINE_SHA: ${{ steps.baseline.outputs.sha }}
+        run: |
+          go run ./bench/performance \
+            -scenario all \
+            -requests 200 \
+            -concurrency 16 \
+            -warmup 20 \
+            -runs 5 \
+            -artifact "${PERF_DIRECTORY}/baseline.json" \
+            -revision "${BASELINE_SHA}" \
+            -environment "${NEXOROUTE_PERF_ENVIRONMENT}"
+
+      - name: Measure candidate revision
+        env:
+          CANDIDATE_SHA: ${{ github.sha }}
+        run: |
+          go run ./bench/performance \
+            -scenario all \
+            -requests 200 \
+            -concurrency 16 \
+            -warmup 20 \
+            -runs 5 \
+            -artifact "${PERF_DIRECTORY}/candidate.json" \
+            -revision "${CANDIDATE_SHA}" \
+            -environment "${NEXOROUTE_PERF_ENVIRONMENT}"
+
+      - name: Enforce performance thresholds
+        if: steps.baseline.outputs.supported == 'true'
+        run: |
+          go run ./bench/performance compare \
+            -baseline "${PERF_DIRECTORY}/baseline.json" \
+            -candidate "${PERF_DIRECTORY}/candidate.json" \
+            -thresholds bench/performance/thresholds.json \
+            -output "${PERF_DIRECTORY}/comparison.json"
+
+      - name: Upload performance evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: performance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/nexoroute-performance/*.json
+          if-no-files-found: error
+          retention-days: 30
