@@ -1,9 +1,9 @@
 # Project state
 
 **Updated:** September 25, 2026
-**Current work:** A deterministic local performance and load harness now covers
-gateway overhead, SSE TTFT, throughput, runtime cost, connection reuse,
-modalities, and failure paths. Credentialed live validation is next.
+**Current work:** The local performance harness now produces repeated,
+versioned evidence and enforces configurable pull-request regression limits.
+Credentialed live provider validation is next.
 
 ## Decisions
 
@@ -90,6 +90,11 @@ modalities, and failure paths. Credentialed live validation is next.
   comparison data, not universal provider or production claims.
 - Performance coverage includes text, tools, 48 KiB image/PDF/audio payloads,
   SSE, retry, fallback, permanent `429`, slow readers, and cancellation.
+- Performance artifacts preserve raw reports from at least three runs. The
+  default CI gate uses five-run medians, rejects incompatible environments,
+  and compares a pull request with its base commit on the same runner.
+- Latency and TTFT regressions must cross both percentage and absolute limits;
+  this reduces false positives from small loopback measurements.
 
 ## Blockers
 
@@ -103,8 +108,8 @@ modalities, and failure paths. Credentialed live validation is next.
   suite with scoped credentials and a spending cap.
 - Complete the versioned normalized response compatibility matrix and add
   equivalent fixture evidence for OpenAI-compatible adapters.
-- Record repeated local performance baselines on a named hardware class and
-  pinned Go version before setting regression thresholds.
+- Review early CI variance and tune performance thresholds only from retained
+  base/candidate evidence.
 - Use [the delivery plan](../../docs/next-steps.md) for dependencies, artifacts,
   and acceptance gates. The plan is proposed until prioritized with the user.
 

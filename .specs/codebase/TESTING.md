@@ -19,6 +19,7 @@
 | Full | `go test ./...` |
 | Build | `go test ./... && go vet ./... && go build ./cmd/nexoroute` |
 | Performance smoke | `go test -run '^$' -bench . -benchtime=1x -benchmem ./bench/performance` |
+| Performance regression | `go run ./bench/performance compare -baseline baseline.json -candidate candidate.json` |
 
 ## Conventions
 
@@ -31,3 +32,5 @@
 - Keep performance tests local and deterministic by default. Record live
   provider performance separately with approved credentials and budgets.
 - Compare direct and gateway paths on the same Go version and hardware class.
+- Use at least three runs for a comparison and five runs in the default CI
+  gate. Never compare different load shapes or runner identifiers.

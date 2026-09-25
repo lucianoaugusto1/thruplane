@@ -1,6 +1,6 @@
 # Performance baseline specification
 
-**Status:** Implementing regression gate
+**Status:** Verified
 **Date:** September 25, 2026
 
 ## Problem
@@ -142,4 +142,4 @@ threshold, CLI, workflow, full test, race, vet, and build checks SHALL pass.
 | PERF-11, PERF-12 | T6 | Verified |
 | PERF-13 | T7 | Verified |
 | PERF-14 | T8 | Verified |
-| PERF-15 | T6-T9 | Implementing |
+| PERF-15 | T6-T9 | Verified |

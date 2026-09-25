@@ -1,7 +1,7 @@
 # Performance baseline tasks
 
 **Design:** `design.md`
-**Status:** Regression gate in progress
+**Status:** Complete
 
 ## Execution plan
 
@@ -86,7 +86,7 @@ pull-request workflow that benchmarks base and candidate on one runner.
 **Requirements:** PERF-11 through PERF-15.
 **Tests:** CLI integration and workflow review. **Gate:** Full.
 
-### T9: Document and validate the regression workflow
+### T9: Document and validate the regression workflow — Complete
 
 **What:** Publish local and CI usage, limitations, acceptance evidence, and
 project state.

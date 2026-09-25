@@ -289,6 +289,17 @@ go run ./bench/performance -scenario text -requests 1000 -concurrency 16
 go test -run '^$' -bench . -benchmem ./bench/performance
 ```
 
+Create and compare repeated-run artifacts:
+
+```sh
+go run ./bench/performance -scenario all -runs 5 \
+  -artifact baseline.json -revision baseline -environment local-reference
+go run ./bench/performance -scenario all -runs 5 \
+  -artifact candidate.json -revision candidate -environment local-reference
+go run ./bench/performance compare \
+  -baseline baseline.json -candidate candidate.json
+```
+
 See the [performance testing guide](docs/performance.md) for p50/p95/p99,
 SSE TTFT, throughput, CPU and heap profiles, connection reuse, modalities,
 retry, fallback, `429`, slow-client, and cancellation scenarios.

@@ -69,7 +69,7 @@ Run the complete matrix with the default local profile:
 go run ./bench/performance
 ```
 
-Emit JSON for storage or comparison:
+Emit a single-run JSON report for ad hoc inspection:
 
 ```sh
 go run ./bench/performance \
@@ -82,6 +82,82 @@ go run ./bench/performance \
 
 The runner uses a fixed number of requests. Requests per second equals the
 measured request count divided by wall-clock time for that phase.
+
+## Create a repeatable artifact
+
+Create a versioned artifact with at least three complete runs. Five runs are
+the repository default for regression decisions:
+
+```sh
+go run ./bench/performance \
+  -scenario all \
+  -requests 1000 \
+  -concurrency 16 \
+  -warmup 100 \
+  -runs 5 \
+  -artifact performance-baseline.json \
+  -revision "$(git rev-parse HEAD)" \
+  -environment macbook-m1-pro
+```
+
+The artifact uses schema version 1 and keeps every raw report. It also records
+the source revision, environment identifier, generation time, Go version,
+operating system, architecture, logical CPU count, and load shape.
+
+Use a stable, descriptive environment identifier. The comparator rejects
+artifacts when their environment, system metadata, scenario set, or load
+shape differs.
+
+## Compare two artifacts
+
+Compare a candidate with its baseline:
+
+```sh
+go run ./bench/performance compare \
+  -baseline performance-baseline.json \
+  -candidate performance-candidate.json \
+  -thresholds bench/performance/thresholds.json \
+  -output performance-comparison.json
+```
+
+The command exits with a nonzero status when any scenario exceeds a threshold.
+The JSON report is written before that exit, so CI can retain the evidence for
+a failed gate.
+
+The comparator uses the median across runs. Latency and TTFT fail only when
+they exceed both the relative and absolute limits. This dual guard prevents a
+small loopback baseline from turning harmless microsecond noise into a large
+percentage regression.
+
+The threshold policy covers:
+
+- Added p95 and p99 latency.
+- Added p95 SSE TTFT.
+- Gateway requests per second.
+- Allocated bytes and allocations per request.
+- Client and upstream connection reuse.
+- Unexpected request failures.
+
+Edit `bench/performance/thresholds.json` to change defaults or add a
+scenario-specific override. Keep `minimum_runs` at three or more. The
+repository policy uses five runs and relaxes connection-reuse limits for the
+intentional cancellation scenario.
+
+## CI regression gate
+
+`.github/workflows/performance.yml` runs on pull requests and through manual
+dispatch. It performs the following steps:
+
+1. Check out the pull request candidate and its base commit.
+2. Run five load matrices for each revision on the same GitHub-hosted runner.
+3. Compare the artifacts with the checked-in threshold policy.
+4. Fail the job on a regression.
+5. Upload the baseline, candidate, and comparison JSON files for 30 days.
+
+The first revision that introduces the artifact format can't benchmark an
+older base that doesn't contain the runner flags. The workflow emits a warning
+and uploads the candidate artifact for that one bootstrap run. Later pull
+requests enforce the comparison normally.
 
 ## Measure CPU and heap
 
@@ -156,16 +232,17 @@ upstream call. The `upstream-calls/op` benchmark metric makes that cost
 visible. Cancellation is an expected failure outcome, not an unexpected load
 error.
 
-## Build a regression baseline
+## Tune a regression baseline
 
 Use the following process before setting a threshold:
 
 1. Pin the Go version and hardware class.
 2. Keep the host idle and use the same power mode.
 3. Fix request count, concurrency, warmup, and `GOMAXPROCS`.
-4. Run at least five benchmark counts.
-5. Store JSON and benchmark output with the commit SHA and environment data.
-6. Set thresholds from observed variance, not from a marketing target.
+4. Run at least five complete load matrices.
+5. Store the versioned JSON artifacts with the commit SHA.
+6. Review several CI runs before tightening the checked-in thresholds.
+7. Set thresholds from observed variance, not from a marketing target.
 
 Local mocks isolate gateway overhead. Run separate opt-in provider tests when
 you need real network, model, account, or regional performance evidence.

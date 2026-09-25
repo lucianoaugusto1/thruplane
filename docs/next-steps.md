@@ -97,7 +97,9 @@ are source material, not proof of implementation.
 **Progress:** A deterministic local load runner and Go benchmark matrix now
 cover latency percentiles, SSE TTFT, throughput, runtime cost, connection
 reuse, modalities, retry, fallback, `429`, slow clients, and cancellation.
-Repeated named-hardware baselines and regression thresholds remain open.
+Versioned five-run artifacts, configurable regression thresholds, and a
+same-runner pull-request gate are implemented. Live-provider and long-running
+capacity evidence remain separate follow-up work.
 
 **Why:** A sub-millisecond local adapter benchmark does not measure gateway
 overhead under concurrency, first-token latency, network reuse, or failure

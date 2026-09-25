@@ -2,7 +2,7 @@
 
 **Current milestone:** Gateway assurance
 **Status:** Planning
-**Updated:** September 22, 2026
+**Updated:** September 25, 2026
 
 This page tracks shippable outcomes. The detailed
 [delivery plan](../../docs/next-steps.md) lists required work, artifacts,
@@ -58,14 +58,16 @@ contract before making broad production claims.
 - Version accepted fields and reject untranslated native fields explicitly.
 - Add golden fixtures and opt-in live smoke tests per provider and modality.
 - Record model, region, auth mode, and verification date in a report.
+- Add refreshable credentials and complete Bedrock streaming.
 
-**Performance and failure baseline** - IN PROGRESS
+**Performance and failure baseline** - COMPLETE
 
 - The local harness measures added p50/p95/p99 latency, first SSE chunk,
   throughput, allocations, memory, connection reuse, modalities, retries,
   fallbacks, throttling, slow clients, and cancellation.
-- Record repeated baselines on named hardware and set regression thresholds.
-- Add refreshable credentials and complete Bedrock streaming.
+- Versioned artifacts retain five raw runs and comparable environment data.
+- Pull requests compare base and candidate on one runner with configurable
+  regression thresholds and retained evidence.
 
 **Exit gate:** Deterministic and opt-in live conformance evidence, documented
 exceptions, repeatable benchmarks, and passing Go build/vet/race checks.
