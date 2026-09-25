@@ -21,7 +21,7 @@ handler tests, and `config.example.yaml`.
 **Requirements:** PLG-01, PLG-02, PLG-10, PLG-12.
 **Tests:** Unit and HTTP integration. **Gate:** Full.
 
-### T2: Expose safe route diagnostics
+### T2: Expose safe route diagnostics — Complete
 
 **What:** Track final provider/model, upstream attempts, and fallbacks in the
 gateway execution result and expose them as response headers.

@@ -14,11 +14,16 @@ type executionResult struct {
 	response     *http.Response
 	requestError *provider.RequestError
 	localDenial  *ratelimit.Denial
+	provider     string
+	model        string
+	attempts     int
+	fallbacks    int
 }
 
 func (g *Gateway) executeChat(ctx context.Context, body []byte, plan chatPlan) executionResult {
 	var localDenial *ratelimit.Denial
 	attemptedUpstream := false
+	upstreamAttempts := 0
 	for targetIndex, target := range plan.targets {
 		client := g.clients[target.Provider]
 		limiter := g.limiters[targetKey{provider: target.Provider, model: target.Model}]
@@ -53,6 +58,7 @@ func (g *Gateway) executeChat(ctx context.Context, body []byte, plan chatPlan) e
 				break
 			}
 			attemptedUpstream = true
+			upstreamAttempts++
 
 			response, err := client.Do(ctx, body, target.Model)
 			if err != nil {
@@ -82,14 +88,20 @@ func (g *Gateway) executeChat(ctx context.Context, body []byte, plan chatPlan) e
 
 			decision := classifyResponse(providerType, response)
 			if !decision.fallback {
-				return executionResult{response: response}
+				return executionResult{
+					response: response, provider: target.Provider, model: target.Model,
+					attempts: upstreamAttempts, fallbacks: targetIndex,
+				}
 			}
 
 			lastAttempt := attempt == g.settings.routing.Retries
 			lastTarget := targetIndex == len(plan.targets)-1
 			if !decision.retryTarget || lastAttempt {
 				if lastTarget {
-					return executionResult{response: response}
+					return executionResult{
+						response: response, provider: target.Provider, model: target.Model,
+						attempts: upstreamAttempts, fallbacks: targetIndex,
+					}
 				}
 				drainAndClose(response)
 				break
@@ -98,7 +110,10 @@ func (g *Gateway) executeChat(ctx context.Context, body []byte, plan chatPlan) e
 			delay := retryDelay(g.settings.routing.Retry, attempt, response, g.now(), g.jitter)
 			if !retryFitsBudget(targetStart, g.now(), time.Duration(g.settings.routing.Retry.Budget), delay) {
 				if lastTarget {
-					return executionResult{response: response}
+					return executionResult{
+						response: response, provider: target.Provider, model: target.Model,
+						attempts: upstreamAttempts, fallbacks: targetIndex,
+					}
 				}
 				drainAndClose(response)
 				break

@@ -58,6 +58,10 @@ func TestChatCompletionsRewritesOnlyModelAndRelaysResponse(t *testing.T) {
 	assertHeader(t, response.Header(), "X-RateLimit-Limit-Requests", "100")
 	assertHeader(t, response.Header(), "Anthropic-RateLimit-Requests-Remaining", "9")
 	assertHeader(t, response.Header(), "X-Upstream-Request-Id", "upstream-request")
+	assertHeader(t, response.Header(), "X-NexoRoute-Provider", "primary")
+	assertHeader(t, response.Header(), "X-NexoRoute-Model", "provider-model")
+	assertHeader(t, response.Header(), "X-NexoRoute-Attempts", "1")
+	assertHeader(t, response.Header(), "X-NexoRoute-Fallbacks", "0")
 	if got := response.Header().Get("X-Ignored"); got != "" {
 		t.Errorf("X-Ignored = %q, want omitted", got)
 	}
@@ -162,6 +166,10 @@ func TestChatCompletionsRetriesTargetThenFallsBackInOrder(t *testing.T) {
 	if got := secondCalls.Load(); got != 1 {
 		t.Errorf("second target calls = %d, want 1", got)
 	}
+	assertHeader(t, response.Header(), "X-NexoRoute-Provider", "second")
+	assertHeader(t, response.Header(), "X-NexoRoute-Model", "model-b")
+	assertHeader(t, response.Header(), "X-NexoRoute-Attempts", "4")
+	assertHeader(t, response.Header(), "X-NexoRoute-Fallbacks", "1")
 }
 
 func TestChatCompletionsFallsBackForEveryRetryableStatus(t *testing.T) {

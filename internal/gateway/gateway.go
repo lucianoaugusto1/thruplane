@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"nexoroute/internal/catalog"
@@ -61,6 +62,7 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 
 	result := g.executeChat(r.Context(), body, plan)
 	if result.response != nil {
+		setRouteHeaders(w.Header(), result)
 		relayResponse(w, result.response, plan.stream)
 		return
 	}
@@ -76,4 +78,27 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeError(w, http.StatusBadGateway, "The gateway could not reach an upstream provider.", "api_error", "upstream_unavailable")
+}
+
+func setRouteHeaders(header http.Header, result executionResult) {
+	if safeRouteHeaderValue(result.provider) {
+		header.Set("X-NexoRoute-Provider", result.provider)
+	}
+	if safeRouteHeaderValue(result.model) {
+		header.Set("X-NexoRoute-Model", result.model)
+	}
+	header.Set("X-NexoRoute-Attempts", strconv.Itoa(result.attempts))
+	header.Set("X-NexoRoute-Fallbacks", strconv.Itoa(result.fallbacks))
+}
+
+func safeRouteHeaderValue(value string) bool {
+	if value == "" || len(value) > 512 {
+		return false
+	}
+	for _, character := range value {
+		if character < 0x20 || character > 0x7e {
+			return false
+		}
+	}
+	return true
 }

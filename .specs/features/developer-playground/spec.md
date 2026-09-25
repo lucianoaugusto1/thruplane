@@ -111,7 +111,7 @@ and build checks SHALL pass.
 | Requirement | Task | Status |
 | --- | --- | --- |
 | PLG-01, PLG-02, PLG-10 | T1 | Implementing |
-| PLG-08 | T2 | Pending |
+| PLG-08 | T2 | Verified |
 | PLG-03 through PLG-09 | T3 | Pending |
 | PLG-10, PLG-11 | T4 | Pending |
 | PLG-12 | T1-T5 | Implementing |
