@@ -1,12 +1,12 @@
 # Performance baseline tasks
 
 **Design:** `design.md`
-**Status:** Complete
+**Status:** Regression gate in progress
 
 ## Execution plan
 
 ```text
-T1 -> T2 -> T3 -> T4 -> T5
+T1 -> T2 -> T3 -> T4 -> T5 -> T6 -> T7 -> T8 -> T9
 ```
 
 ## Tasks
@@ -56,6 +56,45 @@ validation, and project state.
 **Requirements:** PERF-08 through PERF-10.
 **Tests:** Documentation review and complete project gate. **Gate:** Build.
 
+### T6: Add versioned repeated-run artifacts
+
+**What:** Capture at least three raw runs with schema, revision, environment,
+time, and compatibility metadata; read and validate saved artifacts.
+**Where:** `bench/performance/artifact.go`, `artifact_test.go`.
+**Depends on:** T5.
+**Requirements:** PERF-11, PERF-12, PERF-15.
+**Tests:** Unit. **Gate:** Package test.
+
+### T7: Add the configurable regression comparator
+
+**What:** Aggregate scenario medians, apply noise-resistant directional
+thresholds, explain every failure, and support JSON threshold overrides.
+**Where:** `bench/performance/compare.go`, `compare_test.go`,
+`bench/performance/thresholds.json`.
+**Depends on:** T6.
+**Requirements:** PERF-13, PERF-15.
+**Tests:** Unit. **Gate:** Package test.
+
+### T8: Expose CLI modes and add the CI gate
+
+**What:** Add repeated runs, artifact output, the `compare` subcommand, and a
+pull-request workflow that benchmarks base and candidate on one runner.
+**Where:** `bench/performance/main.go`, `main_test.go`,
+`.github/workflows/performance.yml`.
+**Depends on:** T7.
+**Requirements:** PERF-11 through PERF-15.
+**Tests:** CLI integration and workflow review. **Gate:** Full.
+
+### T9: Document and validate the regression workflow
+
+**What:** Publish local and CI usage, limitations, acceptance evidence, and
+project state.
+**Where:** `docs/performance.md`, validation, testing strategy, roadmap, and
+project state.
+**Depends on:** T8.
+**Requirements:** PERF-11 through PERF-15.
+**Tests:** Documentation review and complete project gate. **Gate:** Build.
+
 ## Granularity check
 
 | Task | Component | Status |
@@ -65,6 +104,10 @@ validation, and project state.
 | T3 | Load engine | Granular |
 | T4 | User-facing runners | Cohesive |
 | T5 | Operator documentation | Cohesive |
+| T6 | Artifact model | Granular |
+| T7 | Regression decision | Granular |
+| T8 | CLI and CI integration | Cohesive |
+| T9 | Operator documentation | Cohesive |
 
 ## Dependency cross-check
 
@@ -75,6 +118,10 @@ validation, and project state.
 | T3 | T2 | T2 | Match |
 | T4 | T3 | T3 | Match |
 | T5 | T4 | T4 | Match |
+| T6 | T5 | T5 | Match |
+| T7 | T6 | T6 | Match |
+| T8 | T7 | T7 | Match |
+| T9 | T8 | T8 | Match |
 
 ## Test co-location check
 
@@ -85,3 +132,7 @@ validation, and project state.
 | T3 | Gateway and HTTP | End-to-end | End-to-end | Match |
 | T4 | CLI and benchmark | Build and integration | Both | Match |
 | T5 | Documentation | Build | Complete gate | Match |
+| T6 | Artifact model | Unit | Unit | Match |
+| T7 | Comparison policy | Unit | Unit | Match |
+| T8 | CLI and workflow | Integration | Full | Match |
+| T9 | Documentation | Build | Complete gate | Match |
