@@ -1,9 +1,9 @@
 # Project state
 
-**Updated:** September 24, 2026
-**Current work:** Provider-aware retry budgets and process-local target limits
-are implemented; credentialed live validation and performance baselines are
-next.
+**Updated:** September 25, 2026
+**Current work:** The gateway orchestration, native provider contract, and
+configuration package have focused internal boundaries. Credentialed live
+validation and performance baselines are next.
 
 ## Decisions
 
@@ -79,6 +79,12 @@ next.
   retry budget.
 - Known provider quota, billing, and spend-limit errors skip same-target
   retries but can still use an independent fallback.
+- The gateway retains a focused runtime settings snapshot and does not retain
+  provider credentials or unrelated server configuration.
+- Chat request planning, upstream execution, and HTTP transport remain in one
+  cohesive package but live in separate files with explicit internal results.
+- Native provider and configuration responsibilities remain in their existing
+  packages to avoid exporting implementation details solely for subpackages.
 
 ## Blockers
 
@@ -115,6 +121,9 @@ next.
   explicitly until a portable translation exists.
 - A concurrency permit must live until response EOF or Close; releasing at
   response headers would allow long SSE streams to bypass admission limits.
+- In Go, splitting a cohesive internal package into subpackages can increase
+  coupling by forcing private wire types to become exported. Focused files are
+  the safer boundary until the contracts stabilize.
 
 ## Deferred ideas
 

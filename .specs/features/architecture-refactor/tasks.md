@@ -1,7 +1,7 @@
 # Architecture refactor tasks
 
 **Design:** `design.md`
-**Status:** In progress
+**Status:** Complete
 
 ## Execution plan
 
@@ -11,7 +11,7 @@ T1 -> T2 -> T3 -> T4
 
 ## Tasks
 
-### T1: Add focused gateway runtime settings
+### T1: Add focused gateway runtime settings — Complete
 
 **What:** Replace retained `config.Config` with an internal settings snapshot.
 **Where:** `internal/gateway/settings.go`, gateway callers.
@@ -19,7 +19,7 @@ T1 -> T2 -> T3 -> T4
 **Requirements:** AR-01, AR-03, AR-06.
 **Tests:** Existing gateway integration tests. **Gate:** Full.
 
-### T2: Separate chat planning, execution, and HTTP transport
+### T2: Separate chat planning, execution, and HTTP transport — Complete
 
 **What:** Extract the chat planner, upstream executor, and transport helpers.
 **Where:** `internal/gateway`.
@@ -27,7 +27,7 @@ T1 -> T2 -> T3 -> T4
 **Requirements:** AR-01, AR-02, AR-06.
 **Tests:** Existing gateway and HTTP API integration tests. **Gate:** Full.
 
-### T3: Split the native provider contract by responsibility
+### T3: Split the native provider contract by responsibility — Complete
 
 **What:** Separate native types, requests, tools, and response normalization.
 **Where:** `internal/provider/native_*.go`.
@@ -35,7 +35,7 @@ T1 -> T2 -> T3 -> T4
 **Requirements:** AR-01, AR-04, AR-06.
 **Tests:** Existing provider unit and conformance tests. **Gate:** Quick.
 
-### T4: Split configuration by responsibility and validate the project
+### T4: Split configuration by responsibility and validate the project — Complete
 
 **What:** Separate schema types, loading, defaults, and validation, then record
 the final verification result.

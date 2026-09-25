@@ -1,6 +1,6 @@
 # Architecture refactor specification
 
-**Status:** Approved
+**Status:** Verified
 **Date:** September 25, 2026
 
 ## Problem
@@ -73,9 +73,9 @@ and the production build SHALL pass without skipped tests or new dependencies.
 
 | Requirement | Task | Status |
 | --- | --- | --- |
-| AR-01 | T1-T4 | Implementing |
-| AR-02 | T2 | Implementing |
-| AR-03 | T1 | Implementing |
-| AR-04 | T3 | Implementing |
-| AR-05 | T4 | Implementing |
-| AR-06 | T1-T4 | Implementing |
+| AR-01 | T1-T4 | Verified |
+| AR-02 | T2 | Verified |
+| AR-03 | T1 | Verified |
+| AR-04 | T3 | Verified |
+| AR-05 | T4 | Verified |
+| AR-06 | T1-T4 | Verified |
