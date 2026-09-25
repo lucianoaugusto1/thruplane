@@ -172,7 +172,7 @@ func TestChatCompletionsDoesNotTruncateRetryAfterToBudget(t *testing.T) {
 		{name: "first", url: first.URL, model: "model-a"},
 		{name: "second", url: second.URL, model: "model-b"},
 	}, 2, 1<<20)
-	gateway.config.Routing.Retry = config.RetryConfig{
+	gateway.settings.routing.Retry = config.RetryConfig{
 		BaseDelay: config.Duration(100 * time.Millisecond),
 		MaxDelay:  config.Duration(time.Second),
 		Budget:    config.Duration(5 * time.Second),

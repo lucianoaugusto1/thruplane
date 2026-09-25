@@ -29,9 +29,9 @@ type retryDecision struct {
 	fallback    bool
 }
 
-func buildLimiters(cfg config.Config, now func() time.Time) map[targetKey]*ratelimit.Limiter {
+func buildLimiters(models map[string]config.ModelConfig, now func() time.Time) map[targetKey]*ratelimit.Limiter {
 	limiters := make(map[targetKey]*ratelimit.Limiter)
-	for _, model := range cfg.Models {
+	for _, model := range models {
 		for _, target := range model.Targets {
 			key := targetKey{provider: target.Provider, model: target.Model}
 			if _, exists := limiters[key]; exists {

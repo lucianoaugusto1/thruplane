@@ -18,7 +18,7 @@ import (
 const streamBufferSize = 32 * 1024
 
 type Gateway struct {
-	config   config.Config
+	settings gatewaySettings
 	clients  map[string]*provider.Client
 	catalog  *catalog.Registry
 	limiters map[targetKey]*ratelimit.Limiter
@@ -40,11 +40,12 @@ func NewWithCatalog(cfg config.Config, clients map[string]*provider.Client, regi
 }
 
 func newWithCatalogAndClock(cfg config.Config, clients map[string]*provider.Client, registry *catalog.Registry, now func() time.Time) *Gateway {
+	settings := newGatewaySettings(cfg)
 	return &Gateway{
-		config:   cfg,
+		settings: settings,
 		clients:  clients,
 		catalog:  registry,
-		limiters: buildLimiters(cfg, now),
+		limiters: buildLimiters(settings.models, now),
 		now:      now,
 		jitter:   equalJitter,
 		wait:     waitContext,
@@ -52,7 +53,7 @@ func newWithCatalogAndClock(cfg config.Config, clients map[string]*provider.Clie
 }
 
 func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
-	body, ok := readBody(w, r, g.config.Server.MaxBodyBytes)
+	body, ok := readBody(w, r, g.settings.maxBodyBytes)
 	if !ok {
 		return
 	}
@@ -61,7 +62,7 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	model, ok := g.config.Models[alias]
+	model, ok := g.settings.models[alias]
 	if !ok {
 		writeError(w, http.StatusNotFound, "The requested model is not configured.", "invalid_request_error", "model_not_found")
 		return
@@ -76,11 +77,12 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 	for _, target := range model.Targets {
 		catalogModel, known := g.lookupTarget(target)
 		if known {
-			catalogModel.Capabilities = provider.EffectiveCapabilities(g.config.Providers[target.Provider], catalogModel)
-			if !catalogModel.Supports(requirements) || !provider.SupportsRequirements(g.config.Providers[target.Provider], requirements) {
+			providerType := g.settings.providerType(target.Provider)
+			catalogModel.Capabilities = provider.EffectiveCapabilities(providerType, catalogModel)
+			if !catalogModel.Supports(requirements) || !provider.SupportsRequirements(providerType, requirements) {
 				continue
 			}
-		} else if g.config.Catalog.UnknownModels == "reject" {
+		} else if g.settings.unknownModels == "reject" {
 			unknown++
 			continue
 		}
@@ -109,13 +111,13 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 		limiter := g.limiters[targetKey{provider: target.Provider, model: target.Model}]
 		var targetStart time.Time
 
-		for attempt := 0; attempt <= g.config.Routing.Retries; attempt++ {
+		for attempt := 0; attempt <= g.settings.routing.Retries; attempt++ {
 			if r.Context().Err() != nil {
 				return
 			}
 			queueTimeout := time.Duration(target.RateLimit.QueueTimeout)
 			if attempt > 0 {
-				remaining, limited := remainingRetryBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget))
+				remaining, limited := remainingRetryBudget(targetStart, g.now(), time.Duration(g.settings.routing.Retry.Budget))
 				if limited && remaining <= 0 {
 					break
 				}
@@ -133,7 +135,7 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 			}
 			if targetStart.IsZero() {
 				targetStart = g.now()
-			} else if remaining, limited := remainingRetryBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget)); limited && remaining <= 0 {
+			} else if remaining, limited := remainingRetryBudget(targetStart, g.now(), time.Duration(g.settings.routing.Retry.Budget)); limited && remaining <= 0 {
 				permit.Release()
 				break
 			}
@@ -150,11 +152,11 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 					writeError(w, http.StatusBadRequest, requestError.Message, "invalid_request_error", requestError.Code)
 					return
 				}
-				if attempt == g.config.Routing.Retries {
+				if attempt == g.settings.routing.Retries {
 					break
 				}
-				delay := retryDelay(g.config.Routing.Retry, attempt, nil, g.now(), g.jitter)
-				if !retryFitsBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget), delay) {
+				delay := retryDelay(g.settings.routing.Retry, attempt, nil, g.now(), g.jitter)
+				if !retryFitsBudget(targetStart, g.now(), time.Duration(g.settings.routing.Retry.Budget), delay) {
 					break
 				}
 				if err := g.wait(r.Context(), delay); err != nil {
@@ -163,15 +165,16 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			wrapPermit(response, permit)
-			limiter.Observe(g.config.Providers[target.Provider].Type, response.StatusCode, response.Header)
+			providerType := g.settings.providerType(target.Provider)
+			limiter.Observe(providerType, response.StatusCode, response.Header)
 
-			decision := classifyResponse(g.config.Providers[target.Provider].Type, response)
+			decision := classifyResponse(providerType, response)
 			if !decision.fallback {
 				relayResponse(w, response, stream)
 				return
 			}
 
-			lastAttempt := attempt == g.config.Routing.Retries
+			lastAttempt := attempt == g.settings.routing.Retries
 			lastTarget := targetIndex == len(routable)-1
 			if !decision.retryTarget || lastAttempt {
 				if lastTarget {
@@ -182,8 +185,8 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 
-			delay := retryDelay(g.config.Routing.Retry, attempt, response, g.now(), g.jitter)
-			if !retryFitsBudget(targetStart, g.now(), time.Duration(g.config.Routing.Retry.Budget), delay) {
+			delay := retryDelay(g.settings.routing.Retry, attempt, response, g.now(), g.jitter)
+			if !retryFitsBudget(targetStart, g.now(), time.Duration(g.settings.routing.Retry.Budget), delay) {
 				if lastTarget {
 					relayResponse(w, response, stream)
 					return
@@ -228,7 +231,7 @@ func writeRateLimitError(w http.ResponseWriter, denied *ratelimit.Denial) {
 }
 
 func (g *Gateway) lookupTarget(target config.TargetConfig) (catalog.Model, bool) {
-	providerID := g.config.Providers[target.Provider].Type
+	providerID := g.settings.providerType(target.Provider)
 	modelID := target.Model
 	if target.CatalogProvider != "" {
 		providerID = target.CatalogProvider

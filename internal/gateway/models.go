@@ -35,8 +35,8 @@ type targetInfo struct {
 }
 
 func (g *Gateway) ListModels(w http.ResponseWriter, _ *http.Request) {
-	aliases := make([]string, 0, len(g.config.Models))
-	for alias := range g.config.Models {
+	aliases := make([]string, 0, len(g.settings.models))
+	for alias := range g.settings.models {
 		aliases = append(aliases, alias)
 	}
 	sort.Strings(aliases)
@@ -54,7 +54,7 @@ func (g *Gateway) ListModels(w http.ResponseWriter, _ *http.Request) {
 
 func (g *Gateway) GetModel(w http.ResponseWriter, r *http.Request) {
 	alias := r.PathValue("model")
-	configured, ok := g.config.Models[alias]
+	configured, ok := g.settings.models[alias]
 	if !ok {
 		writeError(w, http.StatusNotFound, "The requested model is not configured.", "invalid_request_error", "model_not_found")
 		return
@@ -63,7 +63,7 @@ func (g *Gateway) GetModel(w http.ResponseWriter, r *http.Request) {
 	for _, target := range configured.Targets {
 		entry := targetInfo{Provider: target.Provider, Model: target.Model}
 		if model, known := g.lookupTarget(target); known {
-			effective := provider.EffectiveCapabilities(g.config.Providers[target.Provider], model)
+			effective := provider.EffectiveCapabilities(g.settings.providerType(target.Provider), model)
 			entry.Cataloged = true
 			entry.CatalogProvider = model.Provider.ID
 			entry.CatalogModel = model.ID

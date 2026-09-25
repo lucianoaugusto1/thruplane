@@ -2,22 +2,21 @@ package provider
 
 import (
 	"nexoroute/internal/catalog"
-	"nexoroute/internal/config"
 )
 
 // EffectiveCapabilities intersects model facts with features implemented by
 // this gateway's adapter. Catalog facts alone do not imply transport support.
-func EffectiveCapabilities(provider config.ProviderConfig, model catalog.Model) catalog.Capabilities {
+func EffectiveCapabilities(providerType string, model catalog.Model) catalog.Capabilities {
 	caps := model.Capabilities
 	caps.Operations = intersect(caps.Operations, []string{"chat"})
-	switch provider.Type {
+	switch providerType {
 	case "anthropic", "bedrock":
 		caps.InputModalities = intersect(caps.InputModalities, []string{"text", "image", "document"})
 		caps.OutputModalities = intersect(caps.OutputModalities, []string{"text"})
 		caps.StructuredOutputs = false
 		caps.Tools.StrictSchema = false
 		caps.PromptCaching = false
-		if provider.Type == "bedrock" {
+		if providerType == "bedrock" {
 			caps.Streaming = false
 		}
 	case "gemini", "vertex":
@@ -32,15 +31,15 @@ func EffectiveCapabilities(provider config.ProviderConfig, model catalog.Model) 
 	return caps
 }
 
-func SupportsRequirements(provider config.ProviderConfig, requirements catalog.Requirements) bool {
+func SupportsRequirements(providerType string, requirements catalog.Requirements) bool {
 	if requirements.RemoteImage {
-		switch provider.Type {
+		switch providerType {
 		case "gemini", "vertex", "bedrock", "ollama":
 			return false
 		}
 	}
 	if requirements.DisableParallelTools && requirements.Tools {
-		return provider.Type != "gemini" && provider.Type != "vertex" && provider.Type != "bedrock"
+		return providerType != "gemini" && providerType != "vertex" && providerType != "bedrock"
 	}
 	return true
 }
