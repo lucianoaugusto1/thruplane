@@ -41,6 +41,9 @@ models:
 	if got := time.Duration(cfg.Server.ShutdownTimeout); got != 10*time.Second {
 		t.Errorf("Server.ShutdownTimeout = %s, want %s", got, 10*time.Second)
 	}
+	if cfg.Server.Metrics.Enabled {
+		t.Error("Server.Metrics.Enabled = true, want disabled by default")
+	}
 	if cfg.Routing.Retries != 1 {
 		t.Errorf("Routing.Retries = %d, want 1", cfg.Routing.Retries)
 	}
@@ -119,6 +122,30 @@ models:
 	}
 	if !cfg.Server.Playground.Enabled {
 		t.Fatal("Server.Playground.Enabled = false, want true")
+	}
+}
+
+func TestLoadMetricsConfiguration(t *testing.T) {
+	path := writeConfig(t, `
+server:
+  metrics:
+    enabled: true
+providers:
+  local:
+    type: ollama
+models:
+  chat:
+    targets:
+      - provider: local
+        model: llama3
+`)
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cfg.Server.Metrics.Enabled {
+		t.Fatal("Server.Metrics.Enabled = false, want true")
 	}
 }
 

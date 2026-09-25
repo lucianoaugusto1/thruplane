@@ -42,9 +42,9 @@ T1 -> T2 -> T3 -> T4 -> T5 -> T6 -> T7
 
 **Done when:**
 
-- [ ] The default is disabled.
-- [ ] Strict YAML accepts only the documented metrics field.
-- [ ] `go test ./internal/config` passes with no test deletion.
+- [x] The default is disabled.
+- [x] Strict YAML accepts only the documented metrics field.
+- [x] `go test ./internal/config` passes with no test deletion.
 
 **Verify:** `go test ./internal/config`
 

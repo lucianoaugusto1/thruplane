@@ -43,9 +43,14 @@ type ServerConfig struct {
 	ReadHeaderTimeout Duration         `yaml:"read_header_timeout"`
 	ShutdownTimeout   Duration         `yaml:"shutdown_timeout"`
 	Playground        PlaygroundConfig `yaml:"playground"`
+	Metrics           MetricsConfig    `yaml:"metrics"`
 }
 
 type PlaygroundConfig struct {
+	Enabled bool `yaml:"enabled"`
+}
+
+type MetricsConfig struct {
 	Enabled bool `yaml:"enabled"`
 }
 

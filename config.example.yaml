@@ -7,6 +7,9 @@ server:
   playground:
     # The local developer UI is disabled unless explicitly enabled.
     enabled: false
+  metrics:
+    # Prometheus metrics expose route metadata and are disabled by default.
+    enabled: false
 
 catalog:
   # allow preserves passthrough for private or newly released model IDs.
