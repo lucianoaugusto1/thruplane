@@ -56,7 +56,7 @@ validation, and project state.
 **Requirements:** PERF-08 through PERF-10.
 **Tests:** Documentation review and complete project gate. **Gate:** Build.
 
-### T6: Add versioned repeated-run artifacts
+### T6: Add versioned repeated-run artifacts — Complete
 
 **What:** Capture at least three raw runs with schema, revision, environment,
 time, and compatibility metadata; read and validate saved artifacts.
