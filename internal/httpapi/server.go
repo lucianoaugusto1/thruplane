@@ -27,6 +27,10 @@ func New(cfg config.Config, gateway *gateway.Gateway, logger *slog.Logger) http.
 	mux.HandleFunc("POST /v1/chat/completions", gateway.ChatCompletions)
 	mux.HandleFunc("GET /v1/models", gateway.ListModels)
 	mux.HandleFunc("GET /v1/models/{model}", gateway.GetModel)
+	if cfg.Server.Playground.Enabled {
+		mux.HandleFunc("GET /playground", redirectPlayground)
+		mux.HandleFunc("GET /playground/", servePlayground)
+	}
 
 	var handler http.Handler = mux
 	handler = authenticate(cfg.Server.APIKey, handler)

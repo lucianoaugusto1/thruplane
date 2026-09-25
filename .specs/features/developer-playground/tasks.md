@@ -11,7 +11,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 
 ## Tasks
 
-### T1: Add configuration and embedded asset handler
+### T1: Add configuration and embedded asset handler — Complete
 
 **What:** Add opt-in configuration, exact static routes, browser security
 headers, and tests for disabled, enabled, redirect, asset, and auth behavior.

@@ -4,6 +4,9 @@ server:
   max_body_bytes: 1048576
   read_header_timeout: 5s
   shutdown_timeout: 10s
+  playground:
+    # The local developer UI is disabled unless explicitly enabled.
+    enabled: false
 
 catalog:
   # allow preserves passthrough for private or newly released model IDs.

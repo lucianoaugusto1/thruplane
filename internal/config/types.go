@@ -37,11 +37,16 @@ type CatalogConfig struct {
 }
 
 type ServerConfig struct {
-	Address           string   `yaml:"address"`
-	APIKey            string   `yaml:"api_key"`
-	MaxBodyBytes      int64    `yaml:"max_body_bytes"`
-	ReadHeaderTimeout Duration `yaml:"read_header_timeout"`
-	ShutdownTimeout   Duration `yaml:"shutdown_timeout"`
+	Address           string           `yaml:"address"`
+	APIKey            string           `yaml:"api_key"`
+	MaxBodyBytes      int64            `yaml:"max_body_bytes"`
+	ReadHeaderTimeout Duration         `yaml:"read_header_timeout"`
+	ShutdownTimeout   Duration         `yaml:"shutdown_timeout"`
+	Playground        PlaygroundConfig `yaml:"playground"`
+}
+
+type PlaygroundConfig struct {
+	Enabled bool `yaml:"enabled"`
 }
 
 type ProviderConfig struct {

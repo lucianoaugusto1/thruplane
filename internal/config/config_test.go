@@ -67,6 +67,31 @@ models:
 	}
 }
 
+func TestLoadPlaygroundConfiguration(t *testing.T) {
+	path := writeConfig(t, `
+server:
+  playground:
+    enabled: true
+providers:
+  local:
+    type: ollama
+    base_url: http://localhost:11434
+models:
+  chat:
+    targets:
+      - provider: local
+        model: llama3
+`)
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cfg.Server.Playground.Enabled {
+		t.Fatal("Server.Playground.Enabled = false, want true")
+	}
+}
+
 func TestLoadRejectsUnknownFields(t *testing.T) {
 	path := writeConfig(t, `
 server:

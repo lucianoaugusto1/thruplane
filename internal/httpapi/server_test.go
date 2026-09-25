@@ -70,6 +70,82 @@ func TestProtectedRoutesRequireConfiguredBearerToken(t *testing.T) {
 	}
 }
 
+func TestPlaygroundIsDisabledByDefault(t *testing.T) {
+	t.Parallel()
+
+	handler := New(config.Config{}, nil, discardLogger())
+	for _, path := range []string{"/playground", "/playground/", "/playground/app.js"} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusNotFound {
+			t.Errorf("GET %s status = %d, want 404", path, response.Code)
+		}
+	}
+}
+
+func TestPlaygroundServesOnlyEmbeddedAssetsWithSecurityHeaders(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Config{Server: config.ServerConfig{
+		APIKey:     "nexoroute-secret",
+		Playground: config.PlaygroundConfig{Enabled: true},
+	}}
+	handler := New(cfg, nil, discardLogger())
+
+	redirect := httptest.NewRecorder()
+	handler.ServeHTTP(redirect, httptest.NewRequest(http.MethodGet, "/playground", nil))
+	if redirect.Code != http.StatusPermanentRedirect || redirect.Header().Get("Location") != "/playground/" {
+		t.Fatalf("redirect = %d %q", redirect.Code, redirect.Header().Get("Location"))
+	}
+
+	tests := []struct {
+		path        string
+		contentType string
+		contains    string
+	}{
+		{path: "/playground/", contentType: "text/html; charset=utf-8", contains: "NexoRoute Playground"},
+		{path: "/playground/app.js", contentType: "text/javascript; charset=utf-8", contains: "use strict"},
+		{path: "/playground/styles.css", contentType: "text/css; charset=utf-8", contains: ":root"},
+	}
+	for _, test := range tests {
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, test.path, nil))
+		if response.Code != http.StatusOK {
+			t.Fatalf("GET %s status = %d, want 200", test.path, response.Code)
+		}
+		if got := response.Header().Get("Content-Type"); got != test.contentType {
+			t.Errorf("GET %s Content-Type = %q, want %q", test.path, got, test.contentType)
+		}
+		if !strings.Contains(response.Body.String(), test.contains) {
+			t.Errorf("GET %s body missing %q", test.path, test.contains)
+		}
+		for name, want := range map[string]string{
+			"Cache-Control":           "no-store",
+			"Content-Security-Policy": "default-src 'self'",
+			"Referrer-Policy":         "no-referrer",
+			"X-Content-Type-Options":  "nosniff",
+			"X-Frame-Options":         "DENY",
+		} {
+			if got := response.Header().Get(name); !strings.Contains(got, want) {
+				t.Errorf("GET %s %s = %q, want %q", test.path, name, got, want)
+			}
+		}
+	}
+
+	missing := httptest.NewRecorder()
+	handler.ServeHTTP(missing, httptest.NewRequest(http.MethodGet, "/playground/private.txt", nil))
+	if missing.Code != http.StatusNotFound {
+		t.Fatalf("unknown playground asset status = %d, want 404", missing.Code)
+	}
+
+	models := httptest.NewRecorder()
+	handler.ServeHTTP(models, httptest.NewRequest(http.MethodGet, "/v1/models", nil))
+	if models.Code != http.StatusUnauthorized {
+		t.Fatalf("models status = %d, want 401", models.Code)
+	}
+}
+
 func TestServerRoutesChatCompletions(t *testing.T) {
 	t.Parallel()
 
