@@ -11,7 +11,7 @@ T1 -> T2 -> T3 -> T4
 
 ## Tasks
 
-### T1: Add circuit-breaker configuration
+### T1: Add circuit-breaker configuration — Complete
 
 **What:** Add strict global routing policy fields, defaults, validation, and
 example configuration.

@@ -47,6 +47,16 @@ func (cfg Config) Validate() error {
 	if retryBudget < baseDelay {
 		return errors.New("routing retry budget must be greater than or equal to base_delay")
 	}
+	if cfg.Routing.CircuitBreaker.FailureThreshold < 0 {
+		return errors.New("routing circuit_breaker failure_threshold must not be negative")
+	}
+	circuitOpenDuration := time.Duration(cfg.Routing.CircuitBreaker.OpenDuration)
+	if circuitOpenDuration < 0 {
+		return errors.New("routing circuit_breaker open_duration must not be negative")
+	}
+	if cfg.Routing.CircuitBreaker.FailureThreshold > 0 && circuitOpenDuration <= 0 {
+		return errors.New("routing circuit_breaker open_duration must be greater than zero when enabled")
+	}
 	if len(cfg.Providers) == 0 {
 		return errors.New("at least one provider is required")
 	}

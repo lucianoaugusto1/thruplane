@@ -59,11 +59,41 @@ models:
 	if got := time.Duration(cfg.Routing.Retry.Budget); got != 15*time.Second {
 		t.Errorf("Routing.Retry.Budget = %s, want %s", got, 15*time.Second)
 	}
+	if cfg.Routing.CircuitBreaker.FailureThreshold != 0 {
+		t.Errorf("Routing.CircuitBreaker.FailureThreshold = %d, want disabled", cfg.Routing.CircuitBreaker.FailureThreshold)
+	}
+	if got := time.Duration(cfg.Routing.CircuitBreaker.OpenDuration); got != 30*time.Second {
+		t.Errorf("Routing.CircuitBreaker.OpenDuration = %s, want %s", got, 30*time.Second)
+	}
 	if got := cfg.Providers["openai"].APIKey; got != "expanded-secret" {
 		t.Errorf("Providers[openai].APIKey = %q, want expanded value", got)
 	}
 	if got := cfg.Providers["openai"].BaseURL; got != "https://api.openai.com/v1" {
 		t.Errorf("Providers[openai].BaseURL = %q, want normalized URL", got)
+	}
+}
+
+func TestLoadCircuitBreakerConfiguration(t *testing.T) {
+	path := writeConfig(t, `
+providers:
+  openai: {type: openai}
+models:
+  chat:
+    targets:
+      - provider: openai
+        model: gpt-4o-mini
+routing:
+  circuit_breaker:
+    failure_threshold: 4
+    open_duration: 45s
+`)
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.Routing.CircuitBreaker.FailureThreshold != 4 || time.Duration(cfg.Routing.CircuitBreaker.OpenDuration) != 45*time.Second {
+		t.Fatalf("circuit breaker = %#v, want threshold 4 and duration 45s", cfg.Routing.CircuitBreaker)
 	}
 }
 
@@ -232,6 +262,28 @@ func TestValidateRejectsInvalidValues(t *testing.T) {
 				cfg.Routing.Retry.Budget = Duration(100 * time.Millisecond)
 			},
 			wantErr: "routing retry budget",
+		},
+		{
+			name: "negative circuit threshold",
+			mutate: func(cfg *Config) {
+				cfg.Routing.CircuitBreaker.FailureThreshold = -1
+			},
+			wantErr: "routing circuit_breaker failure_threshold",
+		},
+		{
+			name: "enabled circuit without open duration",
+			mutate: func(cfg *Config) {
+				cfg.Routing.CircuitBreaker.FailureThreshold = 3
+				cfg.Routing.CircuitBreaker.OpenDuration = 0
+			},
+			wantErr: "routing circuit_breaker open_duration",
+		},
+		{
+			name: "negative circuit open duration while disabled",
+			mutate: func(cfg *Config) {
+				cfg.Routing.CircuitBreaker.OpenDuration = Duration(-time.Second)
+			},
+			wantErr: "routing circuit_breaker open_duration",
 		},
 		{
 			name: "empty target model",

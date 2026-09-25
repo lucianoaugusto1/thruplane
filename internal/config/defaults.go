@@ -15,6 +15,7 @@ const (
 	defaultRetryBaseDelay        = 200 * time.Millisecond
 	defaultRetryMaxDelay         = 5 * time.Second
 	defaultRetryBudget           = 15 * time.Second
+	defaultCircuitOpenDuration   = 30 * time.Second
 )
 
 func defaultConfig() Config {
@@ -33,6 +34,9 @@ func defaultConfig() Config {
 				BaseDelay: Duration(defaultRetryBaseDelay),
 				MaxDelay:  Duration(defaultRetryMaxDelay),
 				Budget:    Duration(defaultRetryBudget),
+			},
+			CircuitBreaker: CircuitBreakerConfig{
+				OpenDuration: Duration(defaultCircuitOpenDuration),
 			},
 		},
 	}

@@ -83,7 +83,7 @@ SHALL pass with local deterministic tests.
 
 | Requirement | Task | Status |
 | --- | --- | --- |
-| CB-01 | T1 | Pending |
+| CB-01 | T1 | Verified |
 | CB-02 through CB-05 | T2-T3 | Pending |
 | CB-06 | T3 | Pending |
 | CB-07 | T4 | Pending |

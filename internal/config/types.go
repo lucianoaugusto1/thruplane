@@ -76,15 +76,21 @@ type TargetConfig struct {
 }
 
 type RoutingConfig struct {
-	Retries               int         `yaml:"retries"`
-	ResponseHeaderTimeout Duration    `yaml:"response_header_timeout"`
-	Retry                 RetryConfig `yaml:"retry"`
+	Retries               int                  `yaml:"retries"`
+	ResponseHeaderTimeout Duration             `yaml:"response_header_timeout"`
+	Retry                 RetryConfig          `yaml:"retry"`
+	CircuitBreaker        CircuitBreakerConfig `yaml:"circuit_breaker"`
 }
 
 type RetryConfig struct {
 	BaseDelay Duration `yaml:"base_delay"`
 	MaxDelay  Duration `yaml:"max_delay"`
 	Budget    Duration `yaml:"budget"`
+}
+
+type CircuitBreakerConfig struct {
+	FailureThreshold int      `yaml:"failure_threshold"`
+	OpenDuration     Duration `yaml:"open_duration"`
 }
 
 type RateLimitConfig struct {

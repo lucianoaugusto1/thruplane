@@ -53,3 +53,7 @@ routing:
     base_delay: 200ms
     max_delay: 5s
     budget: 15s
+  circuit_breaker:
+    # Zero disables the breaker. Start with 5 after validating your workload.
+    failure_threshold: 0
+    open_duration: 30s
