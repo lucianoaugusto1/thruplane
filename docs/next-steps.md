@@ -27,10 +27,9 @@ combination has passed a live compatibility or performance test.
 
 ### 1. Define and enforce API compatibility
 
-**Progress:** Native request-field enforcement, a dated request contract,
-deterministic native-provider fixtures, and an opt-in live runner are
-implemented. The complete response matrix and recorded live evidence remain
-open.
+**Progress:** Native request-field enforcement, dated request and response
+contracts, deterministic native and compatible-provider fixtures, and an
+opt-in live runner are implemented. Recorded live evidence remains open.
 
 **Why:** Native adapters decode selected Chat Completions fields. An unknown
 model in `allow` mode bypasses catalog filtering, so an unsupported field can
@@ -257,6 +256,7 @@ SLA or compliance claim before operational and legal review.
 5. Decide the hosted control-plane deployment and data-retention model before
    collecting any customer prompts or responses.
 
-The next implementation slice is **recorded live provider conformance and the
-response compatibility matrix**. They are prerequisites for credible
-performance claims, public release, and higher-level routing.
+The next external validation slice is **recorded live provider conformance**.
+The next credential-free implementation slice is **per-target health, circuit
+breakers, and readiness**. Both are prerequisites for credible production
+claims, public release, and higher-level routing.

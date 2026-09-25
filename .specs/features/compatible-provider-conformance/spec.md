@@ -1,6 +1,6 @@
 # OpenAI-compatible provider conformance specification
 
-**Status:** Implementing
+**Status:** Complete
 **Date:** September 25, 2026
 
 ## Problem
@@ -60,4 +60,4 @@ access.
 | CPC-02 | Buffered opaque-request fixture | Verified |
 | CPC-03 | Buffered, SSE, and upstream-error fixtures | Verified |
 | CPC-04 | Invalid-object fixture and cancellation integration test | Verified |
-| CPC-05 | Validation report and project gate | Pending |
+| CPC-05 | Validation report and project gate | Verified |

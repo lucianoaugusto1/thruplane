@@ -1,9 +1,9 @@
 # Project state
 
 **Updated:** September 25, 2026
-**Current work:** The opt-in embedded developer playground is complete and
-exercises the public API for streaming, tools, media, and route inspection.
-Credentialed live provider validation is next.
+**Current work:** Native and OpenAI-compatible adapters now have deterministic
+conformance fixtures and a versioned request/response matrix. Credentialed
+live provider validation is next.
 
 ## Decisions
 
@@ -75,6 +75,10 @@ Credentialed live provider validation is next.
   streaming or explicit rejection, upstream errors, and response
   normalization. Live evidence remains unverified until credentialed runs are
   recorded.
+- One shared OpenAI-compatible fixture verifies all six canonical compatible
+  provider types against opaque buffered, SSE, and error responses. It also
+  covers multimodal fields, tools, structured output, future fields, and the
+  Ollama output-token rename.
 - Go 1.26 is the tested baseline; the implementation uses only standard HTTP
   features available since Go 1.22.
 - The container uses a multi-stage Go build and a non-root distroless runtime.

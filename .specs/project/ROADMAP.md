@@ -53,12 +53,15 @@ contract before making broad production claims.
 - Native function tools; native image and PDF input; Gemini and Vertex
   inline audio input; capability-aware routing.
 
-**Contract enforcement and provider conformance** - PLANNED
+**Contract enforcement and provider conformance** - IN PROGRESS
 
-- Version accepted fields and reject untranslated native fields explicitly.
-- Add golden fixtures and opt-in live smoke tests per provider and modality.
-- Record model, region, auth mode, and verification date in a report.
-- Add refreshable credentials and complete Bedrock streaming.
+- Versioned request and response contracts reject untranslated native fields
+  and document compatible passthrough boundaries.
+- Golden fixtures cover native and OpenAI-compatible adapters, modalities,
+  tools, streaming or explicit rejection, and upstream errors.
+- The opt-in live smoke runner exists; recorded model, region, auth mode, and
+  verification-date evidence remains pending.
+- Refreshable credentials and Bedrock streaming remain planned.
 
 **Performance and failure baseline** - COMPLETE
 
