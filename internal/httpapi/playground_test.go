@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -37,6 +38,64 @@ func TestPlaygroundClientContract(t *testing.T) {
 	} {
 		if strings.Contains(script, forbidden) {
 			t.Errorf("app.js contains forbidden %q", forbidden)
+		}
+	}
+}
+
+func TestPlaygroundInterfaceContract(t *testing.T) {
+	htmlBytes, err := playgroundAssets.ReadFile("playground/index.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cssBytes, err := playgroundAssets.ReadFile("playground/styles.css")
+	if err != nil {
+		t.Fatal(err)
+	}
+	scriptBytes, err := playgroundAssets.ReadFile("playground/app.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	html := string(htmlBytes)
+	css := string(cssBytes)
+	script := string(scriptBytes)
+
+	for _, required := range []string{
+		`<html lang="en">`,
+		`name="viewport"`,
+		`<header class="app-header">`,
+		`<main class="workspace">`,
+		`aria-live="polite"`,
+		`aria-label="Attach image, PDF, WAV, or MP3"`,
+		`<label for="api-key">`,
+		`<label for="model">`,
+		`for="prompt"`,
+	} {
+		if !strings.Contains(html, required) {
+			t.Errorf("index.html missing %q", required)
+		}
+	}
+	for _, forbidden := range []string{"<style", "onclick=", "onchange=", "onload="} {
+		if strings.Contains(html, forbidden) {
+			t.Errorf("index.html contains forbidden %q", forbidden)
+		}
+	}
+
+	idPattern := regexp.MustCompile(`byID\("([a-z0-9-]+)"\)`)
+	for _, match := range idPattern.FindAllStringSubmatch(script, -1) {
+		if !strings.Contains(html, `id="`+match[1]+`"`) {
+			t.Errorf("index.html missing app.js element id %q", match[1])
+		}
+	}
+	for _, required := range []string{
+		":focus-visible",
+		"@media (max-width:",
+		"@media (prefers-reduced-motion: reduce)",
+		".composer-tools input.file-input",
+		"grid-template-columns:",
+		"min-height: 100dvh",
+	} {
+		if !strings.Contains(css, required) {
+			t.Errorf("styles.css missing %q", required)
 		}
 	}
 }

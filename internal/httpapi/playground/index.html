@@ -7,10 +7,197 @@
   <link rel="stylesheet" href="/playground/styles.css">
 </head>
 <body>
-  <main>
-    <h1>NexoRoute Playground</h1>
-    <p>The developer interface is loading.</p>
+  <header class="app-header">
+    <a class="brand" href="/playground/" aria-label="NexoRoute Playground home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>
+        <strong>NexoRoute</strong>
+        <small>Developer playground</small>
+      </span>
+    </a>
+    <div class="header-meta">
+      <span class="privacy-badge"><i aria-hidden="true"></i>Local session</span>
+      <button class="button button-ghost" id="export-curl" type="button">Copy curl</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="panel config-panel" aria-labelledby="configuration-title">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Request setup</p>
+          <h1 id="configuration-title">Configuration</h1>
+        </div>
+        <span class="step-badge">01</span>
+      </div>
+
+      <section class="config-section">
+        <div class="field-heading">
+          <label for="api-key">Gateway API key</label>
+          <span>Memory only</span>
+        </div>
+        <div class="input-action">
+          <input id="api-key" type="password" autocomplete="off" spellcheck="false"
+            placeholder="Optional when auth is disabled">
+          <button class="button button-compact" id="connect-button" type="button">Connect</button>
+        </div>
+        <p class="connection-state" id="connection-state" data-state="pending">Connecting…</p>
+      </section>
+
+      <section class="config-section">
+        <label for="model">Model alias</label>
+        <select id="model" disabled>
+          <option value="">Connect to load models</option>
+        </select>
+        <div class="model-summary" id="model-summary" aria-live="polite"></div>
+      </section>
+
+      <section class="config-section">
+        <label for="system-prompt">System prompt</label>
+        <textarea id="system-prompt" rows="3"
+          placeholder="Set behavior and response constraints"></textarea>
+      </section>
+
+      <section class="config-section settings-grid">
+        <div class="field temperature-field">
+          <div class="field-heading">
+            <label for="temperature">Temperature</label>
+            <output id="temperature-value" for="temperature">0.7</output>
+          </div>
+          <input id="temperature" type="range" min="0" max="2" step="0.1" value="0.7">
+        </div>
+        <div class="field">
+          <label for="max-tokens">Max output tokens</label>
+          <input id="max-tokens" type="number" min="1" step="1" value="1024">
+        </div>
+      </section>
+
+      <section class="config-section">
+        <label class="switch-row" for="stream">
+          <span>
+            <strong>Stream response</strong>
+            <small>Render SSE deltas as they arrive</small>
+          </span>
+          <span class="switch">
+            <input id="stream" type="checkbox" checked>
+            <i aria-hidden="true"></i>
+          </span>
+        </label>
+      </section>
+
+      <details class="config-section tools-section">
+        <summary>
+          <span>
+            <strong>Function tools</strong>
+            <small>OpenAI-compatible JSON array</small>
+          </span>
+          <span class="summary-plus" aria-hidden="true">+</span>
+        </summary>
+        <label class="sr-only" for="tools">Function tools JSON</label>
+        <textarea id="tools" rows="9" spellcheck="false"
+          placeholder='[{"type":"function","function":{"name":"lookup","parameters":{"type":"object"}}}]'></textarea>
+      </details>
+    </aside>
+
+    <section class="panel conversation-panel" aria-labelledby="conversation-title">
+      <div class="conversation-header">
+        <div>
+          <p class="eyebrow">Public API session</p>
+          <h2 id="conversation-title">Conversation</h2>
+        </div>
+        <button class="button button-ghost button-compact" id="clear-button" type="button">Clear</button>
+      </div>
+
+      <div class="conversation" id="conversation" aria-live="polite" aria-label="Conversation messages">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-orbit" aria-hidden="true"><i></i><i></i></div>
+          <p class="eyebrow">Ready to route</p>
+          <h3>Send one request.<br>See the entire path.</h3>
+          <p>Test streaming, tools, and multimodal input through the same API your application uses.</p>
+          <div class="starter-grid" aria-hidden="true">
+            <span>Text</span><span>Tools</span><span>Image</span><span>PDF</span><span>Audio</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <div class="attachments" id="attachments" aria-live="polite"></div>
+        <label class="sr-only" for="prompt">Message</label>
+        <textarea id="prompt" rows="3" placeholder="Ask a model through NexoRoute…"></textarea>
+        <div class="composer-actions">
+          <div class="composer-tools">
+            <label class="attach-button" for="files" aria-label="Attach image, PDF, WAV, or MP3">
+              <span aria-hidden="true">＋</span> Attach
+            </label>
+            <input id="files" class="file-input" type="file" multiple
+              accept="image/png,image/jpeg,image/gif,image/webp,application/pdf,audio/wav,audio/x-wav,audio/mpeg,audio/mp3">
+            <span class="shortcut">⌘ / Ctrl + Enter</span>
+          </div>
+          <div class="send-actions">
+            <button class="button button-danger" id="stop-button" type="button" disabled>Stop</button>
+            <button class="button button-primary" id="send-button" type="button" disabled>
+              Send request <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel inspector-panel" aria-labelledby="inspector-title">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Execution trace</p>
+          <h2 id="inspector-title">Route Inspector</h2>
+        </div>
+        <span class="pulse-indicator" aria-hidden="true"></span>
+      </div>
+
+      <section class="route-card">
+        <p class="route-label">Resolved route</p>
+        <div class="route-path">
+          <span class="route-node route-origin">Alias</span>
+          <i aria-hidden="true"></i>
+          <span class="route-node" id="route-provider">—</span>
+          <i aria-hidden="true"></i>
+          <span class="route-node route-model" id="route-model">—</span>
+        </div>
+      </section>
+
+      <dl class="metrics-grid">
+        <div><dt>Status</dt><dd id="response-status">—</dd></div>
+        <div><dt>First byte</dt><dd id="ttft">—</dd></div>
+        <div><dt>Total</dt><dd id="total-latency">—</dd></div>
+        <div><dt>Attempts</dt><dd id="route-attempts">—</dd></div>
+        <div><dt>Fallbacks</dt><dd id="route-fallbacks">—</dd></div>
+        <div class="metric-wide"><dt>Usage</dt><dd id="usage">—</dd></div>
+      </dl>
+
+      <section class="trace-section">
+        <h3>Request identifiers</h3>
+        <dl class="identifier-list">
+          <div><dt>Gateway</dt><dd id="request-id">—</dd></div>
+          <div><dt>Upstream</dt><dd id="upstream-request-id">—</dd></div>
+        </dl>
+      </section>
+
+      <details class="trace-section payload-details">
+        <summary>Request JSON <span aria-hidden="true">⌄</span></summary>
+        <pre id="request-json">No request yet.</pre>
+      </details>
+
+      <details class="trace-section payload-details">
+        <summary>Latest raw response <span aria-hidden="true">⌄</span></summary>
+        <pre id="raw-response">No response yet.</pre>
+      </details>
+
+      <div class="privacy-note">
+        <span aria-hidden="true">◇</span>
+        <p><strong>Nothing is stored.</strong> Prompts, files, and the gateway key remain in this browser tab.</p>
+      </div>
+    </aside>
   </main>
+
+  <p class="sr-only" id="live-status" aria-live="polite">Playground ready.</p>
   <script src="/playground/app.js" defer></script>
 </body>
 </html>

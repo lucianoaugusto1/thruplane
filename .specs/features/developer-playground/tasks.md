@@ -40,7 +40,7 @@ tools, media encoding, `curl` export, and route/usage measurement.
 **Tests:** Static contract, JavaScript syntax, and browser integration.
 **Gate:** Full.
 
-### T4: Build and visually verify the interface
+### T4: Build and visually verify the interface — Complete
 
 **What:** Add semantic HTML and responsive CSS, then inspect desktop and narrow
 layouts with the embedded server.
@@ -49,6 +49,12 @@ contract tests.
 **Depends on:** T3.
 **Requirements:** PLG-10 through PLG-12.
 **Tests:** Static contract and browser smoke. **Gate:** Full.
+
+**Evidence:** The embedded build completed a streamed request through a local
+OpenAI-compatible upstream at 1440×900. The Route Inspector reported provider,
+model, status, attempts, fallbacks, TTFT, total latency, and usage. A 390×844
+check confirmed stacked panels with no horizontal overflow. Browser QA also
+caught and verified the fix for an invisible file input overlapping Send.
 
 ### T5: Document and validate
 
