@@ -22,7 +22,7 @@ example configuration.
 **Tools:** Local filesystem and Go test runner; TLC skill.
 **Tests:** Unit. **Gate:** Quick.
 
-### T2: Implement the breaker state machine
+### T2: Implement the breaker state machine — Complete
 
 **What:** Add a concurrency-safe breaker with closed, open, and half-open
 behavior, one-shot permits, generations, snapshots, and deterministic tests.
