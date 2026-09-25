@@ -1,9 +1,9 @@
 # Project state
 
 **Updated:** September 25, 2026
-**Current work:** The gateway orchestration, native provider contract, and
-configuration package have focused internal boundaries. Credentialed live
-validation and performance baselines are next.
+**Current work:** A deterministic local performance and load harness now covers
+gateway overhead, SSE TTFT, throughput, runtime cost, connection reuse,
+modalities, and failure paths. Credentialed live validation is next.
 
 ## Decisions
 
@@ -85,6 +85,11 @@ validation and performance baselines are next.
   cohesive package but live in separate files with explicit internal results.
 - Native provider and configuration responsibilities remain in their existing
   packages to avoid exporting implementation details solely for subpackages.
+- Local performance evidence uses the real gateway and adapter paths with
+  synthetic `httptest` upstreams. Direct-versus-gateway deltas are local
+  comparison data, not universal provider or production claims.
+- Performance coverage includes text, tools, 48 KiB image/PDF/audio payloads,
+  SSE, retry, fallback, permanent `429`, slow readers, and cancellation.
 
 ## Blockers
 
@@ -98,8 +103,8 @@ validation and performance baselines are next.
   suite with scoped credentials and a spending cap.
 - Complete the versioned normalized response compatibility matrix and add
   equivalent fixture evidence for OpenAI-compatible adapters.
-- Establish end-to-end gateway overhead and failure baselines before claiming
-  performance or implementing adaptive routing.
+- Record repeated local performance baselines on a named hardware class and
+  pinned Go version before setting regression thresholds.
 - Use [the delivery plan](../../docs/next-steps.md) for dependencies, artifacts,
   and acceptance gates. The plan is proposed until prioritized with the user.
 

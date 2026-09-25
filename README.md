@@ -282,6 +282,17 @@ Run the race detector before merging concurrency-related changes:
 go test -race ./...
 ```
 
+Run the local performance and load harness:
+
+```sh
+go run ./bench/performance -scenario text -requests 1000 -concurrency 16
+go test -run '^$' -bench . -benchmem ./bench/performance
+```
+
+See the [performance testing guide](docs/performance.md) for p50/p95/p99,
+SSE TTFT, throughput, CPU and heap profiles, connection reuse, modalities,
+retry, fallback, `429`, slow-client, and cancellation scenarios.
+
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a change. Report
 vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 

@@ -1,7 +1,7 @@
 # Performance baseline tasks
 
 **Design:** `design.md`
-**Status:** In progress
+**Status:** Complete
 
 ## Execution plan
 
@@ -11,7 +11,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 
 ## Tasks
 
-### T1: Implement deterministic performance metrics
+### T1: Implement deterministic performance metrics — Complete
 
 **What:** Add percentile, throughput, memory, and connection result models.
 **Where:** `bench/performance/metrics.go`, `metrics_test.go`.
@@ -19,7 +19,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 **Requirements:** PERF-01, PERF-03, PERF-05, PERF-08.
 **Tests:** Unit. **Gate:** Quick plus package test.
 
-### T2: Define the synthetic scenario catalog
+### T2: Define the synthetic scenario catalog — Complete
 
 **What:** Add modality, streaming, retry, fallback, `429`, slow-reader, and
 cancellation scenario definitions and mock responses.
@@ -28,7 +28,7 @@ cancellation scenario definitions and mock responses.
 **Requirements:** PERF-02, PERF-06, PERF-07, PERF-09.
 **Tests:** Unit. **Gate:** Package test.
 
-### T3: Implement the local load harness
+### T3: Implement the local load harness — Complete
 
 **What:** Build gateway and direct phases with workers, runtime metrics,
 TTFT, cancellation, and connection tracking.
@@ -37,7 +37,7 @@ TTFT, cancellation, and connection tracking.
 **Requirements:** PERF-01 through PERF-09.
 **Tests:** End-to-end with `httptest`. **Gate:** Full.
 
-### T4: Add the command and Go benchmarks
+### T4: Add the command and Go benchmarks — Complete
 
 **What:** Add CLI output, JSON mode, CPU and heap profiles, and allocation
 benchmarks for every scenario.
@@ -46,7 +46,7 @@ benchmarks for every scenario.
 **Requirements:** PERF-04, PERF-08, PERF-09.
 **Tests:** CLI smoke and benchmark smoke. **Gate:** Full.
 
-### T5: Publish usage and validation evidence
+### T5: Publish usage and validation evidence — Complete
 
 **What:** Document commands, interpretation, limitations, and validation;
 update project testing strategy and state.

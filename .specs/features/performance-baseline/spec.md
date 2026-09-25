@@ -1,6 +1,6 @@
 # Performance baseline specification
 
-**Status:** Approved
+**Status:** Verified
 **Date:** September 25, 2026
 
 ## Problem
@@ -99,9 +99,9 @@ smoke, and benchmark smoke gates SHALL pass without skipped tests.
 
 | Requirement | Task | Status |
 | --- | --- | --- |
-| PERF-01, PERF-03 | T1, T3 | Implementing |
-| PERF-02, PERF-05 | T3 | Implementing |
-| PERF-04 | T3, T4 | Implementing |
-| PERF-06, PERF-07 | T2, T3 | Implementing |
-| PERF-08, PERF-09 | T2, T4 | Implementing |
-| PERF-10 | T1-T5 | Implementing |
+| PERF-01, PERF-03 | T1, T3 | Verified |
+| PERF-02, PERF-05 | T3 | Verified |
+| PERF-04 | T3, T4 | Verified |
+| PERF-06, PERF-07 | T2, T3 | Verified |
+| PERF-08, PERF-09 | T2, T4 | Verified |
+| PERF-10 | T1-T5 | Verified |

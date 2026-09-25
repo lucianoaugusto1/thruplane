@@ -94,6 +94,11 @@ are source material, not proof of implementation.
 
 ### 4. Establish a performance and failure baseline
 
+**Progress:** A deterministic local load runner and Go benchmark matrix now
+cover latency percentiles, SSE TTFT, throughput, runtime cost, connection
+reuse, modalities, retry, fallback, `429`, slow clients, and cancellation.
+Repeated named-hardware baselines and regression thresholds remain open.
+
 **Why:** A sub-millisecond local adapter benchmark does not measure gateway
 overhead under concurrency, first-token latency, network reuse, or failure
 recovery. Optimization without a baseline risks adding complexity for no gain.

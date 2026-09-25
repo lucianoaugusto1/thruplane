@@ -59,10 +59,12 @@ contract before making broad production claims.
 - Add golden fixtures and opt-in live smoke tests per provider and modality.
 - Record model, region, auth mode, and verification date in a report.
 
-**Performance and failure baseline** - PLANNED
+**Performance and failure baseline** - IN PROGRESS
 
-- Measure added p50/p95/p99 latency, first SSE chunk, throughput,
-  allocations, memory, and behavior under retries and disconnects.
+- The local harness measures added p50/p95/p99 latency, first SSE chunk,
+  throughput, allocations, memory, connection reuse, modalities, retries,
+  fallbacks, throttling, slow clients, and cancellation.
+- Record repeated baselines on named hardware and set regression thresholds.
 - Add refreshable credentials and complete Bedrock streaming.
 
 **Exit gate:** Deterministic and opt-in live conformance evidence, documented
