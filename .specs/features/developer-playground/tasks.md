@@ -30,7 +30,7 @@ gateway execution result and expose them as response headers.
 **Requirements:** PLG-08, PLG-12.
 **Tests:** Integration. **Gate:** Full.
 
-### T3: Implement the dependency-free browser client
+### T3: Implement the dependency-free browser client — Complete
 
 **What:** Add model discovery, request building, SSE parsing, cancellation,
 tools, media encoding, `curl` export, and route/usage measurement.
