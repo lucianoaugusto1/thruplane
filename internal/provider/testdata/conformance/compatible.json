@@ -1,0 +1,234 @@
+{
+  "model": "compatible-fixture-model",
+  "providers": [
+    {
+      "name": "openai",
+      "type": "openai",
+      "path": "/v1/chat/completions",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer fixture-compatible-key"
+      }
+    },
+    {
+      "name": "azure-openai",
+      "type": "azure-openai",
+      "api_version": "2025-01-01-preview",
+      "path": "/openai/v1/chat/completions",
+      "raw_query": "api-version=2025-01-01-preview",
+      "headers": {
+        "Content-Type": "application/json",
+        "api-key": "fixture-compatible-key"
+      }
+    },
+    {
+      "name": "ollama",
+      "type": "ollama",
+      "path": "/v1/chat/completions",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer fixture-compatible-key"
+      }
+    },
+    {
+      "name": "custom-compatible",
+      "type": "openai-compatible",
+      "path": "/v1/chat/completions",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer fixture-compatible-key"
+      }
+    },
+    {
+      "name": "nexoroute-inference",
+      "type": "nexoroute-inference",
+      "path": "/v1/chat/completions",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer fixture-compatible-key"
+      }
+    },
+    {
+      "name": "xai",
+      "type": "xai",
+      "path": "/v1/chat/completions",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer fixture-compatible-key"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "buffered-opaque",
+      "request": {
+        "model": "public-alias",
+        "messages": [{
+          "role": "user",
+          "content": [
+            {"type": "text", "text": "Inspect these inputs"},
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,AQID", "detail": "high"}},
+            {"type": "file", "file": {"file_data": "data:application/pdf;base64,JVBERg==", "filename": "report.pdf"}},
+            {"type": "input_audio", "input_audio": {"data": "UklGRg==", "format": "wav"}}
+          ],
+          "vendor_message_field": true
+        }],
+        "tools": [{
+          "type": "function",
+          "function": {
+            "name": "lookup",
+            "parameters": {"type": "object"},
+            "strict": true
+          }
+        }],
+        "tool_choice": "auto",
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {"name": "result", "schema": {"type": "object"}}
+        },
+        "max_completion_tokens": 42,
+        "stream": false,
+        "vendor_request_field": {"future": true}
+      },
+      "want_json": {
+        "model": "compatible-fixture-model",
+        "messages": [{
+          "role": "user",
+          "content": [
+            {"type": "text", "text": "Inspect these inputs"},
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,AQID", "detail": "high"}},
+            {"type": "file", "file": {"file_data": "data:application/pdf;base64,JVBERg==", "filename": "report.pdf"}},
+            {"type": "input_audio", "input_audio": {"data": "UklGRg==", "format": "wav"}}
+          ],
+          "vendor_message_field": true
+        }],
+        "tools": [{
+          "type": "function",
+          "function": {
+            "name": "lookup",
+            "parameters": {"type": "object"},
+            "strict": true
+          }
+        }],
+        "tool_choice": "auto",
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {"name": "result", "schema": {"type": "object"}}
+        },
+        "max_completion_tokens": 42,
+        "stream": false,
+        "vendor_request_field": {"future": true}
+      },
+      "want_ollama_json": {
+        "model": "compatible-fixture-model",
+        "messages": [{
+          "role": "user",
+          "content": [
+            {"type": "text", "text": "Inspect these inputs"},
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,AQID", "detail": "high"}},
+            {"type": "file", "file": {"file_data": "data:application/pdf;base64,JVBERg==", "filename": "report.pdf"}},
+            {"type": "input_audio", "input_audio": {"data": "UklGRg==", "format": "wav"}}
+          ],
+          "vendor_message_field": true
+        }],
+        "tools": [{
+          "type": "function",
+          "function": {
+            "name": "lookup",
+            "parameters": {"type": "object"},
+            "strict": true
+          }
+        }],
+        "tool_choice": "auto",
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {"name": "result", "schema": {"type": "object"}}
+        },
+        "max_tokens": 42,
+        "stream": false,
+        "vendor_request_field": {"future": true}
+      },
+      "upstream": {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json",
+          "X-Provider-Trace": "fixture-buffered"
+        },
+        "body_text": "{\"id\":\"opaque\",\"vendor\":{\"cache_read_tokens\":7},\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"hello\"}]},\"finish_reason\":\"vendor_stop\"}]}"
+      },
+      "want_response": {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json",
+          "X-Provider-Trace": "fixture-buffered"
+        },
+        "body_exact": "{\"id\":\"opaque\",\"vendor\":{\"cache_read_tokens\":7},\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"hello\"}]},\"finish_reason\":\"vendor_stop\"}]}"
+      }
+    },
+    {
+      "name": "stream-opaque",
+      "request": {
+        "model": "public-alias",
+        "messages": [{"role": "user", "content": "Stream"}],
+        "stream": true,
+        "stream_options": {"include_usage": true}
+      },
+      "want_json": {
+        "model": "compatible-fixture-model",
+        "messages": [{"role": "user", "content": "Stream"}],
+        "stream": true,
+        "stream_options": {"include_usage": true}
+      },
+      "upstream": {
+        "headers": {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "X-Provider-Trace": "fixture-stream"
+        },
+        "body_text": "data: {\"vendor_delta\":{\"text\":\"hello\"}}\n\nevent: vendor\ndata: {\"done\":true}\n\ndata: [DONE]\n\n"
+      },
+      "want_response": {
+        "headers": {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "X-Provider-Trace": "fixture-stream"
+        },
+        "body_exact": "data: {\"vendor_delta\":{\"text\":\"hello\"}}\n\nevent: vendor\ndata: {\"done\":true}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "name": "upstream-error-opaque",
+      "request": {
+        "model": "public-alias",
+        "messages": [{"role": "user", "content": "Trigger limit"}]
+      },
+      "want_json": {
+        "model": "compatible-fixture-model",
+        "messages": [{"role": "user", "content": "Trigger limit"}]
+      },
+      "upstream": {
+        "status": 429,
+        "headers": {
+          "Content-Type": "application/json",
+          "Retry-After": "3",
+          "X-Provider-Trace": "fixture-error"
+        },
+        "body_text": "{\"error\":{\"type\":\"vendor_quota\",\"message\":\"limit reached\",\"code\":991}}"
+      },
+      "want_response": {
+        "status": 429,
+        "headers": {
+          "Content-Type": "application/json",
+          "Retry-After": "3",
+          "X-Provider-Trace": "fixture-error"
+        },
+        "body_exact": "{\"error\":{\"type\":\"vendor_quota\",\"message\":\"limit reached\",\"code\":991}}"
+      }
+    },
+    {
+      "name": "invalid-json-object",
+      "request": [],
+      "want_error_code": "invalid_json"
+    }
+  ]
+}

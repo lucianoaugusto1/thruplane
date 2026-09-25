@@ -60,6 +60,31 @@ type conformanceResponse struct {
 	Contains   []string          `json:"contains"`
 }
 
+type compatibleConformanceFixture struct {
+	Model     string                          `json:"model"`
+	Providers []compatibleConformanceProvider `json:"providers"`
+	Cases     []compatibleConformanceCase     `json:"cases"`
+}
+
+type compatibleConformanceProvider struct {
+	Name       string            `json:"name"`
+	Type       string            `json:"type"`
+	APIVersion string            `json:"api_version"`
+	Path       string            `json:"path"`
+	RawQuery   string            `json:"raw_query"`
+	Headers    map[string]string `json:"headers"`
+}
+
+type compatibleConformanceCase struct {
+	Name           string              `json:"name"`
+	Request        json.RawMessage     `json:"request"`
+	WantJSON       json.RawMessage     `json:"want_json"`
+	WantOllamaJSON json.RawMessage     `json:"want_ollama_json"`
+	Upstream       conformanceUpstream `json:"upstream"`
+	WantResponse   conformanceResponse `json:"want_response"`
+	WantErrorCode  string              `json:"want_error_code"`
+}
+
 type capturedConformanceRequest struct {
 	Method   string
 	Path     string
@@ -100,6 +125,131 @@ func TestNativeProviderConformanceFixtures(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCompatibleProviderConformanceFixtures(t *testing.T) {
+	t.Parallel()
+	fixture := loadCompatibleConformanceFixture(t)
+	if fixture.Model == "" || len(fixture.Providers) == 0 || len(fixture.Cases) == 0 {
+		t.Fatal("compatible fixture requires a model, providers, and cases")
+	}
+
+	wantTypes := map[string]bool{
+		"openai": true, "azure-openai": true, "ollama": true,
+		"openai-compatible": true, "nexoroute-inference": true, "xai": true,
+	}
+	seenTypes := make(map[string]bool, len(fixture.Providers))
+	for _, fixtureProvider := range fixture.Providers {
+		if fixtureProvider.Name == "" || !wantTypes[fixtureProvider.Type] || seenTypes[fixtureProvider.Type] {
+			t.Fatalf("invalid or duplicate compatible provider fixture: %#v", fixtureProvider)
+		}
+		seenTypes[fixtureProvider.Type] = true
+		fixtureProvider := fixtureProvider
+		t.Run(fixtureProvider.Name, func(t *testing.T) {
+			t.Parallel()
+			for _, testCase := range fixture.Cases {
+				testCase := testCase
+				t.Run(testCase.Name, func(t *testing.T) {
+					runCompatibleConformanceCase(t, fixture.Model, fixtureProvider, testCase)
+				})
+			}
+		})
+	}
+	if !reflect.DeepEqual(seenTypes, wantTypes) {
+		t.Fatalf("compatible provider types = %#v, want %#v", seenTypes, wantTypes)
+	}
+}
+
+func loadCompatibleConformanceFixture(t *testing.T) compatibleConformanceFixture {
+	t.Helper()
+	path := filepath.Join("testdata", "conformance", "compatible.json")
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read fixture %s: %v", path, err)
+	}
+	var fixture compatibleConformanceFixture
+	decoder := json.NewDecoder(bytes.NewReader(contents))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&fixture); err != nil {
+		t.Fatalf("decode fixture %s: %v", path, err)
+	}
+	if err := decoder.Decode(new(any)); !errors.Is(err, io.EOF) {
+		t.Fatalf("fixture %s must contain exactly one JSON value", path)
+	}
+	return fixture
+}
+
+func runCompatibleConformanceCase(t *testing.T, model string, fixtureProvider compatibleConformanceProvider, testCase compatibleConformanceCase) {
+	t.Helper()
+	var calls atomic.Int32
+	captured := make(chan capturedConformanceRequest, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		body, _ := io.ReadAll(r.Body)
+		captured <- capturedConformanceRequest{
+			Method: r.Method, Path: r.URL.Path, RawQuery: r.URL.RawQuery,
+			Headers: r.Header.Clone(), Body: body,
+		}
+		for name, value := range testCase.Upstream.Headers {
+			w.Header().Set(name, value)
+		}
+		status := testCase.Upstream.Status
+		if status == 0 {
+			status = http.StatusOK
+		}
+		w.WriteHeader(status)
+		if len(testCase.Upstream.BodyJSON) > 0 {
+			_, _ = w.Write(testCase.Upstream.BodyJSON)
+		} else {
+			_, _ = io.WriteString(w, testCase.Upstream.BodyText)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	providerConfig := config.ProviderConfig{
+		Type: fixtureProvider.Type, BaseURL: server.URL,
+		APIKey: "fixture-compatible-key", APIVersion: fixtureProvider.APIVersion,
+	}
+	providerAdapter, err := newAdapter(providerConfig)
+	if err != nil {
+		t.Fatalf("newAdapter() error = %v", err)
+	}
+	client := &Client{httpClient: server.Client(), adapter: providerAdapter}
+	response, err := client.Do(context.Background(), testCase.Request, model)
+	if testCase.WantErrorCode != "" {
+		var requestError *RequestError
+		if !errors.As(err, &requestError) || requestError.Code != testCase.WantErrorCode {
+			t.Fatalf("Do() error = %v, want code %q", err, testCase.WantErrorCode)
+		}
+		if calls.Load() != 0 {
+			t.Fatalf("upstream calls = %d, want 0", calls.Load())
+		}
+		return
+	}
+	if err != nil {
+		t.Fatalf("Do() error = %v", err)
+	}
+	defer response.Body.Close()
+	if calls.Load() != 1 {
+		t.Fatalf("upstream calls = %d, want 1", calls.Load())
+	}
+
+	gotRequest := <-captured
+	wantJSON := testCase.WantJSON
+	if fixtureProvider.Type == "ollama" && len(testCase.WantOllamaJSON) > 0 {
+		wantJSON = testCase.WantOllamaJSON
+	}
+	assertConformanceRequest(t, gotRequest, conformanceRequest{
+		Path: fixtureProvider.Path, RawQuery: fixtureProvider.RawQuery,
+		Headers: fixtureProvider.Headers, JSON: wantJSON,
+	})
+	if fixtureProvider.Type == "azure-openai" && gotRequest.Headers.Get("Authorization") != "" {
+		t.Error("Azure request unexpectedly contains Authorization")
+	}
+	if fixtureProvider.Type != "azure-openai" && gotRequest.Headers.Get("api-key") != "" {
+		t.Error("bearer-auth request unexpectedly contains api-key")
+	}
+	assertConformanceResponse(t, response, testCase.WantResponse)
 }
 
 func loadConformanceFixture(t *testing.T, providerType string) conformanceFixture {
