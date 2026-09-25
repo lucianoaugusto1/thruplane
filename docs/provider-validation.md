@@ -1,6 +1,6 @@
 # Provider validation
 
-**Updated:** September 24, 2026  
+**Updated:** September 25, 2026
 **Live provider calls:** Not run
 
 NexoRoute separates deterministic protocol evidence from live provider
@@ -33,10 +33,29 @@ authentication shape, translated JSON, normalized response fields, usage, and
 finish reasons. Bedrock fixtures use a fixed clock and verify the
 `X-Amz-Content-Sha256` value.
 
+## OpenAI-compatible adapter snapshot
+
+| Provider type | Endpoint contract | Authentication | Deterministic evidence |
+| --- | --- | --- | --- |
+| OpenAI | `/v1/chat/completions` | Bearer | Request and opaque response passthrough |
+| Azure OpenAI | `/openai/v1/chat/completions` plus API version | `api-key` | Request and opaque response passthrough |
+| Ollama | `/v1/chat/completions` | Optional bearer | Passthrough plus output-token field translation |
+| Custom compatible | `/v1/chat/completions` | Optional bearer | Request and opaque response passthrough |
+| NexoRoute Inference | `/v1/chat/completions` | Bearer | Request and opaque response passthrough |
+| xAI/Grok | `/v1/chat/completions` | Bearer | Request and opaque response passthrough |
+
+The shared compatible fixture covers text, inline image, PDF, audio, function
+tools, strict schemas, structured output, unknown request fields, buffered
+responses, SSE, cache-usage extensions, provider-specific finish reasons,
+upstream `429` errors, and invalid JSON objects. It verifies response bodies
+byte for byte because compatible adapters don't normalize them.
+
 Run the deterministic suite with no credentials:
 
 ```sh
-go test ./internal/provider -run TestNativeProviderConformanceFixtures -count=1
+go test ./internal/provider \
+  -run 'Test(Native|Compatible)ProviderConformanceFixtures' \
+  -count=1
 ```
 
 The normal project gate also runs these fixtures and never contacts a public
@@ -108,9 +127,8 @@ record credentials, prompts, responses, or customer data.
 ## Remaining gaps
 
 - Run the smoke suite with capped credentials and selected model/region pairs.
-- Add fixtures for OpenAI-compatible adapters to the same evidence model.
-- Version the normalized response compatibility matrix, including cache usage
-  and provider-specific finish reasons.
+- Add native cache-token fixtures before extending the normalized public usage
+  object with provider-specific cache accounting.
 - Implement and validate Bedrock `ConverseStream` before advertising Bedrock
   streaming.
 - Add provider drift checks only after live test accounts and spending policy

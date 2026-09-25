@@ -56,8 +56,8 @@ access.
 
 | Requirement | Evidence | Status |
 | --- | --- | --- |
-| CPC-01 | Provider fixture variants and configuration alias test | Implementing |
-| CPC-02 | Buffered opaque-request fixture | Implementing |
-| CPC-03 | Buffered, SSE, and upstream-error fixtures | Implementing |
-| CPC-04 | Invalid-object fixture and cancellation integration test | Implementing |
+| CPC-01 | Provider fixture variants and configuration alias test | Verified |
+| CPC-02 | Buffered opaque-request fixture | Verified |
+| CPC-03 | Buffered, SSE, and upstream-error fixtures | Verified |
+| CPC-04 | Invalid-object fixture and cancellation integration test | Verified |
 | CPC-05 | Validation report and project gate | Pending |
