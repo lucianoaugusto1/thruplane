@@ -93,6 +93,14 @@ brand without overstating commercial readiness.
 - Prioritize Flight Recorder and SLO-based routing as strategic bets.
 - Record the proposed Community, Pro, and Enterprise capabilities.
 
+**Developer playground** - COMPLETE
+
+- Serve an opt-in interface from the Community binary with no frontend runtime
+  dependency.
+- Exercise the public API for streaming, tools, images, PDFs, and audio.
+- Show safe route, timing, usage, attempt, fallback, and request-ID details.
+- Keep API keys, prompts, and files in browser memory without server history.
+
 **Release hardening** - PLANNED
 
 - Add CI, signed release artifacts, checksums, and a versioning policy.

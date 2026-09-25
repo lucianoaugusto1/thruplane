@@ -32,6 +32,8 @@ cost controls, governance, high availability, and support.
 - Sourced model catalog with capability-aware routing and model metadata
 - Optional inbound bearer authentication
 - Request IDs, structured JSON logs, health checks, and graceful shutdown
+- Optional embedded developer playground for streaming, tools, media, and
+  route inspection
 - Distroless, non-root container image
 
 ## Editions
@@ -90,6 +92,22 @@ the validation gates before public and paid releases.
    ```sh
    curl http://localhost:8080/healthz
    ```
+
+## Use the developer playground
+
+Enable the optional interface in `config.yaml`:
+
+```yaml
+server:
+  playground:
+    enabled: true
+```
+
+Restart NexoRoute, then open `http://localhost:8080/playground/`. The page uses
+the public `/v1` API, keeps its API key and conversation only in browser memory,
+and never receives provider credentials. See the
+[developer playground guide](docs/playground.md) for tools, media, route
+inspection, privacy boundaries, and deployment guidance.
 
 ## Send requests
 
@@ -216,6 +234,7 @@ Set `catalog.unknown_models: reject` to require a catalog match. Use
 | `server.max_body_bytes` | Maximum chat request body | `1048576` |
 | `server.read_header_timeout` | Client header timeout | `5s` |
 | `server.shutdown_timeout` | Graceful shutdown limit | `10s` |
+| `server.playground.enabled` | Serve the embedded interface at `/playground/` | `false` |
 | `catalog.unknown_models` | `allow` passthrough or `reject` unknown target IDs | `allow` |
 | `providers.*.type` | Provider protocol name | `openai` |
 | `providers.*.base_url` | Provider root URL without an API path | Provider default or required for custom endpoints |

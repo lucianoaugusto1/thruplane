@@ -1,7 +1,7 @@
 # Developer playground tasks
 
 **Design:** `design.md`
-**Status:** In progress
+**Status:** Complete
 
 ## Execution plan
 
@@ -56,7 +56,7 @@ model, status, attempts, fallbacks, TTFT, total latency, and usage. A 390×844
 check confirmed stacked panels with no horizontal overflow. Browser QA also
 caught and verified the fix for an invisible file input overlapping Send.
 
-### T5: Document and validate
+### T5: Document and validate — Complete
 
 **What:** Add enablement, privacy, usage, and limitation guidance; update
 project state and record validation evidence.

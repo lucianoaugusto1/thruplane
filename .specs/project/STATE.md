@@ -1,14 +1,21 @@
 # Project state
 
 **Updated:** September 25, 2026
-**Current work:** The local performance harness now produces repeated,
-versioned evidence and enforces configurable pull-request regression limits.
+**Current work:** The opt-in embedded developer playground is complete and
+exercises the public API for streaming, tools, media, and route inspection.
 Credentialed live provider validation is next.
 
 ## Decisions
 
 - NexoRoute has three product fronts: the open Gateway data plane, paid
   NexoRoute Inference, and NexoRoute Intelligence.
+- The Community binary includes an optional developer playground. It remains
+  disabled by default and adds no frontend runtime dependency or privileged
+  internal API.
+- Playground API keys, prompts, files, and history stay in page memory. The
+  page never receives provider credentials or executes model-requested tools.
+- Safe response headers expose the selected provider and model, attempt count,
+  and fallback count for request-level inspection.
 - NexoRoute Inference is described as included usage backed by compute credits,
   limits, and explicit overage. It is never marketed as unlimited or free.
 - Pro uses a shared inference pool with monthly credits and BYOK fallback.
@@ -134,6 +141,9 @@ Credentialed live provider validation is next.
 - In Go, splitting a cohesive internal package into subpackages can increase
   coupling by forcing private wire types to become exported. Focused files are
   the safer boundary until the contracts stabilize.
+- Visually hidden file inputs need a selector at least as specific as the
+  shared form-control selector; otherwise an invisible input can cover nearby
+  controls even when its local rule sets a one-pixel size.
 
 ## Deferred ideas
 
