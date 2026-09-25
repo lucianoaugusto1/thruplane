@@ -65,12 +65,13 @@ time, and compatibility metadata; read and validate saved artifacts.
 **Requirements:** PERF-11, PERF-12, PERF-15.
 **Tests:** Unit. **Gate:** Package test.
 
-### T7: Add the configurable regression comparator
+### T7: Add the configurable regression comparator — Complete
 
 **What:** Aggregate scenario medians, apply noise-resistant directional
 thresholds, explain every failure, and support JSON threshold overrides.
 **Where:** `bench/performance/compare.go`, `compare_test.go`,
-`bench/performance/thresholds.json`.
+`bench/performance/thresholds.json`, and failure-count coverage in
+`harness_test.go`.
 **Depends on:** T6.
 **Requirements:** PERF-13, PERF-15.
 **Tests:** Unit. **Gate:** Package test.

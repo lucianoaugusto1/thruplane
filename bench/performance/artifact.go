@@ -74,6 +74,7 @@ type artifactReportShape struct {
 	Load         loadConfig
 	PayloadBytes int
 	MediaBytes   int
+	HasTTFT      bool
 }
 
 func artifactRunShapes(reports []benchmarkReport) (map[string]artifactReportShape, error) {
@@ -93,6 +94,7 @@ func artifactRunShapes(reports []benchmarkReport) (map[string]artifactReportShap
 			Load:         report.Load,
 			PayloadBytes: report.PayloadBytes,
 			MediaBytes:   report.MediaBytes,
+			HasTTFT:      report.AddedTTFT.Samples > 0,
 		}
 	}
 	return shapes, nil

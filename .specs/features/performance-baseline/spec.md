@@ -140,6 +140,6 @@ threshold, CLI, workflow, full test, race, vet, and build checks SHALL pass.
 | PERF-08, PERF-09 | T2, T4 | Verified |
 | PERF-10 | T1-T5 | Verified |
 | PERF-11, PERF-12 | T6 | Implementing |
-| PERF-13 | T7 | Pending |
+| PERF-13 | T7 | Verified |
 | PERF-14 | T8 | Pending |
 | PERF-15 | T6-T9 | Implementing |

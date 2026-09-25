@@ -86,6 +86,22 @@ func TestHarnessCancellationDoesNotRetry(t *testing.T) {
 	}
 }
 
+func TestHarnessCountsUnexpectedFailures(t *testing.T) {
+	scenario := mustScenario(t, "text")
+	scenario.Name = "unexpected-failure"
+	scenario.Targets = append([]targetScenario(nil), scenario.Targets...)
+	scenario.Targets[0].Mode = upstreamUnavailable
+	report, err := runScenario(context.Background(), scenario, loadConfig{
+		Requests: 3, Concurrency: 1, Warmup: 0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if report.Gateway.UnexpectedFailures != 3 || report.Gateway.Completed != 0 {
+		t.Fatalf("gateway failure phase = %#v", report.Gateway)
+	}
+}
+
 func assertHealthyPhase(t *testing.T, phase phaseReport, requests int) {
 	t.Helper()
 	if phase.Completed != requests || phase.UnexpectedFailures != 0 {

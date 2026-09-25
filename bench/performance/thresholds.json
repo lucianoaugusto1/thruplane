@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "minimum_runs": 5,
+  "defaults": {
+    "max_added_latency_p95_increase_percent": 25,
+    "max_added_latency_p95_increase_ms": 0.5,
+    "max_added_latency_p99_increase_percent": 30,
+    "max_added_latency_p99_increase_ms": 1,
+    "max_ttft_p95_increase_percent": 25,
+    "max_ttft_p95_increase_ms": 0.5,
+    "max_rps_decrease_percent": 25,
+    "max_alloc_bytes_per_request_increase_percent": 30,
+    "max_allocs_per_request_increase_percent": 30,
+    "min_client_connection_reuse_percent": 90,
+    "min_upstream_connection_reuse_percent": 80,
+    "max_connection_reuse_decrease_points": 10,
+    "max_unexpected_failures": 0
+  },
+  "scenarios": {
+    "cancellation": {
+      "min_client_connection_reuse_percent": 0,
+      "min_upstream_connection_reuse_percent": 0,
+      "max_connection_reuse_decrease_points": 100
+    },
+    "slow-client": {
+      "max_added_latency_p95_increase_percent": 50,
+      "max_added_latency_p95_increase_ms": 10,
+      "max_added_latency_p99_increase_percent": 50,
+      "max_added_latency_p99_increase_ms": 10
+    }
+  }
+}
