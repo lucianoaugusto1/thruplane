@@ -1,7 +1,7 @@
 # Target circuit breaker and readiness tasks
 
 **Design:** `design.md`
-**Status:** In progress
+**Status:** Complete
 
 ## Execution plan
 
@@ -44,7 +44,7 @@ targets, preserve fallback, and return `503 circuit_open` when exhausted.
 **Tools:** Local filesystem and Go test runner; TLC skill.
 **Tests:** Integration with `httptest`. **Gate:** Full.
 
-### T4: Add readiness and operator guidance
+### T4: Add readiness and operator guidance — Complete
 
 **What:** Add public `/readyz`, non-sensitive target counts, documentation,
 project state, and final validation evidence.

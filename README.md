@@ -27,7 +27,8 @@ cost controls, governance, high availability, and support.
 - Direct adapters for OpenAI, Anthropic, Gemini, Vertex AI, Amazon Bedrock,
   Azure OpenAI, Ollama, xAI, custom OpenAI-compatible APIs, and NexoRoute
   Inference
-- Rate-aware retries, per-target admission control, and ordered fallback
+- Rate-aware retries, per-target admission control, circuit breakers, and
+  ordered fallback
 - Strict YAML configuration with environment expansion
 - Sourced model catalog with capability-aware routing and model metadata
 - Optional inbound bearer authentication
@@ -91,6 +92,12 @@ the validation gates before public and paid releases.
 
    ```sh
    curl http://localhost:8080/healthz
+   ```
+
+   Check route readiness separately:
+
+   ```sh
+   curl http://localhost:8080/readyz
    ```
 
 ## Use the developer playground
@@ -189,6 +196,9 @@ routing:
     base_delay: 200ms
     max_delay: 5s
     budget: 15s
+  circuit_breaker:
+    failure_threshold: 5
+    open_duration: 30s
 ```
 
 Aliases that name the same configured provider and upstream model share one
@@ -197,7 +207,7 @@ zero queue timeout fails over immediately. Set limits from the actual quota for
 the provider account, region, and model. Exact local token-per-minute
 accounting is not implemented because token reservation differs by provider;
 NexoRoute does observe supported upstream remaining/reset headers. See the
-[rate-limit operations guide](docs/rate-limits.md).
+[rate-limit and circuit-breaker operations guide](docs/rate-limits.md).
 
 OpenAI-compatible adapters replace the upstream `model` field and preserve
 other JSON fields they do not interpret. For Ollama, the gateway also
@@ -259,6 +269,8 @@ Set `catalog.unknown_models: reject` to require a catalog match. Use
 | `routing.retry.base_delay` | Initial fallback delay without `Retry-After` | `200ms` |
 | `routing.retry.max_delay` | Maximum fallback backoff delay | `5s` |
 | `routing.retry.budget` | Total retry time per target, including attempts | `15s` |
+| `routing.circuit_breaker.failure_threshold` | Consecutive health failures before opening; `0` disables | `0` |
+| `routing.circuit_breaker.open_duration` | Wait before one half-open recovery probe | `30s` |
 
 The loader expands `${VARIABLE}` placeholders before validation and rejects
 unknown YAML fields or multiple YAML documents.
@@ -343,9 +355,10 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - Bedrock supports buffered Converse responses; Bedrock streaming remains
   deferred until the binary AWS event-stream decoder is available.
 - Ollama's OpenAI compatibility can vary by version and model.
-- Local limits are process-local. Community does not yet include persistent
-  usage history, dynamic reload, Prometheus metrics, distributed tracing,
-  tenant-level policies, or distributed limits across replicas.
+- Local limits and circuit breakers are process-local. Community does not yet
+  include persistent usage history, dynamic reload, Prometheus metrics,
+  distributed tracing, tenant-level policies, or distributed state across
+  replicas.
 - If an upstream stream fails after headers are sent, NexoRoute closes the
   stream without inventing a `[DONE]` event.
 

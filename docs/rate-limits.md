@@ -1,4 +1,4 @@
-# Rate limits and retry operations
+# Rate limits, retries, and circuit breakers
 
 NexoRoute protects provider capacity in two layers: local admission before a
 request leaves the process, and adaptive retry behavior after an upstream
@@ -118,9 +118,94 @@ The reason is `request_rate`, `concurrency`, `provider_cooldown`, or
 `queue_timeout`. `Retry-After` is included only when a positive wait can be
 calculated and is rounded up to a whole second.
 
+## Circuit breakers
+
+Enable target circuit breakers under `routing`:
+
+```yaml
+routing:
+  circuit_breaker:
+    failure_threshold: 5
+    open_duration: 30s
+```
+
+The breaker is disabled when `failure_threshold` is `0`, which is the default.
+Start with a threshold that tolerates occasional provider errors but opens
+before repeated retries create avoidable latency.
+
+Circuit breakers share the same physical target identity as local limits: the
+configured provider name plus upstream model ID. Aliases that use the same
+pair share one circuit.
+
+The breaker records these failures:
+
+- non-canceled transport failures; and
+- retryable `408`, `500`, `502`, `503`, and `504` responses.
+
+A `429` doesn't open the circuit because request admission and adaptive
+cooldown already handle provider capacity. Other HTTP responses reset the
+consecutive-failure count because the upstream was reachable. Client
+cancellation, local admission rejection, and adapter validation don't count.
+
+After the threshold, new requests skip the target and continue to the next
+ordered fallback. After `open_duration`, one request becomes the half-open
+probe. A successful response closes the circuit. A health failure reopens it
+for the full duration. Other concurrent requests continue fallback while that
+probe is active.
+
+If every eligible target is already circuit-open, NexoRoute returns:
+
+```http
+HTTP/1.1 503 Service Unavailable
+Retry-After: 30
+Content-Type: application/json
+```
+
+```json
+{
+  "error": {
+    "message": "All eligible upstream targets have an open circuit.",
+    "type": "api_error",
+    "param": null,
+    "code": "circuit_open"
+  }
+}
+```
+
+`Retry-After` is present when NexoRoute can calculate a positive delay.
+
+## Liveness and readiness
+
+Use `GET /healthz` as a process-liveness check. It remains `200` while the
+process can serve HTTP, even when upstream circuits are open.
+
+Use `GET /readyz` to inspect route readiness. It returns only aggregate target
+counts:
+
+```json
+{
+  "status": "ready",
+  "targets": {
+    "total": 2,
+    "available": 1,
+    "open": 1,
+    "half_open": 0
+  }
+}
+```
+
+The endpoint returns `503` with `status: "not_ready"` when every physical
+target is circuit-open or a half-open probe is already using the only target.
+It is public like `/healthz` and never exposes provider names, model IDs, URLs,
+credentials, or request content.
+
+Provider cooldown and local rate limits don't change readiness. Restarting or
+removing a healthy gateway process doesn't restore external provider quota.
+
 ## Current boundary
 
-The Community limiter is deliberately process-local and target-level. It does
-not provide tenant identity, a distributed counter across replicas, persistent
-usage, or exact local token-per-minute accounting. Those capabilities require
-request identity, provider-specific usage reconciliation, and shared state.
+The Community limiter and circuit breaker are deliberately process-local and
+target-level. They don't provide tenant identity, distributed state across
+replicas, persistent usage, or exact local token-per-minute accounting. Those
+capabilities require request identity, provider-specific usage reconciliation,
+and shared state.

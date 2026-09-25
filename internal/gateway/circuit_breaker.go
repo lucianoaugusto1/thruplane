@@ -28,3 +28,31 @@ func buildBreakers(models map[string]config.ModelConfig, policy config.CircuitBr
 func circuitFailure(status int, decision retryDecision) bool {
 	return status != http.StatusTooManyRequests && decision.retryTarget
 }
+
+type ReadinessStatus struct {
+	Ready     bool
+	Total     int
+	Available int
+	Open      int
+	HalfOpen  int
+}
+
+func (g *Gateway) Readiness() ReadinessStatus {
+	status := ReadinessStatus{Total: len(g.breakers)}
+	for _, breaker := range g.breakers {
+		snapshot := breaker.Snapshot()
+		switch snapshot.State {
+		case circuitbreaker.StateOpen:
+			status.Open++
+		case circuitbreaker.StateHalfOpen:
+			status.HalfOpen++
+			if !snapshot.ProbeInFlight {
+				status.Available++
+			}
+		default:
+			status.Available++
+		}
+	}
+	status.Ready = status.Available > 0
+	return status
+}

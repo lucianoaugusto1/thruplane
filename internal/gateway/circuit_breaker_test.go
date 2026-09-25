@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"nexoroute/internal/catalog"
+	"nexoroute/internal/circuitbreaker"
 	"nexoroute/internal/config"
 	"nexoroute/internal/provider"
 )
@@ -155,6 +156,85 @@ func TestRateLimitResponseDoesNotOpenCircuit(t *testing.T) {
 	if got := calls.Load(); got != 2 {
 		t.Fatalf("upstream calls = %d, want circuit to remain closed", got)
 	}
+}
+
+func TestTransportFailureOpensCircuit(t *testing.T) {
+	unavailable := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	unavailableURL := unavailable.URL
+	unavailable.Close()
+	var fallbackCalls atomic.Int32
+	fallback := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fallbackCalls.Add(1)
+		_, _ = io.WriteString(w, `{"id":"fallback"}`)
+	}))
+	t.Cleanup(fallback.Close)
+	gateway := newCircuitTestGateway(t, []testTarget{
+		{name: "unavailable", url: unavailableURL, model: "model-a"},
+		{name: "fallback", url: fallback.URL, model: "model-b"},
+	}, 1, time.Minute, time.Now)
+
+	for requestIndex := 0; requestIndex < 2; requestIndex++ {
+		if response := performChat(t, gateway, "public-alias"); response.Code != http.StatusOK {
+			t.Fatalf("request %d status = %d, want fallback success", requestIndex+1, response.Code)
+		}
+	}
+	snapshot := gateway.breakers[targetKey{provider: "unavailable", model: "model-a"}].Snapshot()
+	if snapshot.State != circuitbreaker.StateOpen || snapshot.Rejected != 1 {
+		t.Fatalf("transport circuit snapshot = %#v, want open and one skipped call", snapshot)
+	}
+	if got := fallbackCalls.Load(); got != 2 {
+		t.Fatalf("fallback calls = %d, want 2", got)
+	}
+}
+
+func TestReadinessCountsUniquePhysicalTargets(t *testing.T) {
+	first := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	t.Cleanup(first.Close)
+	second := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	t.Cleanup(second.Close)
+	cfg := circuitTestConfig([]testTarget{
+		{name: "first", url: first.URL, model: "model-a"},
+		{name: "second", url: second.URL, model: "model-b"},
+	}, 1, time.Minute)
+	shared := cfg.Models["public-alias"].Targets[0]
+	cfg.Models["shared-alias"] = config.ModelConfig{Targets: []config.TargetConfig{shared}}
+	gateway := circuitGatewayFromConfig(t, cfg, time.Now)
+
+	initial := gateway.Readiness()
+	if !initial.Ready || initial.Total != 2 || initial.Available != 2 || initial.Open != 0 {
+		t.Fatalf("initial readiness = %#v, want two unique available targets", initial)
+	}
+	permit, _ := gateway.breakers[targetKey{provider: "first", model: "model-a"}].Acquire()
+	permit.Failure()
+	degraded := gateway.Readiness()
+	if !degraded.Ready || degraded.Total != 2 || degraded.Available != 1 || degraded.Open != 1 {
+		t.Fatalf("degraded readiness = %#v, want one available and one open", degraded)
+	}
+}
+
+func TestReadinessTreatsOnlyIdleHalfOpenTargetAsAvailable(t *testing.T) {
+	now := time.Unix(100, 0)
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	t.Cleanup(upstream.Close)
+	gateway := newCircuitTestGateway(t,
+		[]testTarget{{name: "primary", url: upstream.URL, model: "model-a"}},
+		1, time.Second, func() time.Time { return now },
+	)
+	breaker := gateway.breakers[targetKey{provider: "primary", model: "model-a"}]
+	failed, _ := breaker.Acquire()
+	failed.Failure()
+	now = now.Add(time.Second)
+
+	idle := gateway.Readiness()
+	if !idle.Ready || idle.Available != 1 || idle.HalfOpen != 1 {
+		t.Fatalf("idle half-open readiness = %#v, want available probe", idle)
+	}
+	probe, _ := breaker.Acquire()
+	busy := gateway.Readiness()
+	if busy.Ready || busy.Available != 0 || busy.HalfOpen != 1 {
+		t.Fatalf("busy half-open readiness = %#v, want unavailable", busy)
+	}
+	probe.Cancel()
 }
 
 func newCircuitTestGateway(t *testing.T, targets []testTarget, threshold int, openDuration time.Duration, now func() time.Time) *Gateway {

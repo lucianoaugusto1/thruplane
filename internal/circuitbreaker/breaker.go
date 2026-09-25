@@ -28,6 +28,7 @@ type Snapshot struct {
 	State               State
 	ConsecutiveFailures int
 	OpenUntil           time.Time
+	ProbeInFlight       bool
 	Opened              uint64
 	Rejected            uint64
 }
@@ -105,6 +106,7 @@ func (b *Breaker) Snapshot() Snapshot {
 		State:               b.stateLocked(now),
 		ConsecutiveFailures: b.consecutiveFailures,
 		OpenUntil:           b.openUntil,
+		ProbeInFlight:       b.probeInFlight,
 		Opened:              b.opened,
 		Rejected:            b.rejected,
 	}

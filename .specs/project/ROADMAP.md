@@ -131,8 +131,10 @@ for broader production adoption.
 
 - Retry budgets, jittered backoff, provider cooldown, bounded queues, and local
   provider/model request and concurrency limits are complete.
-- Circuit breakers, weighted routing, readiness, multiple local keys,
-  token-aware quotas, and secure secret sources remain planned.
+- Process-local per-target circuit breakers and public aggregate readiness are
+  complete.
+- Weighted routing, multiple local keys, token-aware quotas, and secure secret
+  sources remain planned.
 
 **Open observability and packaging** - PLANNED
 

@@ -17,6 +17,18 @@ import (
 
 type requestIDKey struct{}
 
+type readinessResponse struct {
+	Status  string           `json:"status"`
+	Targets readinessTargets `json:"targets"`
+}
+
+type readinessTargets struct {
+	Total     int `json:"total"`
+	Available int `json:"available"`
+	Open      int `json:"open"`
+	HalfOpen  int `json:"half_open"`
+}
+
 func New(cfg config.Config, gateway *gateway.Gateway, logger *slog.Logger) http.Handler {
 	if logger == nil {
 		logger = slog.Default()
@@ -24,6 +36,7 @@ func New(cfg config.Config, gateway *gateway.Gateway, logger *slog.Logger) http.
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", health)
+	mux.HandleFunc("GET /readyz", readiness(gateway))
 	mux.HandleFunc("POST /v1/chat/completions", gateway.ChatCompletions)
 	mux.HandleFunc("GET /v1/models", gateway.ListModels)
 	mux.HandleFunc("GET /v1/models/{model}", gateway.GetModel)
@@ -42,6 +55,28 @@ func New(cfg config.Config, gateway *gateway.Gateway, logger *slog.Logger) http.
 
 func health(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func readiness(gatewayService *gateway.Gateway) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		status := gateway.ReadinessStatus{}
+		if gatewayService != nil {
+			status = gatewayService.Readiness()
+		}
+		httpStatus := http.StatusOK
+		state := "ready"
+		if !status.Ready {
+			httpStatus = http.StatusServiceUnavailable
+			state = "not_ready"
+		}
+		writeJSON(w, httpStatus, readinessResponse{
+			Status: state,
+			Targets: readinessTargets{
+				Total: status.Total, Available: status.Available,
+				Open: status.Open, HalfOpen: status.HalfOpen,
+			},
+		})
+	}
 }
 
 func assignRequestID(next http.Handler) http.Handler {

@@ -1,9 +1,9 @@
 # Project state
 
 **Updated:** September 25, 2026
-**Current work:** Native and OpenAI-compatible adapters now have deterministic
-conformance fixtures and a versioned request/response matrix. Credentialed
-live provider validation is next.
+**Current work:** Process-local per-target circuit breakers and aggregate
+readiness now prevent repeatedly calling unhealthy targets. Credentialed live
+provider validation is next.
 
 ## Decisions
 
@@ -85,6 +85,11 @@ live provider validation is next.
 - Provider/model targets share process-local request-rate, concurrency, queue,
   and adaptive cooldown state across aliases. Limits remain isolated between
   configured provider names.
+- Provider/model targets also share process-local circuit state across aliases.
+  Retryable transport and server failures open a configured circuit; one
+  half-open request probes recovery after the open duration.
+- `/healthz` remains process liveness. `/readyz` reports only aggregate target
+  counts and ignores provider rate-limit cooldown to avoid orchestrator churn.
 - Retry behavior honors `Retry-After`, otherwise uses cancelable exponential
   backoff with jitter, and never shortens a provider hint to fit the target
   retry budget.

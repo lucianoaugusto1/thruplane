@@ -124,9 +124,9 @@ latency or TPS claim based on one laptop benchmark.
 
 **Progress:** Bounded per-target retry budgets, cancelable jittered backoff,
 `Retry-After`, permanent quota classification, process-local request and
-concurrency admission, bounded queues, and shared provider cooldown are
-implemented. Distributed or tenant quotas, circuit breakers, and telemetry
-exporters remain open.
+concurrency admission, bounded queues, shared provider cooldown, per-target
+circuit breakers, and aggregate readiness are implemented. Distributed or
+tenant quotas, weighted routing, and telemetry exporters remain open.
 
 **Create:** Per-target health and circuit breakers, weighted routing, readiness
 checks, multiple local keys with scopes and expiry, token-aware local quotas,
@@ -257,6 +257,6 @@ SLA or compliance claim before operational and legal review.
    collecting any customer prompts or responses.
 
 The next external validation slice is **recorded live provider conformance**.
-The next credential-free implementation slice is **per-target health, circuit
-breakers, and readiness**. Both are prerequisites for credible production
-claims, public release, and higher-level routing.
+The next credential-free implementation slice is **Prometheus-compatible
+metrics and privacy-safe routing telemetry**. Both are prerequisites for
+credible production claims, public release, and higher-level routing.

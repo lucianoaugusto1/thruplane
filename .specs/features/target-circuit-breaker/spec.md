@@ -1,6 +1,6 @@
 # Target circuit breaker and readiness specification
 
-**Status:** Approved
+**Status:** Complete
 **Date:** September 25, 2026
 
 ## Problem
@@ -86,5 +86,5 @@ SHALL pass with local deterministic tests.
 | CB-01 | T1 | Verified |
 | CB-02 through CB-05 | T2-T3 | Verified |
 | CB-06 | T3 | Verified |
-| CB-07 | T4 | Pending |
-| CB-08 | T1-T4 | Pending |
+| CB-07 | T4 | Verified |
+| CB-08 | T1-T4 | Verified |

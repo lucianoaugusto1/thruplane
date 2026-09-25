@@ -41,6 +41,49 @@ func TestHealthIsPublicAndHasRequestID(t *testing.T) {
 	}
 }
 
+func TestReadinessIsPublicAndReflectsOpenTargets(t *testing.T) {
+	t.Parallel()
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	t.Cleanup(upstream.Close)
+	cfg := testConfig(upstream.URL, "nexoroute-secret")
+	cfg.Routing.CircuitBreaker = config.CircuitBreakerConfig{
+		FailureThreshold: 1,
+		OpenDuration:     config.Duration(time.Minute),
+	}
+	clients, err := provider.NewClients(cfg)
+	if err != nil {
+		t.Fatalf("NewClients() error = %v", err)
+	}
+	handler := New(cfg, gateway.New(cfg, clients), discardLogger())
+
+	ready := httptest.NewRecorder()
+	handler.ServeHTTP(ready, httptest.NewRequest(http.MethodGet, "/readyz", nil))
+	assertReadinessResponse(t, ready, http.StatusOK, "ready", 1, 1, 0)
+
+	chatRequest := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(
+		`{"model":"fast","messages":[{"role":"user","content":"hello"}]}`,
+	))
+	chatRequest.Header.Set("Authorization", "Bearer nexoroute-secret")
+	handler.ServeHTTP(httptest.NewRecorder(), chatRequest)
+
+	notReady := httptest.NewRecorder()
+	handler.ServeHTTP(notReady, httptest.NewRequest(http.MethodGet, "/readyz", nil))
+	assertReadinessResponse(t, notReady, http.StatusServiceUnavailable, "not_ready", 1, 0, 1)
+	for _, sensitive := range []string{"provider", "provider-model", upstream.URL, "nexoroute-secret"} {
+		if strings.Contains(notReady.Body.String(), sensitive) {
+			t.Errorf("readiness body contains sensitive target detail %q: %s", sensitive, notReady.Body.String())
+		}
+	}
+
+	health := httptest.NewRecorder()
+	handler.ServeHTTP(health, httptest.NewRequest(http.MethodGet, "/healthz", nil))
+	if health.Code != http.StatusOK {
+		t.Fatalf("health status after open circuit = %d, want 200", health.Code)
+	}
+}
+
 func TestProtectedRoutesRequireConfiguredBearerToken(t *testing.T) {
 	t.Parallel()
 
@@ -307,5 +350,27 @@ func assertAPIError(t *testing.T, body []byte) {
 	}
 	if len(payload.Error.Param) == 0 {
 		t.Errorf("error response = %#v, want param field", payload.Error)
+	}
+}
+
+func assertReadinessResponse(t *testing.T, response *httptest.ResponseRecorder, wantStatus int, wantState string, total, available, open int) {
+	t.Helper()
+	if response.Code != wantStatus {
+		t.Fatalf("readiness status = %d, want %d; body = %s", response.Code, wantStatus, response.Body.String())
+	}
+	var payload struct {
+		Status  string `json:"status"`
+		Targets struct {
+			Total     int `json:"total"`
+			Available int `json:"available"`
+			Open      int `json:"open"`
+			HalfOpen  int `json:"half_open"`
+		} `json:"targets"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode readiness response: %v", err)
+	}
+	if payload.Status != wantState || payload.Targets.Total != total || payload.Targets.Available != available || payload.Targets.Open != open {
+		t.Fatalf("readiness payload = %#v, want status %q total %d available %d open %d", payload, wantState, total, available, open)
 	}
 }
