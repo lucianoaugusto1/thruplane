@@ -33,7 +33,7 @@ behavior, one-shot permits, generations, snapshots, and deterministic tests.
 **Tools:** Local filesystem and Go test runner; TLC skill.
 **Tests:** Unit. **Gate:** Quick.
 
-### T3: Integrate routing and exhaustion behavior
+### T3: Integrate routing and exhaustion behavior — Complete
 
 **What:** Share breakers by target identity, classify results, skip open
 targets, preserve fallback, and return `503 circuit_open` when exhausted.

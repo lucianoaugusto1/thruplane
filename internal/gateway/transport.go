@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"nexoroute/internal/circuitbreaker"
 	"nexoroute/internal/ratelimit"
 )
 
@@ -43,6 +44,13 @@ func writeRateLimitError(w http.ResponseWriter, denied *ratelimit.Denial) {
 	}
 	w.Header().Set("X-NexoRoute-RateLimit-Reason", denied.Reason)
 	writeError(w, http.StatusTooManyRequests, "All eligible upstream targets are currently rate limited.", "rate_limit_error", "gateway_rate_limited")
+}
+
+func writeCircuitOpenError(w http.ResponseWriter, denied *circuitbreaker.Denial) {
+	if retryAfter := retryAfterSeconds(denied.RetryAfter); retryAfter != "" {
+		w.Header().Set("Retry-After", retryAfter)
+	}
+	writeError(w, http.StatusServiceUnavailable, "All eligible upstream targets have an open circuit.", "api_error", "circuit_open")
 }
 
 func relayResponse(w http.ResponseWriter, response *http.Response, stream bool) {

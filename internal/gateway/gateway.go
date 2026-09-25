@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"nexoroute/internal/catalog"
+	"nexoroute/internal/circuitbreaker"
 	"nexoroute/internal/config"
 	"nexoroute/internal/provider"
 	"nexoroute/internal/ratelimit"
@@ -17,6 +18,7 @@ type Gateway struct {
 	clients  map[string]*provider.Client
 	catalog  *catalog.Registry
 	limiters map[targetKey]*ratelimit.Limiter
+	breakers map[targetKey]*circuitbreaker.Breaker
 	now      func() time.Time
 	jitter   func(time.Duration) time.Duration
 	wait     func(context.Context, time.Duration) error
@@ -41,6 +43,7 @@ func newWithCatalogAndClock(cfg config.Config, clients map[string]*provider.Clie
 		clients:  clients,
 		catalog:  registry,
 		limiters: buildLimiters(settings.models, now),
+		breakers: buildBreakers(settings.models, settings.routing.CircuitBreaker, now),
 		now:      now,
 		jitter:   equalJitter,
 		wait:     waitContext,
@@ -75,6 +78,10 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 	}
 	if result.localDenial != nil {
 		writeRateLimitError(w, result.localDenial)
+		return
+	}
+	if result.circuitDenial != nil {
+		writeCircuitOpenError(w, result.circuitDenial)
 		return
 	}
 	writeError(w, http.StatusBadGateway, "The gateway could not reach an upstream provider.", "api_error", "upstream_unavailable")
