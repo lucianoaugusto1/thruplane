@@ -118,9 +118,9 @@ vet, and build.
 
 **Done when:**
 
-- [ ] Pull requests and default-branch pushes run the complete gate.
-- [ ] Actions are commit-pinned and permissions are read-only.
-- [ ] Local build gate passes.
+- [x] Pull requests and default-branch pushes run the complete gate.
+- [x] Actions are commit-pinned and permissions are read-only.
+- [x] Local build gate passes.
 
 **Verify:** Review the workflow and run the build gate locally.
 

@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Format, test, vet, and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Check formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          unformatted="$(gofmt -l ./cmd ./internal ./bench ./tests)"
+          if [[ -n "${unformatted}" ]]; then
+            echo "The following Go files require gofmt:"
+            echo "${unformatted}"
+            exit 1
+          fi
+
+      - name: Run race-enabled tests
+        run: go test -race ./...
+
+      - name: Run vet
+        run: go vet ./...
+
+      - name: Build candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          short_revision="${GITHUB_SHA:0:12}"
+          build_date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          go build -trimpath \
+            -ldflags "-X main.version=0.1.0-beta -X main.revision=${short_revision} -X main.buildDate=${build_date}" \
+            -o nexoroute ./cmd/nexoroute
+          ./nexoroute -version
