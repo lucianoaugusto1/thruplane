@@ -96,7 +96,7 @@ workloads. Planned capabilities include:
 - In-memory provider/model request and concurrency limits (implemented);
   token-aware and tenant quotas remain planned.
 - Per-request token and cost estimates.
-- Prometheus metrics and OpenTelemetry traces.
+- Prometheus metrics (implemented) and OpenTelemetry traces (planned).
 - Validated YAML or GitOps configuration with hot reload.
 - Guardrail webhooks and deterministic local rules.
 - A Docker image, Helm chart, and portable single binary.
@@ -345,7 +345,8 @@ through NexoRoute infrastructure.
 - Add priority providers and the Responses and embeddings APIs.
 - Add circuit breakers, weighted routing, virtual keys, and token-aware local
   quotas; provider/model request and concurrency limits are implemented.
-- Add Prometheus, OpenTelemetry, cost estimates, and hot reload.
+- Prometheus metrics are implemented; add OpenTelemetry, cost estimates, and
+  hot reload.
 - Add release automation, compatibility tests, and a Helm chart.
 
 ### v0.3: Pro operations beta

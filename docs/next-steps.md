@@ -1,7 +1,7 @@
 # Delivery plan after the first multimodal adapters
 
-**Status:** Proposed, not a release commitment  
-**Updated:** September 22, 2026
+**Status:** Active, not a release commitment
+**Updated:** September 26, 2026
 
 This plan turns the existing product strategy into work that can be verified.
 The sequence matters: prove the direct-provider gateway before adding a
@@ -125,15 +125,17 @@ latency or TPS claim based on one laptop benchmark.
 **Progress:** Bounded per-target retry budgets, cancelable jittered backoff,
 `Retry-After`, permanent quota classification, process-local request and
 concurrency admission, bounded queues, shared provider cooldown, per-target
-circuit breakers, and aggregate readiness are implemented. Distributed or
-tenant quotas, weighted routing, and telemetry exporters remain open.
+circuit breakers, aggregate readiness, and opt-in Prometheus-compatible HTTP,
+route, fallback, attempt, readiness, and build metrics are implemented.
+OpenTelemetry exporters, multiple local keys, token-aware quotas, and weighted
+routing remain open.
 
 **Create:** Per-target health and circuit breakers, weighted routing, readiness
 checks, multiple local keys with scopes and expiry, token-aware local quotas,
-and clear fail-open versus fail-closed policies. Add Prometheus-compatible
-metrics and OpenTelemetry traces without prompt, response, or credential
-content by default. Define retention, redaction, and high-cardinality label
-rules.
+and clear fail-open versus fail-closed policies. Maintain
+Prometheus-compatible metrics and add OpenTelemetry traces without prompt,
+response, or credential content by default. Define retention, redaction, and
+high-cardinality label rules.
 
 **Done when:** Chaos tests cover a slow provider, retryable errors, partial
 streams, client disconnects, and mixed healthy/unhealthy targets. Operators
@@ -256,7 +258,9 @@ SLA or compliance claim before operational and legal review.
 5. Decide the hosted control-plane deployment and data-retention model before
    collecting any customer prompts or responses.
 
-The next external validation slice is **recorded live provider conformance**.
-The next credential-free implementation slice is **Prometheus-compatible
-metrics and privacy-safe routing telemetry**. Both are prerequisites for
-credible production claims, public release, and higher-level routing.
+The Community beta gate, privacy-safe Prometheus metrics, configuration
+preflight, build identity, CI, and operator runbook are complete. The next
+external validation slice is **recorded live provider conformance**. The next
+credential-free production slice is **multiple scoped local keys and
+OpenTelemetry traces**. Live evidence and release hardening remain
+prerequisites for a public production claim.

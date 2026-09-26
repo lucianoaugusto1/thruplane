@@ -1,8 +1,8 @@
 # Roadmap
 
-**Current milestone:** Gateway assurance
-**Status:** Planning
-**Updated:** September 25, 2026
+**Current milestone:** Community beta
+**Status:** Complete
+**Updated:** September 26, 2026
 
 This page tracks shippable outcomes. The detailed
 [delivery plan](../../docs/next-steps.md) lists required work, artifacts,
@@ -77,6 +77,33 @@ exceptions, repeatable benchmarks, and passing Go build/vet/race checks.
 
 ---
 
+## Community beta
+
+**Goal:** Give design partners a functional self-hosted/BYOK candidate with a
+repeatable operator and maintainer gate.
+
+### Features
+
+**Runtime and operator diagnostics** - COMPLETE
+
+- Validate configuration without opening a listener.
+- Identify version, revision, and build date.
+- Expose opt-in Prometheus-compatible metrics with bounded labels and no
+  prompt, response, credential, file, or authorization-header content.
+
+**Qualification and operations** - COMPLETE
+
+- Run formatting, race-enabled tests, vet, and build in standard CI.
+- Document install, preflight, probes, metrics, buffered and streaming smoke
+  tests, rollout, rollback, privacy, and beta boundaries.
+- Run the deterministic build, race, and short performance gates on the
+  candidate revision.
+
+**Exit gate:** All local qualification commands pass. Live provider evidence
+remains explicit and does not block the deterministic BYOK beta contract.
+
+---
+
 ## Public Community launch
 
 **Goal:** Publish a credible open-source foundation under the NexoRoute working
@@ -136,9 +163,10 @@ for broader production adoption.
 - Weighted routing, multiple local keys, token-aware quotas, and secure secret
   sources remain planned.
 
-**Open observability and packaging** - PLANNED
+**Open observability and packaging** - IN PROGRESS
 
-- Add Prometheus, OpenTelemetry, cost estimates, hot reload, and Helm.
+- Prometheus-compatible process metrics are complete.
+- Add OpenTelemetry, cost estimates, hot reload, and Helm.
 - Prove privacy and redaction defaults under load and failure.
 
 ---

@@ -9,11 +9,11 @@ roll back without depending on future Pro or Enterprise services.
 
 ## Goals
 
-- [ ] Make a self-hosted, BYOK deployment diagnosable before and after start.
-- [ ] Publish a repeatable beta qualification and operator workflow.
-- [ ] Keep request content, responses, credentials, and authorization headers
+- [x] Make a self-hosted, BYOK deployment diagnosable before and after start.
+- [x] Publish a repeatable beta qualification and operator workflow.
+- [x] Keep request content, responses, credentials, and authorization headers
   out of metrics and logs.
-- [ ] Prove the beta candidate with deterministic tests and a short load run.
+- [x] Prove the beta candidate with deterministic tests and a short load run.
 
 ## Out of scope
 
@@ -103,21 +103,21 @@ verify that the workflow file contains the same mandatory gates.
 
 | Requirement ID | Story | Status |
 | --- | --- | --- |
-| BETA-01 | Validate configuration | In tasks |
-| BETA-02 | Identify the build | In tasks |
-| BETA-03 | Opt-in metrics endpoint | In tasks |
-| BETA-04 | Privacy-safe bounded telemetry | In tasks |
-| BETA-05 | Continuous integration gate | In tasks |
-| BETA-06 | Operator runbook and smoke test | In tasks |
-| BETA-07 | Final deterministic qualification | In tasks |
+| BETA-01 | Validate configuration | Verified |
+| BETA-02 | Identify the build | Verified |
+| BETA-03 | Opt-in metrics endpoint | Verified |
+| BETA-04 | Privacy-safe bounded telemetry | Verified |
+| BETA-05 | Continuous integration gate | Verified |
+| BETA-06 | Operator runbook and smoke test | Verified |
+| BETA-07 | Final deterministic qualification | Verified |
 
 **Coverage:** 7 requirements, 7 mapped to tasks, 0 unmapped.
 
 ## Success criteria
 
-- [ ] A tester can validate and identify a build before it starts.
-- [ ] A tester can diagnose traffic and target health without sensitive
+- [x] A tester can validate and identify a build before it starts.
+- [x] A tester can diagnose traffic and target health without sensitive
   telemetry.
-- [ ] The documented beta gate passes on the candidate revision.
-- [ ] The remaining provider-live evidence is labeled as unverified rather
+- [x] The documented beta gate passes on the candidate revision.
+- [x] The remaining provider-live evidence is labeled as unverified rather
   than implied by the beta designation.

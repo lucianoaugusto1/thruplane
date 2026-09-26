@@ -6,9 +6,10 @@ NexoRoute is an open-source AI gateway written in Go. It gives applications one
 OpenAI-compatible endpoint for hosted and local models, then centralizes model
 aliases, provider credentials, streaming, retries, and failover.
 
-NexoRoute Community is available now under Apache License 2.0. NexoRoute Pro
-and NexoRoute Enterprise are planned commercial editions for teams that need
-cost controls, governance, high availability, and support.
+NexoRoute Community is in beta under Apache License 2.0. NexoRoute Pro and
+NexoRoute Enterprise are planned commercial editions for teams that need cost
+controls, governance, high availability, and support. Start with the
+[Community beta operations guide](docs/beta.md).
 
 ## Why NexoRoute
 
@@ -33,6 +34,8 @@ cost controls, governance, high availability, and support.
 - Sourced model catalog with capability-aware routing and model metadata
 - Optional inbound bearer authentication
 - Request IDs, structured JSON logs, health checks, and graceful shutdown
+- Opt-in Prometheus-compatible metrics with bounded, privacy-safe labels
+- Configuration preflight and build identity commands
 - Optional embedded developer playground for streaming, tools, media, and
   route inspection
 - Distroless, non-root container image
@@ -41,7 +44,7 @@ cost controls, governance, high availability, and support.
 
 | Edition | Status | Designed for |
 | --- | --- | --- |
-| Community | Available | Developers and teams that self-host the core gateway |
+| Community | Beta | Developers and teams that self-host the core gateway |
 | Pro | Planned | Teams that need usage, cost, policy, and alerting workflows |
 | Enterprise | Planned | Organizations that need SSO, audit, HA, and contracted support |
 
@@ -82,13 +85,19 @@ the validation gates before public and paid releases.
    ollama pull llama3.2
    ```
 
-4. Start NexoRoute.
+4. Validate the configuration.
+
+   ```sh
+   go run ./cmd/nexoroute -check-config -config config.yaml
+   ```
+
+5. Start NexoRoute.
 
    ```sh
    go run ./cmd/nexoroute -config config.yaml
    ```
 
-5. Check its health.
+6. Check its health.
 
    ```sh
    curl http://localhost:8080/healthz
@@ -98,6 +107,12 @@ the validation gates before public and paid releases.
 
    ```sh
    curl http://localhost:8080/readyz
+   ```
+
+   When `server.metrics.enabled` is `true`, scrape metrics separately:
+
+   ```sh
+   curl http://localhost:8080/metrics
    ```
 
 ## Use the developer playground
@@ -245,6 +260,7 @@ Set `catalog.unknown_models: reject` to require a catalog match. Use
 | `server.read_header_timeout` | Client header timeout | `5s` |
 | `server.shutdown_timeout` | Graceful shutdown limit | `10s` |
 | `server.playground.enabled` | Serve the embedded interface at `/playground/` | `false` |
+| `server.metrics.enabled` | Serve Prometheus-compatible metrics at `/metrics` | `false` |
 | `catalog.unknown_models` | `allow` passthrough or `reject` unknown target IDs | `allow` |
 | `providers.*.type` | Provider protocol name | `openai` |
 | `providers.*.base_url` | Provider root URL without an API path | Provider default or required for custom endpoints |
@@ -355,10 +371,9 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - Bedrock supports buffered Converse responses; Bedrock streaming remains
   deferred until the binary AWS event-stream decoder is available.
 - Ollama's OpenAI compatibility can vary by version and model.
-- Local limits and circuit breakers are process-local. Community does not yet
-  include persistent usage history, dynamic reload, Prometheus metrics,
-  distributed tracing, tenant-level policies, or distributed state across
-  replicas.
+- Local limits, circuit breakers, and metrics are process-local. Community
+  does not yet include persistent usage history, dynamic reload, distributed
+  tracing, tenant-level policies, or distributed state across replicas.
 - If an upstream stream fails after headers are sent, NexoRoute closes the
   stream without inventing a `[DONE]` event.
 

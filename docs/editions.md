@@ -1,8 +1,8 @@
 # NexoRoute editions
 
-NexoRoute uses an open-core model. Community provides the production-usable
-gateway. Planned paid editions add organizational workflows, governance, and
-assurance around that open core.
+NexoRoute uses an open-core model. Community provides the self-hosted gateway
+and is currently in beta. Planned paid editions add organizational workflows,
+governance, and assurance around that open core.
 
 Only Community exists today. Pro and Enterprise describe product direction,
 not generally available features or contractual commitments.
@@ -26,7 +26,8 @@ not generally available features or contractual commitments.
 | YAML configuration | Included | Included | Included |
 | Basic bearer authentication | Included | Included | Included |
 | Structured logs and health checks | Included | Included | Included |
-| Prometheus and OpenTelemetry integration | Planned open source | Included | Included |
+| Prometheus-compatible metrics | Included | Included | Included |
+| OpenTelemetry traces | Planned open source | Included | Included |
 | Multiple local keys and simple scopes | Planned open source | Managed | Managed |
 | Local provider/model rate and concurrency limits | Included | Distributed | Distributed |
 | Per-request token and cost estimates | Planned open source | Included | Included |
@@ -53,9 +54,9 @@ operate their own gateway. Apache License 2.0 allows commercial use,
 modification, and redistribution under its terms.
 
 Community must remain useful without a commercial subscription. Future open
-work includes additional providers, standard metrics and traces, multiple
-local keys, token-aware local quotas, more endpoint families, and stronger
-routing primitives.
+work includes additional providers, OpenTelemetry traces, multiple local keys,
+token-aware local quotas, more endpoint families, and stronger routing
+primitives.
 
 ## NexoRoute Pro
 

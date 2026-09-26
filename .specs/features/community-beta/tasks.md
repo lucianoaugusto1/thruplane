@@ -1,7 +1,7 @@
 # Community beta tasks
 
 **Design:** `.specs/features/community-beta/design.md`  
-**Status:** In progress
+**Status:** Done
 
 ## Execution plan
 
@@ -129,7 +129,9 @@ vet, and build.
 **What:** Add the beta operator runbook, update project status and public docs,
 then run the complete beta gate.  
 **Where:** `docs/beta.md`, `README.md`, `docs/next-steps.md`,
-`.specs/project/ROADMAP.md`, `.specs/project/STATE.md`, and this task file  
+`docs/editions.md`, `docs/product-strategy.md`, `.specs/project/ROADMAP.md`,
+`.specs/project/STATE.md`, `validation.md`, and this task file
+
 **Depends on:** T6  
 **Requirement:** BETA-06, BETA-07  
 **Tests:** Full, race, and performance smoke  
@@ -137,12 +139,12 @@ then run the complete beta gate.
 
 **Done when:**
 
-- [ ] The runbook covers install, preflight, start, probes, metrics, buffered
+- [x] The runbook covers install, preflight, start, probes, metrics, buffered
   and streamed smoke requests, rollback, and known limitations.
-- [ ] Public docs call the artifact a beta and do not imply live provider
+- [x] Public docs call the artifact a beta and do not imply live provider
   certification.
-- [ ] Build, race, and one-run performance gates pass.
-- [ ] All requirements are marked verified.
+- [x] Build, race, and one-run performance gates pass.
+- [x] All requirements are marked verified.
 
 **Verify:**
 

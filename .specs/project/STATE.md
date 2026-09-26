@@ -1,9 +1,10 @@
 # Project state
 
-**Updated:** September 25, 2026
-**Current work:** Process-local per-target circuit breakers and aggregate
-readiness now prevent repeatedly calling unhealthy targets. Credentialed live
-provider validation is next.
+**Updated:** September 26, 2026
+**Current work:** The Community beta is locally qualified with configuration
+preflight, build identity, opt-in privacy-safe metrics, standard CI, an
+operator runbook, race-enabled tests, and a short performance gate.
+Credentialed live provider validation is next.
 
 ## Decisions
 
@@ -90,6 +91,15 @@ provider validation is next.
   half-open request probes recovery after the open duration.
 - `/healthz` remains process liveness. `/readyz` reports only aggregate target
   counts and ignores provider rate-limit cooldown to avoid orchestrator churn.
+- `/metrics` is opt-in and public for Prometheus-style scraping. It uses only
+  bounded route/status and configured provider/model labels; it never receives
+  prompts, responses, files, credentials, authorization headers, or raw
+  unknown paths.
+- `-check-config` validates strict YAML, the embedded catalog, and provider
+  initialization without opening a listener. `-version` works without loading
+  configuration.
+- The Community beta is a deterministic self-hosted/BYOK contract. It does not
+  imply live certification for every provider, model, account, or region.
 - Retry behavior honors `Retry-After`, otherwise uses cancelable exponential
   backoff with jitter, and never shortens a provider hint to fit the target
   retry budget.
@@ -122,10 +132,10 @@ provider validation is next.
 
 - Select test models and regions, then run the opt-in native-provider smoke
   suite with scoped credentials and a spending cap.
-- Complete the versioned normalized response compatibility matrix and add
-  equivalent fixture evidence for OpenAI-compatible adapters.
 - Review early CI variance and tune performance thresholds only from retained
   base/candidate evidence.
+- Add multiple scoped local API keys and OpenTelemetry only after beta feedback
+  confirms the operator requirements.
 - Use [the delivery plan](../../docs/next-steps.md) for dependencies, artifacts,
   and acceptance gates. The plan is proposed until prioritized with the user.
 
