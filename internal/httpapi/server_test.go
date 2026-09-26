@@ -16,6 +16,7 @@ import (
 	"nexoroute/internal/config"
 	"nexoroute/internal/gateway"
 	"nexoroute/internal/provider"
+	"nexoroute/internal/telemetry"
 )
 
 func TestHealthIsPublicAndHasRequestID(t *testing.T) {
@@ -123,6 +124,77 @@ func TestPlaygroundIsDisabledByDefault(t *testing.T) {
 		handler.ServeHTTP(response, request)
 		if response.Code != http.StatusNotFound {
 			t.Errorf("GET %s status = %d, want 404", path, response.Code)
+		}
+	}
+}
+
+func TestMetricsAreDisabledByDefault(t *testing.T) {
+	t.Parallel()
+
+	handler := New(config.Config{}, nil, discardLogger())
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("GET /metrics status = %d, want 404", response.Code)
+	}
+}
+
+func TestMetricsExposeBoundedOperationalDataWithoutSecrets(t *testing.T) {
+	t.Parallel()
+
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"id":"chatcmpl-metrics"}`)
+	}))
+	t.Cleanup(upstream.Close)
+
+	cfg := testConfig(upstream.URL, "gateway-secret-value")
+	cfg.Server.Metrics.Enabled = true
+	clients, err := provider.NewClients(cfg)
+	if err != nil {
+		t.Fatalf("NewClients() error = %v", err)
+	}
+	handler := NewWithBuildInfo(cfg, gateway.New(cfg, clients), discardLogger(), telemetry.BuildInfo{
+		Version:  "v0.1.0-beta.1",
+		Revision: "abc123",
+		Date:     "2026-09-26T00:00:00Z",
+	})
+
+	chat := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(
+		`{"model":"fast","messages":[{"role":"user","content":"prompt-secret-value"}]}`,
+	))
+	chat.Header.Set("Authorization", "Bearer gateway-secret-value")
+	chat.Header.Set("X-Private-Header", "header-secret-value")
+	chatResponse := httptest.NewRecorder()
+	handler.ServeHTTP(chatResponse, chat)
+	if chatResponse.Code != http.StatusOK {
+		t.Fatalf("chat status = %d, want 200; body = %s", chatResponse.Code, chatResponse.Body.String())
+	}
+
+	unknown := httptest.NewRecorder()
+	handler.ServeHTTP(unknown, httptest.NewRequest(http.MethodGet, "/private-path-value", nil))
+
+	metrics := httptest.NewRecorder()
+	handler.ServeHTTP(metrics, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if metrics.Code != http.StatusOK {
+		t.Fatalf("metrics status = %d, want 200; body = %s", metrics.Code, metrics.Body.String())
+	}
+	assertContainsAll(t, metrics.Body.String(),
+		`nexoroute_build_info{build_date="2026-09-26T00:00:00Z",revision="abc123",version="v0.1.0-beta.1"} 1`,
+		`nexoroute_http_requests_total{method="GET",route="unmatched",status="404"} 1`,
+		`nexoroute_http_requests_total{method="POST",route="/v1/chat/completions",status="200"} 1`,
+		`nexoroute_route_selections_total{model="provider-model",provider="provider"} 1`,
+		`nexoroute_request_attempts_sum{model="provider-model",provider="provider"} 1`,
+		`nexoroute_request_fallbacks_sum{model="provider-model",provider="provider"} 0`,
+		`nexoroute_targets{state="available"} 1`,
+		`nexoroute_targets{state="total"} 1`,
+	)
+	for _, sensitive := range []string{
+		"prompt-secret-value", "gateway-secret-value", "header-secret-value",
+		"private-path-value", "Authorization", "X-Private-Header",
+	} {
+		if strings.Contains(metrics.Body.String(), sensitive) {
+			t.Errorf("metrics contain sensitive value %q", sensitive)
 		}
 	}
 }
@@ -372,5 +444,14 @@ func assertReadinessResponse(t *testing.T, response *httptest.ResponseRecorder, 
 	}
 	if payload.Status != wantState || payload.Targets.Total != total || payload.Targets.Available != available || payload.Targets.Open != open {
 		t.Fatalf("readiness payload = %#v, want status %q total %d available %d open %d", payload, wantState, total, available, open)
+	}
+}
+
+func assertContainsAll(t *testing.T, value string, fragments ...string) {
+	t.Helper()
+	for _, fragment := range fragments {
+		if !strings.Contains(value, fragment) {
+			t.Errorf("value missing %q:\n%s", fragment, value)
+		}
 	}
 }

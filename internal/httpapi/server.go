@@ -8,11 +8,13 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"nexoroute/internal/config"
 	"nexoroute/internal/gateway"
+	"nexoroute/internal/telemetry"
 )
 
 type requestIDKey struct{}
@@ -30,24 +32,46 @@ type readinessTargets struct {
 }
 
 func New(cfg config.Config, gateway *gateway.Gateway, logger *slog.Logger) http.Handler {
+	return NewWithBuildInfo(cfg, gateway, logger, telemetry.BuildInfo{})
+}
+
+func NewWithBuildInfo(cfg config.Config, gatewayService *gateway.Gateway, logger *slog.Logger, build telemetry.BuildInfo) http.Handler {
 	if logger == nil {
 		logger = slog.Default()
 	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", health)
-	mux.HandleFunc("GET /readyz", readiness(gateway))
-	mux.HandleFunc("POST /v1/chat/completions", gateway.ChatCompletions)
-	mux.HandleFunc("GET /v1/models", gateway.ListModels)
-	mux.HandleFunc("GET /v1/models/{model}", gateway.GetModel)
+	mux.HandleFunc("GET /readyz", readiness(gatewayService))
+	mux.HandleFunc("POST /v1/chat/completions", gatewayService.ChatCompletions)
+	mux.HandleFunc("GET /v1/models", gatewayService.ListModels)
+	mux.HandleFunc("GET /v1/models/{model}", gatewayService.GetModel)
 	if cfg.Server.Playground.Enabled {
 		mux.HandleFunc("GET /playground", redirectPlayground)
 		mux.HandleFunc("GET /playground/", servePlayground)
 	}
 
+	var metrics *telemetry.Metrics
+	if cfg.Server.Metrics.Enabled {
+		metrics = telemetry.New(build, func() telemetry.Readiness {
+			status := gateway.ReadinessStatus{}
+			if gatewayService != nil {
+				status = gatewayService.Readiness()
+			}
+			return telemetry.Readiness{
+				Total: status.Total, Available: status.Available,
+				Open: status.Open, HalfOpen: status.HalfOpen,
+			}
+		})
+		mux.Handle("GET /metrics", metrics)
+	}
+
 	var handler http.Handler = mux
 	handler = authenticate(cfg.Server.APIKey, handler)
 	handler = recoverPanics(logger, handler)
+	if metrics != nil {
+		handler = observeMetrics(metrics, handler)
+	}
 	handler = accessLog(logger, handler)
 	handler = assignRequestID(handler)
 	return handler
@@ -140,6 +164,46 @@ func accessLog(logger *slog.Logger, next http.Handler) http.Handler {
 			"duration_ms", float64(time.Since(started).Microseconds())/1000,
 		)
 	})
+}
+
+func observeMetrics(metrics *telemetry.Metrics, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		route := metricRoute(r.URL.Path)
+		if route == "/metrics" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		started := time.Now()
+		recorder := &responseRecorder{ResponseWriter: w}
+		metrics.RequestStarted()
+		defer metrics.RequestFinished()
+		next.ServeHTTP(recorder, r)
+		metrics.ObserveHTTPRequest(r.Method, route, recorder.statusCode(), time.Since(started))
+
+		attempts, _ := strconv.Atoi(recorder.Header().Get("X-NexoRoute-Attempts"))
+		fallbacks, _ := strconv.Atoi(recorder.Header().Get("X-NexoRoute-Fallbacks"))
+		metrics.ObserveRoute(
+			recorder.Header().Get("X-NexoRoute-Provider"),
+			recorder.Header().Get("X-NexoRoute-Model"),
+			attempts,
+			fallbacks,
+		)
+	})
+}
+
+func metricRoute(path string) string {
+	switch path {
+	case "/healthz", "/readyz", "/metrics", "/playground", "/v1/chat/completions", "/v1/models":
+		return path
+	}
+	if strings.HasPrefix(path, "/v1/models/") {
+		return "/v1/models/{model}"
+	}
+	if strings.HasPrefix(path, "/playground/") {
+		return "/playground/{asset}"
+	}
+	return "unmatched"
 }
 
 type responseRecorder struct {

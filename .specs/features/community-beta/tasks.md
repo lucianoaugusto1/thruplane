@@ -80,11 +80,11 @@ safe route headers.
 
 **Done when:**
 
-- [ ] Disabled metrics return `404`.
-- [ ] Enabled metrics include HTTP, selected route, request attempts,
+- [x] Disabled metrics return `404`.
+- [x] Enabled metrics include HTTP, selected route, request attempts,
   fallbacks, readiness, and build series.
-- [ ] Raw unknown paths and sensitive test values do not appear.
-- [ ] `go test ./...` passes with no skipped tests.
+- [x] Raw unknown paths and sensitive test values do not appear.
+- [x] `go test ./...` passes with no skipped tests.
 
 **Verify:** `go test ./...`
 
