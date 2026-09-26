@@ -99,10 +99,10 @@ safe route headers.
 
 **Done when:**
 
-- [ ] Preflight accepts valid config and rejects invalid config without
+- [x] Preflight accepts valid config and rejects invalid config without
   starting a listener.
-- [ ] Version mode works without a config file.
-- [ ] `go test ./... && go vet ./... && go build ./cmd/nexoroute` passes.
+- [x] Version mode works without a config file.
+- [x] `go test ./... && go vet ./... && go build ./cmd/nexoroute` passes.
 
 **Verify:** Run the build gate and invoke both CLI modes.
 
