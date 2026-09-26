@@ -1,10 +1,11 @@
 # Project state
 
 **Updated:** September 26, 2026
-**Current work:** The Community beta is locally qualified with configuration
-preflight, build identity, opt-in privacy-safe metrics, standard CI, an
-operator runbook, race-enabled tests, and a short performance gate.
-Credentialed live provider validation is next.
+**Current work:** The Community beta includes an opt-in provider-credential
+playground flow for onboarding. It uses request-scoped clients, exact base-URL
+allowlisting, one upstream attempt, transient browser memory, and secret-safe
+logs, metrics, errors, inspection, and export. Credentialed live provider
+validation remains the next external assurance step.
 
 ## Decisions
 
@@ -14,7 +15,15 @@ Credentialed live provider validation is next.
   disabled by default and adds no frontend runtime dependency or privileged
   internal API.
 - Playground API keys, prompts, files, and history stay in page memory. The
-  page never receives provider credentials or executes model-requested tools.
+  optional credential-testing mode also keeps user-entered provider secrets in
+  tab memory and the active request only; configured credentials remain
+  server-side. The page never executes model-requested tools.
+- Provider credential testing requires a gateway API key, is separately
+  disabled by default, accepts custom base URLs only through an exact
+  server-side allowlist, and never mutates durable gateway configuration.
+- Ephemeral credential requests create an isolated one-target provider client
+  with no retry, fallback, rate-limit state, or circuit state. Dynamic model
+  IDs are excluded from route-selection metric labels.
 - Safe response headers expose the selected provider and model, attempt count,
   and fallback count for request-level inspection.
 - NexoRoute Inference is described as included usage backed by compute credits,

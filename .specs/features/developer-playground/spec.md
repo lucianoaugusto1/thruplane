@@ -16,7 +16,7 @@ differentiates the gateway.
 - Exercise only the public `/v1` API used by real clients.
 - Support text, SSE, tools, images, PDFs, and audio input.
 - Show request timing and safe route diagnostics without persisting content.
-- Preserve the gateway's authentication and provider credential boundaries.
+- Preserve the gateway's authentication and configured-credential boundary.
 
 ## Requirements
 
@@ -29,8 +29,9 @@ redirect to `/playground/` and serve the embedded interface.
 ### PLG-02: Authentication boundary
 
 WHEN the playground calls `/v1` routes THEN existing gateway authentication
-SHALL apply unchanged. Provider credentials SHALL never be sent to or embedded
-in the browser.
+SHALL apply unchanged. Credentials configured in gateway YAML SHALL never be
+sent to or embedded in the browser. The later, separately opt-in transient
+credential flow is specified in `../playground-provider-credentials/spec.md`.
 
 ### PLG-03: Model discovery
 
@@ -94,7 +95,8 @@ and build checks SHALL pass.
 - Automatic execution of model-requested tools.
 - Persisted history, shared workspaces, accounts, or a database.
 - Side-by-side evaluations, replay, shadow traffic, and AutoRouter controls.
-- Provider API keys entered through the playground.
+- Provider API keys entered through the original configured-alias flow. The
+  later opt-in transient flow is a separate feature and security boundary.
 - Uploading media to a separate file service.
 - A hosted public playground.
 

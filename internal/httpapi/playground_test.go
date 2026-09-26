@@ -112,6 +112,7 @@ func TestPlaygroundInterfaceContract(t *testing.T) {
 		".source-switch",
 		".credential-card",
 		".cost-warning",
+		`:not([type="radio"])`,
 	} {
 		if !strings.Contains(css, required) {
 			t.Errorf("styles.css missing %q", required)

@@ -426,7 +426,7 @@ label,
   font: 500 10px ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-input:not([type="range"]):not([type="checkbox"]),
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
 select,
 textarea {
   width: 100%;
@@ -436,7 +436,7 @@ textarea {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-input:not([type="range"]):not([type="checkbox"]),
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
 select {
   min-height: 41px;
   padding: 0 11px;

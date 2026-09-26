@@ -1,7 +1,7 @@
 # Playground provider credentials tasks
 
 **Design:** `design.md`
-**Status:** In progress
+**Status:** Complete
 
 ## Execution plan
 
@@ -71,7 +71,7 @@ only environment placeholders.
 **Requirements:** PCR-03, PCR-07, PCR-08, PCR-10, PCR-11.
 **Tests:** Static contract, JavaScript syntax, and browser smoke. **Gate:** Full.
 
-### T7: Document, visually verify, and validate
+### T7: Document, visually verify, and validate — Complete
 
 **What:** Update operator/user docs and project state, run desktop/mobile
 browser checks, record validation evidence, and execute the complete quality

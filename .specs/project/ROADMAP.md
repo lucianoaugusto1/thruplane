@@ -99,6 +99,14 @@ repeatable operator and maintainer gate.
 - Run the deterministic build, race, and short performance gates on the
   candidate revision.
 
+**Developer onboarding** - COMPLETE
+
+- Use the embedded playground with configured aliases or an optional ephemeral
+  provider credential.
+- Test all initial adapter credential shapes without persisting secrets.
+- Require inbound authentication and exact allowlisting for custom upstream
+  destinations; keep logs, metrics, errors, inspection, and export secret-safe.
+
 **Exit gate:** All local qualification commands pass. Live provider evidence
 remains explicit and does not block the deterministic BYOK beta contract.
 

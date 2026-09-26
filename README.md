@@ -127,7 +127,23 @@ server:
 
 Restart NexoRoute, then open `http://localhost:8080/playground/`. The page uses
 the public `/v1` API, keeps its API key and conversation only in browser memory,
-and never receives provider credentials. See the
+and uses server-configured provider credentials by default.
+
+For onboarding, you can separately enable ephemeral provider credential tests:
+
+```yaml
+server:
+  api_key: "${NEXOROUTE_API_KEY}"
+  playground:
+    enabled: true
+    credential_testing:
+      enabled: true
+      allowed_base_urls:
+        - http://localhost:11434
+```
+
+This mode makes real, potentially billable provider calls. Entered credentials
+stay in tab memory and the active request; NexoRoute never saves them. See the
 [developer playground guide](docs/playground.md) for tools, media, route
 inspection, privacy boundaries, and deployment guidance.
 

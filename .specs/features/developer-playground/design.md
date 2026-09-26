@@ -58,7 +58,7 @@ visible labels, live regions, and focus styles support keyboard use.
 | Concern | Decision |
 | --- | --- |
 | Default exposure | Disabled unless YAML explicitly enables it. |
-| Provider credentials | Remain server-side in provider clients. |
+| Configured provider credentials | Remain server-side in provider clients. |
 | Gateway key | Password input held only in page memory. |
 | External content | No CDN, analytics, fonts, scripts, or images. |
 | Browser policy | Restrictive CSP and anti-framing headers. |

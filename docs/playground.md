@@ -34,6 +34,57 @@ When `server.playground.enabled` is false or omitted, NexoRoute returns `404`
 for playground paths. Enabling the static page doesn't bypass authentication
 on `/v1/models` or `/v1/chat/completions`.
 
+## Test a provider credential
+
+Credential testing is a separate opt-in for onboarding. It lets you validate a
+provider key and physical model before adding them to the gateway's durable
+YAML configuration.
+
+```yaml
+server:
+  api_key: "${NEXOROUTE_API_KEY}"
+  playground:
+    enabled: true
+    credential_testing:
+      enabled: true
+      allowed_base_urls:
+        - http://localhost:11434
+        - https://models.example.com
+```
+
+Both `playground.enabled` and `credential_testing.enabled` must be true, and
+`server.api_key` must be non-empty. Restart NexoRoute after changing the file.
+The page then shows **Request source** with these choices:
+
+- **Configured aliases** uses the normal `/v1` routes and credentials already
+  present in server configuration.
+- **Provider credential** constructs a transient provider setup for OpenAI,
+  Anthropic, Gemini, Vertex AI, Bedrock, Azure OpenAI, Ollama,
+  OpenAI-compatible APIs, NexoRoute Inference, or xAI/Grok.
+
+To use provider credential mode:
+
+1. Enter the inbound NexoRoute API key at the top of the page.
+2. Select **Provider credential** and the provider adapter.
+3. Enter its physical model ID and the fields shown for that provider.
+4. Leave **Base URL** empty to use a built-in official endpoint. Azure OpenAI,
+   OpenAI-compatible APIs, and NexoRoute Inference require a base URL.
+5. Select **Test connection**. This sends a real buffered request with an
+   eight-token output limit and may create a provider charge.
+6. After the status reads **Connection verified**, use text, tools, streaming,
+   images, PDFs, or audio through the normal composer.
+
+Any base URL typed in the page must exactly match a normalized
+`allowed_base_urls` entry. This includes official URLs entered explicitly.
+Leaving an official provider URL blank uses the adapter's built-in default and
+doesn't require an allowlist entry. The allowlist prevents this developer
+endpoint from becoming an arbitrary network proxy.
+
+Changing any provider field invalidates the successful test. NexoRoute uses
+one upstream attempt, no fallback, and no circuit breaker for each transient
+request, which avoids silent duplicate billable calls. The request-scoped
+client is intentionally isolated from configured routing state.
+
 ## Send a request
 
 1. Select a public model alias.
@@ -114,8 +165,9 @@ NexoRoute exposes route metadata through `X-NexoRoute-Provider`,
 
 Expand **Request JSON** and **Latest raw response** to inspect the wire shape.
 Select **Copy curl** to copy a request that references
-`${NEXOROUTE_API_KEY}`. The copied command never includes the key entered in
-the page.
+`${NEXOROUTE_API_KEY}`. In provider credential mode it also substitutes
+`${PROVIDER_API_KEY}`, `${GOOGLE_ACCESS_TOKEN}`, or the relevant `${AWS_*}`
+variables. The copied command never includes a key entered in the page.
 
 ## Privacy and security
 
@@ -123,17 +175,24 @@ The playground has the following boundaries:
 
 - It keeps the gateway key, messages, files, and conversation history only in
   the current page's JavaScript memory.
+- When credential testing is enabled, it also keeps provider credentials only
+  in current-tab memory and the active request. The server constructs a
+  request-scoped client and never writes those values to YAML or a database.
 - It doesn't use cookies, browser storage, analytics, external fonts, or
   third-party assets.
-- It doesn't send provider credentials to the browser. Provider credentials
-  remain in the gateway process.
+- Configured alias credentials remain server-side and are never sent to the
+  browser. Only credentials typed by the user enter the transient test flow.
 - It doesn't store server-side playground history.
+- It doesn't place credential values in access logs, metrics, the Route
+  Inspector, error responses, or copied commands. Upstream error bodies are
+  defensively redacted against the submitted secret values.
 - It serves a restrictive Content Security Policy and disables framing,
   MIME-type sniffing, caching, and referrer forwarding.
 
 The page itself is public when enabled. Protect the gateway with an inbound API
 key and your normal network controls. Use TLS at the deployment edge before
-entering a key through a remote browser.
+entering any key through a remote browser. Do not enable credential testing on
+an untrusted network, and prefer scoped, capped test credentials.
 
 ## Current limits
 
@@ -145,6 +204,9 @@ entering a key through a remote browser.
 - Timings are browser observations, not durable traces or benchmark results.
 - Route Inspector describes the current response and isn't an audit log.
 - The interface has no tenant, project, budget, or policy administration.
+- Credential testing is not a credential vault and doesn't implement OAuth,
+  cloud identity discovery, token refresh, or connection pooling across
+  requests.
 
 Use the [performance testing guide](performance.md) for repeatable latency,
 throughput, allocation, connection-reuse, and failure measurements.
