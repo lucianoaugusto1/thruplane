@@ -27,6 +27,19 @@ type Client struct {
 	adapter    adapter
 }
 
+func (c *Client) CloseIdleConnections() {
+	if c == nil || c.httpClient == nil {
+		return
+	}
+	c.httpClient.CloseIdleConnections()
+}
+
+func CloseIdleConnections(clients map[string]*Client) {
+	for _, client := range clients {
+		client.CloseIdleConnections()
+	}
+}
+
 func NewClients(cfg config.Config) (map[string]*Client, error) {
 	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
 	if !ok {

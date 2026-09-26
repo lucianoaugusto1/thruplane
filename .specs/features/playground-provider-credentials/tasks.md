@@ -31,7 +31,7 @@ YAML surface.
 **Requirements:** PCR-01, PCR-05, PCR-12.
 **Tests:** Unit. **Gate:** Fast.
 
-### T3: Implement request-scoped credential execution
+### T3: Implement request-scoped credential execution — Complete
 
 **What:** Parse and validate the secret envelope, build a one-provider
 configuration with no retries or breaker, and execute the existing adapters
