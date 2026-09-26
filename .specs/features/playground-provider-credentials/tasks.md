@@ -61,7 +61,7 @@ labels without weakening existing accessibility.
 **Requirements:** PCR-02, PCR-07, PCR-10.
 **Tests:** Static UI contract. **Gate:** Fast.
 
-### T6: Implement browser test-and-use flow
+### T6: Implement browser test-and-use flow — Complete
 
 **What:** Build the ephemeral envelope, test a tiny completion, invalidate on
 edits, send buffered/SSE/multimodal/tools requests, cancel safely, and export

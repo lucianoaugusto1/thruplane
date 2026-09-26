@@ -8,6 +8,9 @@
     controller: null,
     modelDetail: null,
     lastPayload: null,
+    credentialTesting: false,
+    credentialRevision: 0,
+    credentialVerifiedRevision: -1,
   };
 
   const byID = (id) => document.getElementById(id);
@@ -15,8 +18,35 @@
     apiKey: byID("api-key"),
     connect: byID("connect-button"),
     connectionState: byID("connection-state"),
+    credentialModeSection: byID("credential-mode-section"),
+    sourceConfigured: byID("source-configured"),
+    sourceCredential: byID("source-credential"),
+    configuredProviderFields: byID("configured-provider-fields"),
+    credentialProviderFields: byID("credential-provider-fields"),
     model: byID("model"),
     modelSummary: byID("model-summary"),
+    providerType: byID("provider-type"),
+    providerModel: byID("provider-model"),
+    providerBaseURL: byID("provider-base-url"),
+    providerAPIKey: byID("provider-api-key"),
+    providerAPIVersion: byID("provider-api-version"),
+    providerAccessToken: byID("provider-access-token"),
+    providerProject: byID("provider-project"),
+    providerLocation: byID("provider-location"),
+    providerRegion: byID("provider-region"),
+    providerAccessKeyID: byID("provider-access-key-id"),
+    providerSecretAccessKey: byID("provider-secret-access-key"),
+    providerSessionToken: byID("provider-session-token"),
+    providerAPIKeyField: byID("provider-api-key-field"),
+    providerAPIVersionField: byID("provider-api-version-field"),
+    providerAccessTokenField: byID("provider-access-token-field"),
+    providerGoogleFields: byID("provider-google-fields"),
+    providerRegionField: byID("provider-region-field"),
+    providerAccessKeyIDField: byID("provider-access-key-id-field"),
+    providerSecretAccessKeyField: byID("provider-secret-access-key-field"),
+    providerSessionTokenField: byID("provider-session-token-field"),
+    testCredential: byID("test-credential"),
+    credentialState: byID("credential-state"),
     systemPrompt: byID("system-prompt"),
     temperature: byID("temperature"),
     temperatureValue: byID("temperature-value"),
@@ -47,6 +77,21 @@
     usage: byID("usage"),
   };
 
+  const credentialInputs = [
+    elements.providerType,
+    elements.providerModel,
+    elements.providerBaseURL,
+    elements.providerAPIKey,
+    elements.providerAPIVersion,
+    elements.providerAccessToken,
+    elements.providerProject,
+    elements.providerLocation,
+    elements.providerRegion,
+    elements.providerAccessKeyID,
+    elements.providerSecretAccessKey,
+    elements.providerSessionToken,
+  ];
+
   function authHeaders(includeJSON = false) {
     const headers = {};
     const key = elements.apiKey.value.trim();
@@ -57,6 +102,150 @@
       headers["Content-Type"] = "application/json";
     }
     return headers;
+  }
+
+  async function loadPlaygroundConfig() {
+    try {
+      const response = await fetch("/playground/config.json");
+      if (!response.ok) {
+        return;
+      }
+      const config = await response.json();
+      state.credentialTesting = config.credential_testing === true;
+      elements.credentialModeSection.hidden = !state.credentialTesting;
+    } catch (_error) {
+      state.credentialTesting = false;
+    }
+    updateSourceMode();
+  }
+
+  function credentialMode() {
+    return state.credentialTesting && elements.sourceCredential.checked;
+  }
+
+  function credentialReady() {
+    return credentialMode() && state.credentialVerifiedRevision === state.credentialRevision;
+  }
+
+  function updateSourceMode() {
+    const useCredential = credentialMode();
+    elements.configuredProviderFields.hidden = useCredential;
+    elements.credentialProviderFields.hidden = !useCredential;
+    setBusy(Boolean(state.controller));
+    announce(useCredential ? "Provider credential mode selected." : "Configured alias mode selected.", "ready");
+  }
+
+  function invalidateCredential() {
+    state.credentialRevision += 1;
+    state.credentialVerifiedRevision = -1;
+    setCredentialState("Credentials changed. Test again before chatting.", "pending");
+    setBusy(Boolean(state.controller));
+  }
+
+  function renderProviderFields() {
+    const providerType = elements.providerType.value;
+    const usesAPIKey = ["openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "nexoroute-inference", "xai"].includes(providerType);
+    const usesAPIVersion = ["anthropic", "azure-openai"].includes(providerType);
+    const vertex = providerType === "vertex";
+    const bedrock = providerType === "bedrock";
+    elements.providerAPIKeyField.hidden = !usesAPIKey;
+    elements.providerAPIVersionField.hidden = !usesAPIVersion;
+    elements.providerAccessTokenField.hidden = !vertex;
+    elements.providerGoogleFields.hidden = !vertex;
+    elements.providerRegionField.hidden = !bedrock;
+    elements.providerAccessKeyIDField.hidden = !bedrock;
+    elements.providerSecretAccessKeyField.hidden = !bedrock;
+    elements.providerSessionTokenField.hidden = !bedrock;
+  }
+
+  function providerCredential() {
+    const type = elements.providerType.value;
+    const provider = { type, base_url: elements.providerBaseURL.value.trim() };
+    if (["openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "nexoroute-inference", "xai"].includes(type)) {
+      provider.api_key = elements.providerAPIKey.value;
+    }
+    if (["anthropic", "azure-openai"].includes(type)) {
+      provider.api_version = elements.providerAPIVersion.value.trim();
+    }
+    if (type === "vertex") {
+      provider.access_token = elements.providerAccessToken.value;
+      provider.project = elements.providerProject.value.trim();
+      provider.location = elements.providerLocation.value.trim();
+    }
+    if (type === "bedrock") {
+      provider.region = elements.providerRegion.value.trim();
+      provider.access_key_id = elements.providerAccessKeyID.value;
+      provider.secret_access_key = elements.providerSecretAccessKey.value;
+      provider.session_token = elements.providerSessionToken.value;
+    }
+    return provider;
+  }
+
+  function buildCredentialEnvelope(payload, provider = providerCredential()) {
+    return {
+      provider,
+      model: elements.providerModel.value.trim(),
+      request: payload,
+    };
+  }
+
+  async function testProviderCredential() {
+    if (state.controller) {
+      return;
+    }
+    const providerModel = elements.providerModel.value.trim();
+    if (!providerModel) {
+      setCredentialState("Enter a physical model ID first.", "error");
+      return;
+    }
+    const revision = state.credentialRevision;
+    const payload = {
+      model: providerModel,
+      messages: [{ role: "user", content: "Reply with exactly OK." }],
+      stream: false,
+      temperature: 0,
+      max_completion_tokens: 8,
+    };
+    elements.requestJSON.textContent = formatJSON(payload);
+    elements.rawResponse.textContent = "Testing provider connection…";
+    resetMetrics();
+    setCredentialState("Testing with a real provider request…", "pending");
+    const controller = new AbortController();
+    state.controller = controller;
+    setBusy(true);
+    const startedAt = performance.now();
+    try {
+      const response = await fetch("/playground/api/credentials/chat/completions", {
+        method: "POST",
+        headers: authHeaders(true),
+        body: JSON.stringify(buildCredentialEnvelope(payload)),
+        signal: controller.signal,
+      });
+      applyRouteHeaders(response);
+      if (!response.ok) {
+        throw new Error(await readError(response));
+      }
+      const body = await response.json();
+      elements.rawResponse.textContent = formatJSON(body);
+      renderUsage(body.usage);
+      elements.totalLatency.textContent = formatDuration(performance.now() - startedAt);
+      if (revision !== state.credentialRevision) {
+        throw new Error("Credentials changed while the connection was being tested.");
+      }
+      state.credentialVerifiedRevision = revision;
+      setCredentialState("Connection verified. Ready for playground requests.", "ready");
+    } catch (error) {
+      state.credentialVerifiedRevision = -1;
+      if (error.name === "AbortError") {
+        setCredentialState("Connection test canceled.", "pending");
+      } else {
+        setCredentialState(error.message, "error");
+      }
+      elements.totalLatency.textContent = formatDuration(performance.now() - startedAt);
+    } finally {
+      state.controller = null;
+      setBusy(false);
+    }
   }
 
   async function loadModels() {
@@ -79,15 +268,14 @@
         throw new Error("The gateway returned no configured model aliases.");
       }
       elements.model.disabled = false;
-      elements.send.disabled = false;
       setConnectionState(`${models.length} model${models.length === 1 ? "" : "s"} available`, "ready");
       await loadModelDetail();
     } catch (error) {
       elements.model.replaceChildren();
       elements.model.disabled = true;
-      elements.send.disabled = true;
       setConnectionState(error.message, "error");
     }
+    setBusy(false);
   }
 
   async function loadModelDetail() {
@@ -161,9 +349,12 @@
   }
 
   function buildPayload(includeDraft = true) {
-    const model = elements.model.value;
+    const model = credentialMode() ? elements.providerModel.value.trim() : elements.model.value;
     if (!model) {
-      throw new Error("Connect to the gateway and select a model first.");
+      throw new Error(credentialMode() ? "Enter and test a physical provider model first." : "Connect to the gateway and select a model first.");
+    }
+    if (credentialMode() && !credentialReady()) {
+      throw new Error("Test the current provider credentials before sending a request.");
     }
     const messages = [];
     const system = elements.systemPrompt.value.trim();
@@ -247,10 +438,12 @@
     const controller = new AbortController();
     state.controller = controller;
     try {
-      const response = await fetch("/v1/chat/completions", {
+      const endpoint = credentialMode() ? "/playground/api/credentials/chat/completions" : "/v1/chat/completions";
+      const requestBody = credentialMode() ? buildCredentialEnvelope(payload) : payload;
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: authHeaders(true),
-        body: JSON.stringify(payload),
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
       applyRouteHeaders(response);
@@ -563,16 +756,38 @@
       announce(error.message, "error");
       return;
     }
-    const body = JSON.stringify(payload, null, 2).replaceAll("'", "'\"'\"'");
+    let endpoint = "/v1/chat/completions";
+    let exportBody = payload;
+    if (credentialMode()) {
+      endpoint = "/playground/api/credentials/chat/completions";
+      const provider = providerCredential();
+      if (Object.hasOwn(provider, "api_key")) {
+        provider.api_key = "${PROVIDER_API_KEY}";
+      }
+      if (Object.hasOwn(provider, "access_token")) {
+        provider.access_token = "${GOOGLE_ACCESS_TOKEN}";
+      }
+      if (Object.hasOwn(provider, "access_key_id")) {
+        provider.access_key_id = "${AWS_ACCESS_KEY_ID}";
+      }
+      if (Object.hasOwn(provider, "secret_access_key")) {
+        provider.secret_access_key = "${AWS_SECRET_ACCESS_KEY}";
+      }
+      if (Object.hasOwn(provider, "session_token")) {
+        provider.session_token = "${AWS_SESSION_TOKEN}";
+      }
+      exportBody = buildCredentialEnvelope(payload, provider);
+    }
+    const body = JSON.stringify(exportBody, null, 2).replaceAll("'", "'\"'\"'");
     const command = [
-      `curl ${window.location.origin}/v1/chat/completions \\`,
+      `curl ${window.location.origin}${endpoint} \\`,
       "  -H 'Content-Type: application/json' \\",
       "  -H 'Authorization: Bearer ${NEXOROUTE_API_KEY}' \\",
       `  --data-binary '${body}'`,
     ].join("\n");
     try {
       await navigator.clipboard.writeText(command);
-      announce("Copied curl command with $NEXOROUTE_API_KEY placeholder.", "ready");
+      announce("Copied curl command with environment-variable placeholders.", "ready");
     } catch (_error) {
       announce("Clipboard access was denied by the browser.", "error");
     }
@@ -590,10 +805,14 @@
   }
 
   function setBusy(busy) {
-    elements.send.disabled = busy || !elements.model.value;
+    const ready = credentialMode() ? credentialReady() : Boolean(elements.model.value);
+    elements.send.disabled = busy || !ready;
     elements.stop.disabled = !busy;
     elements.clear.disabled = busy;
     elements.connect.disabled = busy;
+    elements.testCredential.disabled = busy;
+    elements.sourceConfigured.disabled = busy;
+    elements.sourceCredential.disabled = busy;
     elements.model.disabled = busy || elements.model.options.length === 0;
   }
 
@@ -614,6 +833,12 @@
   function setConnectionState(message, stateName) {
     elements.connectionState.textContent = message;
     elements.connectionState.dataset.state = stateName;
+    announce(message, stateName);
+  }
+
+  function setCredentialState(message, stateName) {
+    elements.credentialState.textContent = message;
+    elements.credentialState.dataset.state = stateName;
     announce(message, stateName);
   }
 
@@ -650,6 +875,14 @@
 
   elements.connect.addEventListener("click", loadModels);
   elements.model.addEventListener("change", loadModelDetail);
+  elements.sourceConfigured.addEventListener("change", updateSourceMode);
+  elements.sourceCredential.addEventListener("change", updateSourceMode);
+  for (const input of credentialInputs) {
+    input.addEventListener("input", invalidateCredential);
+  }
+  elements.providerType.addEventListener("change", renderProviderFields);
+  elements.apiKey.addEventListener("input", invalidateCredential);
+  elements.testCredential.addEventListener("click", testProviderCredential);
   elements.temperature.addEventListener("input", () => {
     elements.temperatureValue.textContent = Number(elements.temperature.value).toFixed(1);
   });
@@ -665,8 +898,14 @@
     }
   });
 
-  resetMetrics();
-  if (!elements.apiKey.value) {
-    loadModels();
+  async function initialize() {
+    resetMetrics();
+    renderProviderFields();
+    await loadPlaygroundConfig();
+    if (!elements.apiKey.value) {
+      await loadModels();
+    }
   }
+
+  initialize();
 })();
