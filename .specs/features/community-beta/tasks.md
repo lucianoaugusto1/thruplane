@@ -61,10 +61,10 @@ tests.
 
 **Done when:**
 
-- [ ] All metric families encode valid Prometheus text.
-- [ ] Labels escape quotes, backslashes, and newlines.
-- [ ] The collector never accepts request or response bodies.
-- [ ] `go test ./internal/telemetry` passes with no skipped tests.
+- [x] All metric families encode valid Prometheus text.
+- [x] Labels escape quotes, backslashes, and newlines.
+- [x] The collector never accepts request or response bodies.
+- [x] `go test ./internal/telemetry` passes with no skipped tests.
 
 **Verify:** `go test ./internal/telemetry`
 
