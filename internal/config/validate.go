@@ -29,6 +29,22 @@ func (cfg Config) Validate() error {
 	if time.Duration(cfg.Server.ShutdownTimeout) <= 0 {
 		return errors.New("server shutdown_timeout must be greater than zero")
 	}
+	credentialTesting := cfg.Server.Playground.CredentialTesting
+	if credentialTesting.Enabled && !cfg.Server.Playground.Enabled {
+		return errors.New("server playground credential_testing requires playground enabled")
+	}
+	if credentialTesting.Enabled && strings.TrimSpace(cfg.Server.APIKey) == "" {
+		return errors.New("server playground credential_testing requires server api_key")
+	}
+	for index, baseURL := range credentialTesting.AllowedBaseURLs {
+		normalized, err := NormalizeBaseURL(baseURL)
+		if err != nil {
+			return fmt.Errorf("server playground credential_testing allowed_base_urls entry %d %s", index, err)
+		}
+		if normalized != baseURL {
+			return fmt.Errorf("server playground credential_testing allowed_base_urls entry %d must be normalized", index)
+		}
+	}
 	if cfg.Routing.Retries < 0 {
 		return errors.New("routing retries must not be negative")
 	}

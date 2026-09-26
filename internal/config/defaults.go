@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -44,6 +46,7 @@ func defaultConfig() Config {
 
 func (cfg *Config) normalize() {
 	cfg.Server.Address = strings.TrimSpace(cfg.Server.Address)
+	cfg.Server.APIKey = strings.TrimSpace(cfg.Server.APIKey)
 	cfg.Catalog.UnknownModels = strings.ToLower(strings.TrimSpace(cfg.Catalog.UnknownModels))
 	if cfg.Catalog.UnknownModels == "" {
 		cfg.Catalog.UnknownModels = "allow"
@@ -67,6 +70,21 @@ func (cfg *Config) normalize() {
 		cfg.Providers[name] = provider
 	}
 
+	allowedBaseURLs := make([]string, 0, len(cfg.Server.Playground.CredentialTesting.AllowedBaseURLs))
+	seenBaseURLs := make(map[string]struct{}, len(cfg.Server.Playground.CredentialTesting.AllowedBaseURLs))
+	for _, raw := range cfg.Server.Playground.CredentialTesting.AllowedBaseURLs {
+		normalized, err := NormalizeBaseURL(raw)
+		if err != nil {
+			normalized = strings.TrimRight(strings.TrimSpace(raw), "/")
+		}
+		if _, exists := seenBaseURLs[normalized]; exists {
+			continue
+		}
+		seenBaseURLs[normalized] = struct{}{}
+		allowedBaseURLs = append(allowedBaseURLs, normalized)
+	}
+	cfg.Server.Playground.CredentialTesting.AllowedBaseURLs = allowedBaseURLs
+
 	for alias, model := range cfg.Models {
 		for index := range model.Targets {
 			model.Targets[index].Provider = strings.TrimSpace(model.Targets[index].Provider)
@@ -79,6 +97,22 @@ func (cfg *Config) normalize() {
 		}
 		cfg.Models[alias] = model
 	}
+}
+
+// NormalizeBaseURL returns the canonical representation used for provider
+// destinations and credential-testing allowlist comparisons.
+func NormalizeBaseURL(raw string) (string, error) {
+	trimmed := strings.TrimRight(strings.TrimSpace(raw), "/")
+	parsed, err := url.Parse(trimmed)
+	if err != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+		return "", fmt.Errorf("must be an absolute HTTP URL")
+	}
+	if parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
+		return "", fmt.Errorf("must not contain credentials, a query, or a fragment")
+	}
+	parsed.Scheme = strings.ToLower(parsed.Scheme)
+	parsed.Host = strings.ToLower(parsed.Host)
+	return strings.TrimRight(parsed.String(), "/"), nil
 }
 
 func defaultProviderBaseURL(provider ProviderConfig) string {

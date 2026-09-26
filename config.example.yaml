@@ -7,6 +7,14 @@ server:
   playground:
     # The local developer UI is disabled unless explicitly enabled.
     enabled: false
+    credential_testing:
+      # Lets the playground test provider credentials with real, billable calls.
+      # Requires playground.enabled and server.api_key. Secrets are never saved.
+      enabled: false
+      # Any base_url entered in the UI must exactly match this normalized list.
+      # Official provider defaults work when the UI leaves base_url empty.
+      allowed_base_urls:
+        - http://localhost:11434
   metrics:
     # Prometheus metrics expose route metadata and are disabled by default.
     enabled: false

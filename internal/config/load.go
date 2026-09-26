@@ -31,10 +31,21 @@ func Load(path string) (Config, error) {
 		return Config{}, fmt.Errorf("decode config %q: %w", path, err)
 	}
 
-	cfg.normalize()
-	if err := cfg.Validate(); err != nil {
+	cfg, err = NormalizeAndValidate(cfg)
+	if err != nil {
 		return Config{}, fmt.Errorf("validate config %q: %w", path, err)
 	}
 
+	return cfg, nil
+}
+
+// NormalizeAndValidate prepares an in-memory configuration using the same
+// rules as Load. It is useful for request-scoped configurations that must not
+// be persisted to disk.
+func NormalizeAndValidate(cfg Config) (Config, error) {
+	cfg.normalize()
+	if err := cfg.Validate(); err != nil {
+		return Config{}, err
+	}
 	return cfg, nil
 }

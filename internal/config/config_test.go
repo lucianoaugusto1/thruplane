@@ -125,6 +125,96 @@ models:
 	}
 }
 
+func TestLoadCredentialTestingConfiguration(t *testing.T) {
+	path := writeConfig(t, `
+server:
+  api_key: gateway-secret
+  playground:
+    enabled: true
+    credential_testing:
+      enabled: true
+      allowed_base_urls:
+        - HTTPS://Models.Example.com/v1/
+        - https://models.example.com/v1
+providers:
+  local: {type: ollama}
+models:
+  chat:
+    targets:
+      - provider: local
+        model: llama3
+`)
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testingConfig := cfg.Server.Playground.CredentialTesting
+	if !testingConfig.Enabled {
+		t.Fatal("CredentialTesting.Enabled = false, want true")
+	}
+	if got, want := testingConfig.AllowedBaseURLs, []string{"https://models.example.com/v1"}; len(got) != 1 || got[0] != want[0] {
+		t.Fatalf("AllowedBaseURLs = %#v, want %#v", got, want)
+	}
+}
+
+func TestLoadRejectsUnsafeCredentialTestingConfiguration(t *testing.T) {
+	tests := []struct {
+		name       string
+		serverYAML string
+		wantErr    string
+	}{
+		{
+			name: "playground disabled",
+			serverYAML: `
+  api_key: gateway-secret
+  playground:
+    credential_testing: {enabled: true}`,
+			wantErr: "requires playground enabled",
+		},
+		{
+			name: "gateway key missing",
+			serverYAML: `
+  playground:
+    enabled: true
+    credential_testing: {enabled: true}`,
+			wantErr: "requires server api_key",
+		},
+		{
+			name: "URL contains credentials",
+			serverYAML: `
+  api_key: gateway-secret
+  playground:
+    enabled: true
+    credential_testing:
+      enabled: true
+      allowed_base_urls: [https://user:secret@example.com]`,
+			wantErr: "must not contain credentials",
+		},
+		{
+			name: "URL is not absolute",
+			serverYAML: `
+  api_key: gateway-secret
+  playground:
+    enabled: true
+    credential_testing:
+      enabled: true
+      allowed_base_urls: [/internal]`,
+			wantErr: "absolute HTTP URL",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := writeConfig(t, "server:\n"+tt.serverYAML+"\nproviders:\n  local: {type: ollama}\nmodels:\n  chat:\n    targets:\n      - provider: local\n        model: llama3\n")
+			_, err := Load(path)
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("Load() error = %v, want error containing %q", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestLoadMetricsConfiguration(t *testing.T) {
 	path := writeConfig(t, `
 server:

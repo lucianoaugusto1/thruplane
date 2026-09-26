@@ -21,7 +21,7 @@ and complete implementation plan.
 **Requirements:** PCR-01 through PCR-12.
 **Tests:** Documentation review. **Gate:** None.
 
-### T2: Add configuration contract
+### T2: Add configuration contract — Complete
 
 **What:** Add opt-in credential-testing configuration, normalize and validate
 allowlisted URLs, enforce playground/API-key dependencies, and document the

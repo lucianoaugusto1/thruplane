@@ -47,7 +47,13 @@ type ServerConfig struct {
 }
 
 type PlaygroundConfig struct {
-	Enabled bool `yaml:"enabled"`
+	Enabled           bool                    `yaml:"enabled"`
+	CredentialTesting CredentialTestingConfig `yaml:"credential_testing"`
+}
+
+type CredentialTestingConfig struct {
+	Enabled         bool     `yaml:"enabled"`
+	AllowedBaseURLs []string `yaml:"allowed_base_urls"`
 }
 
 type MetricsConfig struct {
