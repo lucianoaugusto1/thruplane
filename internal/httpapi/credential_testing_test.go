@@ -85,6 +85,30 @@ func TestCredentialTesterRejectsDestinationBeforeNetwork(t *testing.T) {
 	}
 }
 
+func TestCredentialTesterRedactsSecretsEchoedByUpstreamErrors(t *testing.T) {
+	const secret = "provider-secret-must-be-redacted"
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = io.WriteString(w, `{"error":{"message":"invalid `+secret+`","type":"authentication_error","code":"bad_key"}}`)
+	}))
+	t.Cleanup(upstream.Close)
+
+	cfg := credentialTestingConfig(upstream.URL, upstream.URL)
+	request := httptest.NewRequest(http.MethodPost, credentialChatPath, strings.NewReader(
+		credentialEnvelope(t, upstream.URL, secret, false),
+	))
+	response := httptest.NewRecorder()
+	newCredentialTester(cfg).ChatCompletions(response, request)
+
+	if response.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401; body = %s", response.Code, response.Body.String())
+	}
+	if strings.Contains(response.Body.String(), secret) || !strings.Contains(response.Body.String(), "[REDACTED]") {
+		t.Fatalf("response did not redact upstream echo: %s", response.Body.String())
+	}
+}
+
 func TestCredentialTesterValidatesProviderContract(t *testing.T) {
 	cfg := testConfig("http://localhost:11434", "gateway-secret")
 	tester := newCredentialTester(cfg)

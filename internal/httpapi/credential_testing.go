@@ -78,7 +78,13 @@ func (t *credentialTester) ChatCompletions(w http.ResponseWriter, r *http.Reques
 	inner.ContentLength = int64(len(body))
 	inner.Header = r.Header.Clone()
 	inner.Header.Set("Content-Type", "application/json")
-	gateway.New(ephemeral, clients).ChatCompletions(w, inner)
+	credentialWriter := newCredentialResponseWriter(w)
+	gateway.New(ephemeral, clients).ChatCompletions(credentialWriter, inner)
+	credentialWriter.finish(request.Provider.secretValues())
+}
+
+func (p credentialProvider) secretValues() []string {
+	return []string{p.APIKey, p.AccessToken, p.AccessKeyID, p.SecretAccessKey, p.SessionToken}
 }
 
 func (t *credentialTester) buildConfig(request credentialChatRequest) (config.Config, []byte, *apiRequestError) {
@@ -231,4 +237,67 @@ func decodeCredentialChatRequest(r *http.Request, maxRequestBytes int64) (creden
 
 func (e *apiRequestError) Error() string {
 	return fmt.Sprintf("%s (%s)", e.message, e.code)
+}
+
+type credentialResponseWriter struct {
+	target      http.ResponseWriter
+	status      int
+	bufferError bool
+	body        bytes.Buffer
+}
+
+func newCredentialResponseWriter(target http.ResponseWriter) *credentialResponseWriter {
+	return &credentialResponseWriter{target: target}
+}
+
+func (w *credentialResponseWriter) Header() http.Header {
+	return w.target.Header()
+}
+
+func (w *credentialResponseWriter) WriteHeader(status int) {
+	if w.status != 0 {
+		return
+	}
+	w.status = status
+	w.bufferError = status >= http.StatusBadRequest
+	if !w.bufferError {
+		w.target.WriteHeader(status)
+	}
+}
+
+func (w *credentialResponseWriter) Write(body []byte) (int, error) {
+	if w.status == 0 {
+		w.WriteHeader(http.StatusOK)
+	}
+	if w.bufferError {
+		return w.body.Write(body)
+	}
+	return w.target.Write(body)
+}
+
+func (w *credentialResponseWriter) Flush() {
+	if w.bufferError {
+		return
+	}
+	if flusher, ok := w.target.(http.Flusher); ok {
+		flusher.Flush()
+	}
+}
+
+func (w *credentialResponseWriter) Unwrap() http.ResponseWriter {
+	return w.target
+}
+
+func (w *credentialResponseWriter) finish(secrets []string) {
+	if !w.bufferError {
+		return
+	}
+	body := w.body.String()
+	for _, secret := range secrets {
+		if secret != "" {
+			body = strings.ReplaceAll(body, secret, "[REDACTED]")
+		}
+	}
+	w.target.WriteHeader(w.status)
+	_, _ = io.WriteString(w.target, body)
 }
