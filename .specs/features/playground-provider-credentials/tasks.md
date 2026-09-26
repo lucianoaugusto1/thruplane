@@ -51,7 +51,7 @@ and metrics do not reveal secrets.
 **Requirements:** PCR-01, PCR-04, PCR-09, PCR-11.
 **Tests:** HTTP integration. **Gate:** Full.
 
-### T5: Build provider credential interface
+### T5: Build provider credential interface — Complete
 
 **What:** Add configured/credential modes, provider-specific fields, model and
 destination inputs, cost warning, test state, responsive styling, and semantic

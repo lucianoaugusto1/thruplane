@@ -27,6 +27,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   min-width: 320px;
   background: var(--page);
@@ -261,6 +265,143 @@ h2 {
 .config-section:first-of-type {
   border-top: 0;
   padding-top: 0;
+}
+
+.source-section fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.source-section legend {
+  margin-bottom: 9px;
+  color: var(--muted-bright);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.source-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-soft);
+}
+
+.source-switch label {
+  margin: 0;
+}
+
+.source-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.source-switch span {
+  display: grid;
+  min-height: 34px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+}
+
+.source-switch input:checked + span {
+  border-color: rgba(255, 117, 73, 0.3);
+  color: var(--text);
+  background: var(--accent-soft);
+}
+
+.source-switch input:focus-visible + span {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+.credential-card {
+  padding-top: 20px;
+}
+
+.credential-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.credential-heading h2 {
+  font-size: 15px;
+}
+
+.memory-pill {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid rgba(110, 214, 165, 0.25);
+  border-radius: 999px;
+  color: var(--green);
+  font: 600 8px ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.credential-field {
+  margin-top: 13px;
+}
+
+.credential-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.optional {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.cost-warning {
+  display: flex;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 10px;
+  border: 1px solid rgba(231, 191, 105, 0.22);
+  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(231, 191, 105, 0.05);
+}
+
+.cost-warning > span {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(231, 191, 105, 0.4);
+  border-radius: 50%;
+  color: var(--yellow);
+  font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.cost-warning p {
+  margin: 0;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.cost-warning strong {
+  color: var(--muted-bright);
+}
+
+.credential-test {
+  width: 100%;
+  margin-top: 12px;
 }
 
 label,

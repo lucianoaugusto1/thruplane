@@ -44,13 +44,133 @@
         <p class="connection-state" id="connection-state" data-state="pending">Connecting…</p>
       </section>
 
-      <section class="config-section">
-        <label for="model">Model alias</label>
-        <select id="model" disabled>
-          <option value="">Connect to load models</option>
-        </select>
-        <div class="model-summary" id="model-summary" aria-live="polite"></div>
+      <section class="config-section source-section" id="credential-mode-section" hidden>
+        <fieldset>
+          <legend>Request source</legend>
+          <div class="source-switch" role="radiogroup" aria-label="Request source">
+            <label>
+              <input id="source-configured" type="radio" name="request-source" value="configured" checked>
+              <span>Configured aliases</span>
+            </label>
+            <label>
+              <input id="source-credential" type="radio" name="request-source" value="credential">
+              <span>Provider credential</span>
+            </label>
+          </div>
+        </fieldset>
       </section>
+
+      <div id="configured-provider-fields">
+        <section class="config-section">
+          <label for="model">Model alias</label>
+          <select id="model" disabled>
+            <option value="">Connect to load models</option>
+          </select>
+          <div class="model-summary" id="model-summary" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <div id="credential-provider-fields" hidden>
+        <section class="config-section credential-card" aria-labelledby="provider-credential-title">
+          <div class="credential-heading">
+            <div>
+              <p class="eyebrow">Ephemeral setup</p>
+              <h2 id="provider-credential-title">Provider credential</h2>
+            </div>
+            <span class="memory-pill">Tab memory</span>
+          </div>
+
+          <label for="provider-type">Provider adapter</label>
+          <select id="provider-type">
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="gemini">Gemini API</option>
+            <option value="vertex">Google Vertex AI</option>
+            <option value="bedrock">Amazon Bedrock</option>
+            <option value="azure-openai">Azure OpenAI</option>
+            <option value="ollama">Ollama</option>
+            <option value="openai-compatible">OpenAI-compatible</option>
+            <option value="nexoroute-inference">NexoRoute Inference</option>
+            <option value="xai">xAI / Grok</option>
+          </select>
+
+          <div class="credential-field">
+            <label for="provider-model">Physical model ID</label>
+            <input id="provider-model" type="text" autocomplete="off" spellcheck="false"
+              placeholder="e.g. gpt-5-mini">
+          </div>
+
+          <div class="credential-field" id="provider-base-url-field">
+            <div class="field-heading">
+              <label for="provider-base-url">Base URL</label>
+              <span>Optional for official APIs</span>
+            </div>
+            <input id="provider-base-url" type="url" autocomplete="off" spellcheck="false"
+              placeholder="Must be allowed by the server">
+          </div>
+
+          <div class="credential-field" id="provider-api-key-field" data-provider-field="api-key">
+            <label for="provider-api-key">Provider API key</label>
+            <input id="provider-api-key" type="password" autocomplete="off" spellcheck="false"
+              placeholder="Held only in this tab">
+          </div>
+
+          <div class="credential-field" id="provider-api-version-field" data-provider-field="api-version" hidden>
+            <label for="provider-api-version">API version</label>
+            <input id="provider-api-version" type="text" autocomplete="off" spellcheck="false"
+              placeholder="Optional adapter version">
+          </div>
+
+          <div class="credential-field" id="provider-access-token-field" data-provider-field="access-token" hidden>
+            <label for="provider-access-token">Access token</label>
+            <input id="provider-access-token" type="password" autocomplete="off" spellcheck="false">
+          </div>
+
+          <div class="credential-field credential-grid" id="provider-google-fields" data-provider-field="google" hidden>
+            <div>
+              <label for="provider-project">Project</label>
+              <input id="provider-project" type="text" autocomplete="off" spellcheck="false">
+            </div>
+            <div>
+              <label for="provider-location">Location</label>
+              <input id="provider-location" type="text" autocomplete="off" spellcheck="false"
+                placeholder="us-central1">
+            </div>
+          </div>
+
+          <div class="credential-field" id="provider-region-field" data-provider-field="region" hidden>
+            <label for="provider-region">AWS region</label>
+            <input id="provider-region" type="text" autocomplete="off" spellcheck="false"
+              placeholder="us-east-1">
+          </div>
+
+          <div class="credential-field" id="provider-access-key-id-field" data-provider-field="access-key-id" hidden>
+            <label for="provider-access-key-id">AWS access key ID</label>
+            <input id="provider-access-key-id" type="password" autocomplete="off" spellcheck="false">
+          </div>
+
+          <div class="credential-field" id="provider-secret-access-key-field" data-provider-field="secret-access-key" hidden>
+            <label for="provider-secret-access-key">AWS secret access key</label>
+            <input id="provider-secret-access-key" type="password" autocomplete="off" spellcheck="false">
+          </div>
+
+          <div class="credential-field" id="provider-session-token-field" data-provider-field="session-token" hidden>
+            <label for="provider-session-token">AWS session token <span class="optional">Optional</span></label>
+            <input id="provider-session-token" type="password" autocomplete="off" spellcheck="false">
+          </div>
+
+          <div class="cost-warning">
+            <span aria-hidden="true">!</span>
+            <p><strong>Test connection makes a real request.</strong> Your provider may charge for it. NexoRoute never saves these values.</p>
+          </div>
+          <button class="button button-primary credential-test" id="test-credential" type="button">
+            Test connection
+          </button>
+          <p class="connection-state" id="credential-state" data-state="pending" aria-live="polite">
+            Enter credentials, then test before chatting.
+          </p>
+        </section>
+      </div>
 
       <section class="config-section">
         <label for="system-prompt">System prompt</label>

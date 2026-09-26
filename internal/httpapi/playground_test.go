@@ -69,6 +69,14 @@ func TestPlaygroundInterfaceContract(t *testing.T) {
 		`<label for="api-key">`,
 		`<label for="model">`,
 		`for="prompt"`,
+		`id="credential-mode-section" hidden`,
+		`id="source-credential"`,
+		`id="provider-type"`,
+		`value="nexoroute-inference"`,
+		`value="xai"`,
+		`id="provider-secret-access-key" type="password"`,
+		`id="test-credential"`,
+		`Test connection makes a real request.`,
 	} {
 		if !strings.Contains(html, required) {
 			t.Errorf("index.html missing %q", required)
@@ -93,6 +101,9 @@ func TestPlaygroundInterfaceContract(t *testing.T) {
 		".composer-tools input.file-input",
 		"grid-template-columns:",
 		"min-height: 100dvh",
+		".source-switch",
+		".credential-card",
+		".cost-warning",
 	} {
 		if !strings.Contains(css, required) {
 			t.Errorf("styles.css missing %q", required)
