@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -118,12 +119,81 @@ func TestPlaygroundIsDisabledByDefault(t *testing.T) {
 	t.Parallel()
 
 	handler := New(config.Config{}, nil, discardLogger())
-	for _, path := range []string{"/playground", "/playground/", "/playground/app.js"} {
+	for _, path := range []string{"/playground", "/playground/", "/playground/app.js", "/playground/config.json", credentialChatPath} {
 		request := httptest.NewRequest(http.MethodGet, path, nil)
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 		if response.Code != http.StatusNotFound {
 			t.Errorf("GET %s status = %d, want 404", path, response.Code)
+		}
+	}
+}
+
+func TestCredentialTestingRouteRequiresExplicitEnablementAndAuthentication(t *testing.T) {
+	t.Parallel()
+
+	cfg := credentialTestingConfig("http://localhost:11434", "http://localhost:11434")
+	payload := credentialEnvelope(t, "http://localhost:11434", "provider-secret", false)
+
+	disabled := cfg
+	disabled.Server.Playground.CredentialTesting.Enabled = false
+	disabledHandler := New(disabled, nil, discardLogger())
+	disabledResponse := httptest.NewRecorder()
+	disabledHandler.ServeHTTP(disabledResponse, httptest.NewRequest(http.MethodPost, credentialChatPath, strings.NewReader(payload)))
+	if disabledResponse.Code != http.StatusNotFound {
+		t.Fatalf("disabled route status = %d, want 404", disabledResponse.Code)
+	}
+
+	handler := New(cfg, nil, discardLogger())
+	unauthorized := httptest.NewRecorder()
+	handler.ServeHTTP(unauthorized, httptest.NewRequest(http.MethodPost, credentialChatPath, strings.NewReader(payload)))
+	if unauthorized.Code != http.StatusUnauthorized {
+		t.Fatalf("unauthorized status = %d, want 401", unauthorized.Code)
+	}
+
+	configResponse := httptest.NewRecorder()
+	handler.ServeHTTP(configResponse, httptest.NewRequest(http.MethodGet, "/playground/config.json", nil))
+	if configResponse.Code != http.StatusOK || strings.TrimSpace(configResponse.Body.String()) != `{"credential_testing":true}` {
+		t.Fatalf("playground config = %d %s, want enabled", configResponse.Code, configResponse.Body.String())
+	}
+}
+
+func TestCredentialTestingRouteUsesFixedMetricsAndRedactedLogs(t *testing.T) {
+	var calls atomic.Int32
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		calls.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"id":"chatcmpl-safe","choices":[{"message":{"role":"assistant","content":"ok"}}]}`)
+	}))
+	t.Cleanup(upstream.Close)
+
+	cfg := credentialTestingConfig(upstream.URL, upstream.URL)
+	cfg.Server.Metrics.Enabled = true
+	var logs bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logs, nil))
+	handler := New(cfg, nil, logger)
+	payload := credentialEnvelope(t, upstream.URL, "provider-secret-never-log", false)
+	payload = strings.Replace(payload, "physical-model", "customer-private-model-id", 1)
+	request := httptest.NewRequest(http.MethodPost, credentialChatPath, strings.NewReader(payload))
+	request.Header.Set("Authorization", "Bearer gateway-secret")
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code != http.StatusOK || calls.Load() != 1 {
+		t.Fatalf("credential response = %d %s; calls = %d", response.Code, response.Body.String(), calls.Load())
+	}
+
+	metrics := httptest.NewRecorder()
+	handler.ServeHTTP(metrics, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if metrics.Code != http.StatusOK {
+		t.Fatalf("metrics status = %d", metrics.Code)
+	}
+	if !strings.Contains(metrics.Body.String(), `route="/playground/api/credentials/chat/completions",status="200"`) {
+		t.Errorf("metrics missing fixed credential route: %s", metrics.Body.String())
+	}
+	combined := logs.String() + metrics.Body.String()
+	for _, sensitive := range []string{"provider-secret-never-log", "customer-private-model-id", upstream.URL} {
+		if strings.Contains(combined, sensitive) {
+			t.Errorf("logs or metrics contain sensitive value %q", sensitive)
 		}
 	}
 }

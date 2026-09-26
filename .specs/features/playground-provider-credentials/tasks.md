@@ -41,7 +41,7 @@ without shared-state mutation.
 **Requirements:** PCR-02, PCR-03, PCR-05, PCR-06, PCR-08, PCR-11.
 **Tests:** Unit and local upstream integration. **Gate:** Fast.
 
-### T4: Wire protected HTTP and bounded telemetry
+### T4: Wire protected HTTP and bounded telemetry — Complete
 
 **What:** Register the route only when enabled, extend inbound authentication,
 use a fixed metric route, omit dynamic route-selection metrics, and prove logs

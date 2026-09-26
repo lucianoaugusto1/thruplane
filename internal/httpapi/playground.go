@@ -38,6 +38,13 @@ func servePlayground(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(contents)
 }
 
+func servePlaygroundConfig(credentialTesting bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		setPlaygroundSecurityHeaders(w.Header())
+		writeJSON(w, http.StatusOK, map[string]bool{"credential_testing": credentialTesting})
+	}
+}
+
 func setPlaygroundSecurityHeaders(header http.Header) {
 	header.Set("Cache-Control", "no-store")
 	header.Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")

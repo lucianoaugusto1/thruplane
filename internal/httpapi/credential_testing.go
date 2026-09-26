@@ -16,7 +16,10 @@ import (
 
 const credentialEnvelopeAllowance = 64 << 10
 
-const credentialAlias = "playground-credential"
+const (
+	credentialAlias    = "playground-credential"
+	credentialChatPath = "/playground/api/credentials/chat/completions"
+)
 
 type credentialChatRequest struct {
 	Provider credentialProvider `json:"provider"`

@@ -46,9 +46,16 @@ func NewWithBuildInfo(cfg config.Config, gatewayService *gateway.Gateway, logger
 	mux.HandleFunc("POST /v1/chat/completions", gatewayService.ChatCompletions)
 	mux.HandleFunc("GET /v1/models", gatewayService.ListModels)
 	mux.HandleFunc("GET /v1/models/{model}", gatewayService.GetModel)
+	credentialTesting := cfg.Server.Playground.Enabled && cfg.Server.Playground.CredentialTesting.Enabled && cfg.Server.APIKey != ""
 	if cfg.Server.Playground.Enabled {
 		mux.HandleFunc("GET /playground", redirectPlayground)
 		mux.HandleFunc("GET /playground/", servePlayground)
+		mux.HandleFunc("GET /playground/config.json", servePlaygroundConfig(credentialTesting))
+		if credentialTesting {
+			mux.HandleFunc("POST "+credentialChatPath, newCredentialTester(cfg).ChatCompletions)
+		} else {
+			mux.HandleFunc("POST "+credentialChatPath, http.NotFound)
+		}
 	}
 
 	var metrics *telemetry.Metrics
@@ -67,7 +74,7 @@ func NewWithBuildInfo(cfg config.Config, gatewayService *gateway.Gateway, logger
 	}
 
 	var handler http.Handler = mux
-	handler = authenticate(cfg.Server.APIKey, handler)
+	handler = authenticate(cfg.Server.APIKey, credentialTesting, handler)
 	handler = recoverPanics(logger, handler)
 	if metrics != nil {
 		handler = observeMetrics(metrics, handler)
@@ -112,9 +119,11 @@ func assignRequestID(next http.Handler) http.Handler {
 	})
 }
 
-func authenticate(apiKey string, next http.Handler) http.Handler {
+func authenticate(apiKey string, protectCredentialAPI bool, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if apiKey == "" || !strings.HasPrefix(r.URL.Path, "/v1/") {
+		protected := strings.HasPrefix(r.URL.Path, "/v1/") ||
+			(protectCredentialAPI && strings.HasPrefix(r.URL.Path, "/playground/api/"))
+		if apiKey == "" || !protected {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -180,6 +189,9 @@ func observeMetrics(metrics *telemetry.Metrics, next http.Handler) http.Handler 
 		defer metrics.RequestFinished()
 		next.ServeHTTP(recorder, r)
 		metrics.ObserveHTTPRequest(r.Method, route, recorder.statusCode(), time.Since(started))
+		if route == credentialChatPath {
+			return
+		}
 
 		attempts, _ := strconv.Atoi(recorder.Header().Get("X-NexoRoute-Attempts"))
 		fallbacks, _ := strconv.Atoi(recorder.Header().Get("X-NexoRoute-Fallbacks"))
@@ -194,7 +206,7 @@ func observeMetrics(metrics *telemetry.Metrics, next http.Handler) http.Handler 
 
 func metricRoute(path string) string {
 	switch path {
-	case "/healthz", "/readyz", "/metrics", "/playground", "/v1/chat/completions", "/v1/models":
+	case "/healthz", "/readyz", "/metrics", "/playground", "/playground/config.json", credentialChatPath, "/v1/chat/completions", "/v1/models":
 		return path
 	}
 	if strings.HasPrefix(path, "/v1/models/") {
