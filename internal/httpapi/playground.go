@@ -14,6 +14,7 @@ var playgroundFiles = map[string]struct {
 }{
 	"/playground/":           {path: "playground/index.html", contentType: "text/html; charset=utf-8"},
 	"/playground/app.js":     {path: "playground/app.js", contentType: "text/javascript; charset=utf-8"},
+	"/playground/mark.svg":   {path: "playground/mark.svg", contentType: "image/svg+xml"},
 	"/playground/styles.css": {path: "playground/styles.css", contentType: "text/css; charset=utf-8"},
 }
 

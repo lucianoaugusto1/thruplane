@@ -291,6 +291,7 @@ func TestPlaygroundServesOnlyEmbeddedAssetsWithSecurityHeaders(t *testing.T) {
 	}{
 		{path: "/playground/", contentType: "text/html; charset=utf-8", contains: "Thruplane Playground"},
 		{path: "/playground/app.js", contentType: "text/javascript; charset=utf-8", contains: "use strict"},
+		{path: "/playground/mark.svg", contentType: "image/svg+xml", contains: "Thruplane mark"},
 		{path: "/playground/styles.css", contentType: "text/css; charset=utf-8", contains: ":root"},
 	}
 	for _, test := range tests {

@@ -49,6 +49,41 @@ governance without changing application code.
 Use **Thruplane** on first reference and in headings. Use `thruplane` for the
 binary, Go module, container image, and command examples.
 
+## Visual identity
+
+The visual system combines a dark infrastructure foundation with two routing
+signals. Flux cyan represents the control plane. Route mint represents traffic
+that successfully passes through it.
+
+| Token | Hex | Use |
+| --- | --- | --- |
+| Obsidian | `#070B12` | Primary background and icon tile |
+| Graphite | `#0E1621` | Panels and navigation |
+| Elevated | `#14202D` | Raised surfaces and controls |
+| Steel | `#20303F` | Borders and dividers |
+| Ice | `#F4F7FA` | Primary text |
+| Mist | `#8FA0B3` | Secondary text |
+| Flux cyan | `#35D8FF` | Primary actions, focus, and control-plane signals |
+| Route mint | `#2EE6A6` | Active routes, success, and healthy state |
+| Signal amber | `#F5BD4F` | Warnings and degraded state |
+| Fault coral | `#FF6B78` | Errors and destructive actions |
+
+Use cyan as the primary brand color. Reserve mint for movement, selection,
+success, and live traffic. Do not use both colors decoratively when no routing
+or state relationship exists.
+
+### Icon
+
+The [Thruplane mark](../assets/brand/thruplane-mark.svg) shows three traffic
+paths meeting a tilted control plane. The highlighted center route passes
+through the plane and changes from cyan to mint.
+
+- Use the complete square mark at 20 pixels or larger.
+- Keep clear space equal to one-eighth of the mark's width.
+- Use the supplied dark tile on both light and dark backgrounds.
+- Do not rotate the mark, change the route count, or add letters inside it.
+- Use the product name beside the mark when the audience may not know it yet.
+
 ## Messaging pillars
 
 ### Open by default

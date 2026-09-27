@@ -1,3 +1,5 @@
+<img src="assets/brand/thruplane-mark.svg" alt="Thruplane icon" width="72">
+
 # Thruplane
 
 **The open control plane for AI traffic.**
