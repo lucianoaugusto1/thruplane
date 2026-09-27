@@ -1,7 +1,7 @@
 # Commercial rebrand validation
 
 **Date:** September 27, 2026
-**Overall:** LOCAL PASS; PUBLICATION PENDING
+**Overall:** PASS
 
 ## Requirement results
 
@@ -14,7 +14,7 @@
 | BR-05 | PASS | Contribution and private security paths exist |
 | BR-06 | PASS | Paid capabilities are consistently labeled planned |
 | BR-07 | PASS | Full gate passed from the requested destination |
-| BR-08 | PENDING | Public repository creation and first push |
+| BR-08 | PASS | Public repository and `origin/main` inspection |
 
 ## Verification record
 
@@ -27,6 +27,16 @@
 - A full worktree search found no obsolete product, module, command,
   environment-variable, image, metric, or HTTP-header identity.
 - A redacted history scan found no common provider or GitHub secret patterns.
+- `actionlint` passed for both GitHub Actions workflows.
+
+## Publication verification
+
+- Public repository: `https://github.com/lucianoaugusto1/thruplane`
+- Default branch: `main`
+- Visibility: public
+- Private vulnerability reporting: enabled
+- Repository topics include `ai-gateway`, `llm`, `golang`, provider names,
+  and `openai-compatible`.
 
 ## Destination verification
 

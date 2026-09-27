@@ -88,7 +88,7 @@ and rerun the final gate there.
 - [x] Build gate passes from the destination.
 - [x] Source path no longer contains the repository.
 
-### T6: Publish the public repository
+### T6: Publish the public repository ✅
 
 **What:** Create the public Thruplane repository and publish the validated
 default branch.
@@ -100,6 +100,6 @@ default branch.
 
 **Done when:**
 
-- [ ] The public repository exists with `main` as its default branch.
-- [ ] The local `origin` points to the public repository.
-- [ ] The rebranded commit is available on `origin/main`.
+- [x] The public repository exists with `main` as its default branch.
+- [x] The local `origin` points to the public repository.
+- [x] The rebranded commit is available on `origin/main`.

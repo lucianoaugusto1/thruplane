@@ -66,4 +66,4 @@ trademark clearance remain required before a commercial launch.
 - [x] Existing 29 top-level tests and 16 subtests remain intact.
 - [x] Race detector, vet, binary build, and Docker build pass.
 - [x] Git worktree is clean at the destination path.
-- [ ] Public GitHub repository exists and the default branch is published.
+- [x] Public GitHub repository exists and the default branch is published.
