@@ -51,36 +51,38 @@ binary, Go module, container image, and command examples.
 
 ## Visual identity
 
-The visual system combines a dark infrastructure foundation with two routing
-signals. Flux cyan represents the control plane. Route mint represents traffic
-that successfully passes through it.
+The visual system combines warm, paper-like surfaces with a precise industrial
+orange. Cream makes the product approachable and premium; Thruplane orange
+identifies routes, focus, and primary actions.
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| Obsidian | `#070B12` | Primary background and icon tile |
-| Graphite | `#0E1621` | Panels and navigation |
-| Elevated | `#14202D` | Raised surfaces and controls |
-| Steel | `#20303F` | Borders and dividers |
-| Ice | `#F4F7FA` | Primary text |
-| Mist | `#8FA0B3` | Secondary text |
-| Flux cyan | `#35D8FF` | Primary actions, focus, and control-plane signals |
-| Route mint | `#2EE6A6` | Active routes, success, and healthy state |
-| Signal amber | `#F5BD4F` | Warnings and degraded state |
-| Fault coral | `#FF6B78` | Errors and destructive actions |
+| Paper | `#F7F0E6` | Page background |
+| Porcelain | `#FFF9F2` | Panels and navigation |
+| Elevated | `#FFFCF7` | Raised surfaces and controls |
+| Sand | `#F2E7DA` | Secondary surfaces |
+| Clay line | `#DCCBB9` | Borders and dividers |
+| Ink | `#241A14` | Primary text |
+| Umber | `#79695C` | Secondary text |
+| Thruplane orange | `#F26632` | Primary actions, focus, and routes |
+| Tangerine | `#FF8A4C` | Hover, highlights, and route origin |
+| Route green | `#397A61` | Success and healthy state |
+| Signal amber | `#B97822` | Warnings and degraded state |
+| Fault clay | `#C94F45` | Errors and destructive actions |
 
-Use cyan as the primary brand color. Reserve mint for movement, selection,
-success, and live traffic. Do not use both colors decoratively when no routing
-or state relationship exists.
+Use orange as the primary brand color and let cream occupy most of the visual
+field. Reserve green for success and healthy traffic. Avoid large solid orange
+surfaces; the color works best as a route, focus signal, or decisive action.
 
 ### Icon
 
 The [Thruplane mark](../assets/brand/thruplane-mark.svg) shows three traffic
 paths meeting a tilted control plane. The highlighted center route passes
-through the plane and changes from cyan to mint.
+through the plane and deepens from tangerine to terracotta.
 
 - Use the complete square mark at 20 pixels or larger.
 - Keep clear space equal to one-eighth of the mark's width.
-- Use the supplied dark tile on both light and dark backgrounds.
+- Use the supplied cream tile on both light and dark backgrounds.
 - Do not rotate the mark, change the route count, or add letters inside it.
 - Use the product name beside the mark when the audience may not know it yet.
 
