@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/config"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
 func TestCapabilityRoutingSkipsGoogleForRemoteImage(t *testing.T) {

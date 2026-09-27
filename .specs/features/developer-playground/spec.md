@@ -5,7 +5,7 @@
 
 ## Problem
 
-Beta users need a fast way to exercise NexoRoute's public contract without
+Beta users need a fast way to exercise Thruplane's public contract without
 building a client first. A generic chat page would help with onboarding, but
 it wouldn't expose the routing, streaming, modality, and failure behavior that
 differentiates the gateway.
@@ -71,7 +71,7 @@ request ID, HTTP status, TTFT, total latency, and usage when present.
 ### PLG-09: Request portability
 
 WHEN a request is ready THEN the user SHALL be able to copy a `curl` command
-that uses `$NEXOROUTE_API_KEY` rather than the entered key.
+that uses `$THRUPLANE_API_KEY` rather than the entered key.
 
 ### PLG-10: Privacy and browser security
 

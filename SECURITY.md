@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-NexoRoute has not published its first release. Until versioned releases exist,
+Thruplane has not published its first release. Until versioned releases exist,
 security fixes target the current default branch only.
 
 ## Report a vulnerability
@@ -38,7 +38,7 @@ after an Enterprise offering becomes available.
 
 ## Security boundaries
 
-NexoRoute must never log prompts, provider API keys, authorization headers, or
+Thruplane must never log prompts, provider API keys, authorization headers, or
 full request bodies. Operators remain responsible for network access controls,
 TLS termination, secret storage, provider policies, and retention settings in
 their deployment environment.

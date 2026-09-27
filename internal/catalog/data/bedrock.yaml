@@ -12,7 +12,7 @@ provider:
       title: Amazon Bedrock pricing
     - url: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
       title: Amazon Bedrock Converse API
-  notes: Bedrock exposes many vendors and region-specific inference profile IDs. The embedded catalog covers Amazon Nova models exercised through the NexoRoute Converse adapter; map inference profiles with catalog_model.
+  notes: Bedrock exposes many vendors and region-specific inference profile IDs. The embedded catalog covers Amazon Nova models exercised through the Thruplane Converse adapter; map inference profiles with catalog_model.
 models:
   - id: amazon.nova-2-lite-v1:0
     aliases: [us.amazon.nova-2-lite-v1:0, eu.amazon.nova-2-lite-v1:0, jp.amazon.nova-2-lite-v1:0, global.amazon.nova-2-lite-v1:0]

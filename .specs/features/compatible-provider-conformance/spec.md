@@ -5,7 +5,7 @@
 
 ## Problem
 
-NexoRoute has direct deterministic fixtures for native adapters, but the
+Thruplane has direct deterministic fixtures for native adapters, but the
 OpenAI-compatible family is covered only by focused integration tests. Beta
 claims need one fixture-driven contract that proves every compatible provider
 variant uses the correct endpoint and authentication while preserving request
@@ -16,7 +16,7 @@ fields and upstream responses.
 ### CPC-01: Provider variants
 
 WHEN the compatible conformance suite runs THEN it SHALL cover `openai`,
-`azure-openai`, `ollama`, `openai-compatible`, `nexoroute-inference`, and
+`azure-openai`, `ollama`, `openai-compatible`, `thruplane-inference`, and
 `xai`; the existing configuration suite SHALL continue to verify that `grok`
 normalizes to `xai`.
 

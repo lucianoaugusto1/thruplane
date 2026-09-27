@@ -32,13 +32,13 @@ results without losing the tool-call identifier or function name.
 
 ### TC-04: Buffered responses
 
-WHEN a native provider returns one or more tool calls THEN NexoRoute SHALL
+WHEN a native provider returns one or more tool calls THEN Thruplane SHALL
 return OpenAI-compatible `message.tool_calls` with JSON-encoded `arguments`
 and `finish_reason: tool_calls`.
 
 ### TC-05: Streaming responses
 
-WHEN Anthropic, Gemini, or Vertex streams a tool call THEN NexoRoute SHALL emit
+WHEN Anthropic, Gemini, or Vertex streams a tool call THEN Thruplane SHALL emit
 OpenAI-compatible `delta.tool_calls` chunks and a final
 `finish_reason: tool_calls`. Anthropic partial JSON SHALL remain incremental.
 
@@ -59,7 +59,7 @@ and response bodies SHALL continue through the existing opaque passthrough.
 - Multimodal tool results.
 - Legacy `functions` and `function_call` fields.
 - Bedrock streaming, which remains blocked on AWS event-stream decoding.
-- Executing tools inside NexoRoute. Tools remain client-executed.
+- Executing tools inside Thruplane. Tools remain client-executed.
 
 ## Success criteria
 

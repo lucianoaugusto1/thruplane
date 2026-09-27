@@ -2,7 +2,7 @@
 
 ## Problem statement
 
-NexoRoute already routes real chat traffic, but it does not define a smaller
+Thruplane already routes real chat traffic, but it does not define a smaller
 release gate between the internal gateway milestone and a public Community
 launch. Beta testers need a build they can validate, identify, observe, and
 roll back without depending on future Pro or Enterprise services.
@@ -36,11 +36,11 @@ traffic.
 
 **Acceptance criteria:**
 
-1. WHEN an operator runs `nexoroute -check-config -config <path>` with a valid
+1. WHEN an operator runs `thruplane -check-config -config <path>` with a valid
    file THEN the command SHALL exit zero and print a confirmation.
 2. WHEN the configuration is invalid THEN the command SHALL exit nonzero and
    report the validation error without printing secret values.
-3. WHEN an operator runs `nexoroute -version` THEN the command SHALL identify
+3. WHEN an operator runs `thruplane -version` THEN the command SHALL identify
    the version, revision, and build date without loading configuration.
 
 **Independent test:** Run the command against valid and invalid temporary YAML

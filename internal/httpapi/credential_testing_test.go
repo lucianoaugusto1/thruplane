@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 func TestCredentialTesterExecutesRequestScopedProvider(t *testing.T) {
@@ -49,11 +49,11 @@ func TestCredentialTesterExecutesRequestScopedProvider(t *testing.T) {
 	if calls.Load() != 1 {
 		t.Fatalf("upstream calls = %d, want 1", calls.Load())
 	}
-	if got := response.Header().Get("X-NexoRoute-Provider"); got != "openai" {
-		t.Errorf("X-NexoRoute-Provider = %q, want openai", got)
+	if got := response.Header().Get("X-Thruplane-Provider"); got != "openai" {
+		t.Errorf("X-Thruplane-Provider = %q, want openai", got)
 	}
-	if got := response.Header().Get("X-NexoRoute-Model"); got != "physical-model" {
-		t.Errorf("X-NexoRoute-Model = %q, want physical-model", got)
+	if got := response.Header().Get("X-Thruplane-Model"); got != "physical-model" {
+		t.Errorf("X-Thruplane-Model = %q, want physical-model", got)
 	}
 }
 

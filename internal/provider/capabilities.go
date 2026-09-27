@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"nexoroute/internal/catalog"
+	"github.com/lucianoaugusto1/thruplane/internal/catalog"
 )
 
 // EffectiveCapabilities intersects model facts with features implemented by
@@ -25,7 +25,7 @@ func EffectiveCapabilities(providerType string, model catalog.Model) catalog.Cap
 		caps.StructuredOutputs = false
 		caps.Tools.StrictSchema = false
 		caps.PromptCaching = false
-	case "openai", "azure-openai", "xai", "ollama", "openai-compatible", "nexoroute-inference", "":
+	case "openai", "azure-openai", "xai", "ollama", "openai-compatible", "thruplane-inference", "":
 		// These adapters pass the OpenAI-compatible request through unchanged.
 	}
 	return caps

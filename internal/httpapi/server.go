@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"nexoroute/internal/config"
-	"nexoroute/internal/gateway"
-	"nexoroute/internal/telemetry"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/gateway"
+	"github.com/lucianoaugusto1/thruplane/internal/telemetry"
 )
 
 type requestIDKey struct{}
@@ -193,11 +193,11 @@ func observeMetrics(metrics *telemetry.Metrics, next http.Handler) http.Handler 
 			return
 		}
 
-		attempts, _ := strconv.Atoi(recorder.Header().Get("X-NexoRoute-Attempts"))
-		fallbacks, _ := strconv.Atoi(recorder.Header().Get("X-NexoRoute-Fallbacks"))
+		attempts, _ := strconv.Atoi(recorder.Header().Get("X-Thruplane-Attempts"))
+		fallbacks, _ := strconv.Atoi(recorder.Header().Get("X-Thruplane-Fallbacks"))
 		metrics.ObserveRoute(
-			recorder.Header().Get("X-NexoRoute-Provider"),
-			recorder.Header().Get("X-NexoRoute-Model"),
+			recorder.Header().Get("X-Thruplane-Provider"),
+			recorder.Header().Get("X-Thruplane-Model"),
 			attempts,
 			fallbacks,
 		)

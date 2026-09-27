@@ -6,7 +6,7 @@
 ## Product decision
 
 The playground will accept provider credentials for interactive testing. This
-is distinct from NexoRoute virtual keys: the user selected provider credential
+is distinct from Thruplane virtual keys: the user selected provider credential
 testing as the first credential feature.
 
 The intended interaction follows the useful part of LiteLLM's provider setup

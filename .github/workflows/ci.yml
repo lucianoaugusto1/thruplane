@@ -57,5 +57,5 @@ jobs:
           build_date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           go build -trimpath \
             -ldflags "-X main.version=0.1.0-beta -X main.revision=${short_revision} -X main.buildDate=${build_date}" \
-            -o nexoroute ./cmd/nexoroute
-          ./nexoroute -version
+            -o thruplane ./cmd/thruplane
+          ./thruplane -version

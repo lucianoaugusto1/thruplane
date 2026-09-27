@@ -3,7 +3,7 @@
 **Updated:** September 25, 2026
 **Live provider calls:** Not run
 
-NexoRoute separates deterministic protocol evidence from live provider
+Thruplane separates deterministic protocol evidence from live provider
 evidence. A fixture proves that the adapter translates and normalizes a
 recorded protocol shape. It doesn't prove that a provider currently accepts a
 specific model, account, region, or capability.
@@ -41,7 +41,7 @@ finish reasons. Bedrock fixtures use a fixed clock and verify the
 | Azure OpenAI | `/openai/v1/chat/completions` plus API version | `api-key` | Request and opaque response passthrough |
 | Ollama | `/v1/chat/completions` | Optional bearer | Passthrough plus output-token field translation |
 | Custom compatible | `/v1/chat/completions` | Optional bearer | Request and opaque response passthrough |
-| NexoRoute Inference | `/v1/chat/completions` | Bearer | Request and opaque response passthrough |
+| Thruplane Inference | `/v1/chat/completions` | Bearer | Request and opaque response passthrough |
 | xAI/Grok | `/v1/chat/completions` | Bearer | Request and opaque response passthrough |
 
 The shared compatible fixture covers text, inline image, PDF, audio, function
@@ -71,21 +71,21 @@ prints credentials, prompts, or response bodies.
 Set the common variables:
 
 ```sh
-export NEXOROUTE_LIVE_PROVIDER="anthropic"
-export NEXOROUTE_LIVE_MODEL="your-approved-model-id"
-export NEXOROUTE_LIVE_SCENARIOS="text,tools,image,pdf,stream"
-export NEXOROUTE_LIVE_MAX_TOKENS="32"
-export NEXOROUTE_LIVE_TIMEOUT="90s"
+export THRUPLANE_LIVE_PROVIDER="anthropic"
+export THRUPLANE_LIVE_MODEL="your-approved-model-id"
+export THRUPLANE_LIVE_SCENARIOS="text,tools,image,pdf,stream"
+export THRUPLANE_LIVE_MAX_TOKENS="32"
+export THRUPLANE_LIVE_TIMEOUT="90s"
 ```
 
 Set the provider-specific variables:
 
 | Provider | Required variables | Optional variables |
 | --- | --- | --- |
-| Anthropic | `ANTHROPIC_API_KEY` | `NEXOROUTE_LIVE_BASE_URL` |
-| Gemini | `GEMINI_API_KEY` | `NEXOROUTE_LIVE_BASE_URL` |
-| Vertex AI | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, `GOOGLE_ACCESS_TOKEN` | `NEXOROUTE_LIVE_BASE_URL` |
-| Bedrock | `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | `AWS_SESSION_TOKEN`, `NEXOROUTE_LIVE_BASE_URL` |
+| Anthropic | `ANTHROPIC_API_KEY` | `THRUPLANE_LIVE_BASE_URL` |
+| Gemini | `GEMINI_API_KEY` | `THRUPLANE_LIVE_BASE_URL` |
+| Vertex AI | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, `GOOGLE_ACCESS_TOKEN` | `THRUPLANE_LIVE_BASE_URL` |
+| Bedrock | `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | `AWS_SESSION_TOKEN`, `THRUPLANE_LIVE_BASE_URL` |
 
 For Bedrock, use short-lived credentials obtained through an IAM role and set
 `AWS_SESSION_TOKEN` when applicable. The current adapter receives credentials

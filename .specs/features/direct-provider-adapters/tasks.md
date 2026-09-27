@@ -27,7 +27,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 
 **What:** Introduce the adapter contract, tune the shared transport, and add
 direct adapters for OpenAI, Azure OpenAI, Ollama, xAI,
-OpenAI-compatible endpoints, and NexoRoute Inference.
+OpenAI-compatible endpoints, and Thruplane Inference.
 **Where:** `internal/provider/client.go`, `internal/provider/compatible.go`,
 `internal/provider/client_test.go`
 **Requirement:** PA-01, PA-02, PA-03, PA-06

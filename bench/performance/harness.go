@@ -17,13 +17,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"nexoroute/internal/config"
-	"nexoroute/internal/gateway"
-	"nexoroute/internal/httpapi"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/gateway"
+	"github.com/lucianoaugusto1/thruplane/internal/httpapi"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
-const directRequestHeader = "X-NexoRoute-Benchmark-Direct"
+const directRequestHeader = "X-Thruplane-Benchmark-Direct"
 
 type loadConfig struct {
 	Requests    int `json:"requests"`

@@ -9,8 +9,8 @@ validation remains the next external assurance step.
 
 ## Decisions
 
-- NexoRoute has three product fronts: the open Gateway data plane, paid
-  NexoRoute Inference, and NexoRoute Intelligence.
+- Thruplane has three product fronts: the open Gateway data plane, paid
+  Thruplane Inference, and Thruplane Intelligence.
 - The Community binary includes an optional developer playground. It remains
   disabled by default and adds no frontend runtime dependency or privileged
   internal API.
@@ -26,7 +26,7 @@ validation remains the next external assurance step.
   IDs are excluded from route-selection metric labels.
 - Safe response headers expose the selected provider and model, attempt count,
   and fallback count for request-level inspection.
-- NexoRoute Inference is described as included usage backed by compute credits,
+- Thruplane Inference is described as included usage backed by compute credits,
   limits, and explicit overage. It is never marketed as unlimited or free.
 - Pro uses a shared inference pool with monthly credits and BYOK fallback.
   Enterprise can use reserved, dedicated, private, BYOC, or approved-region
@@ -37,7 +37,7 @@ validation remains the next external assurance step.
   Flight Recorder provides evaluation and production evidence.
 - AutoRouter evaluates hard constraints first, then heuristics, then semantic
   classification, and uses an LLM only for ambiguous or high-value decisions.
-- NexoRoute's product thesis is to make models replaceable, measurable, and
+- Thruplane's product thesis is to make models replaceable, measurable, and
   governed rather than compete only as a Go implementation of LiteLLM.
 - The commercial boundary follows operational scale and governance, not minimum
   production safety. Basic multiple keys, local limits, metrics, and traces
@@ -52,7 +52,7 @@ validation remains the next external assurance step.
   default; the Go data plane remains inside the customer's infrastructure.
 - Agent Firewall is a later strategic direction after gateway tracing and
   customer discovery validate the need.
-- NexoRoute is the working product brand and must complete legal, domain, and
+- Thruplane is the working product brand and must complete legal, domain, and
   registry clearance before public commercial launch.
 - The Community edition is licensed under Apache License 2.0 and remains useful
   for production self-hosting.
@@ -70,7 +70,7 @@ validation remains the next external assurance step.
 - Direct provider calls are the data-plane rule: customer traffic must not
   require an aggregation gateway or hosted control plane.
 - The first adapter set covers OpenAI, Anthropic, Gemini, Vertex AI, Bedrock,
-  Azure OpenAI, Ollama, configurable OpenAI-compatible APIs, NexoRoute
+  Azure OpenAI, Ollama, configurable OpenAI-compatible APIs, Thruplane
   Inference, and xAI. `grok` is an alias for xAI.
 - Compatible adapters use response passthrough. Native adapters translate
   text, image, and PDF input; Gemini and Vertex also translate inline audio.
@@ -150,7 +150,7 @@ validation remains the next external assurance step.
 
 ## Launch prerequisites
 
-- Legal and trademark review of the NexoRoute working name
+- Legal and trademark review of the Thruplane working name
 - Domain, social-handle, and package-registry availability checks
 - Public repository, release automation, and versioning policy
 - Customer interviews that rank cost control, safe rollout, and governance pain
@@ -175,7 +175,7 @@ validation remains the next external assurance step.
 
 ## Deferred ideas
 
-- NexoRoute Inference aliases and shared Pro compute credits
+- Thruplane Inference aliases and shared Pro compute credits
 - Enterprise reserved, dedicated, private, and BYOC inference
 - Semantic and selective LLM routing after sufficient evaluation data exists
 - Cost Autopilot with model cascades and an explicit quality floor

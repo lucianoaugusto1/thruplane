@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"nexoroute/internal/circuitbreaker"
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/circuitbreaker"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 func buildBreakers(models map[string]config.ModelConfig, policy config.CircuitBreakerConfig, now func() time.Time) map[targetKey]*circuitbreaker.Breaker {

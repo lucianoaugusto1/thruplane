@@ -11,7 +11,7 @@ import (
 
 func normalizedResponse(response *http.Response, id, model, text, finish string, usage tokenUsage, toolCallSets ...[]openAIToolCall) (*http.Response, error) {
 	if id == "" {
-		id = "chatcmpl-nexoroute"
+		id = "chatcmpl-thruplane"
 	}
 	type message struct {
 		Role      string           `json:"role"`

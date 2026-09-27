@@ -1,6 +1,6 @@
-# Contributing to NexoRoute
+# Contributing to Thruplane
 
-Thanks for helping improve NexoRoute Community.
+Thanks for helping improve Thruplane Community.
 
 ## Before you start
 
@@ -22,7 +22,7 @@ Do not use a public issue for a suspected vulnerability. Follow
    gofmt -w ./cmd ./internal
    go test -race ./...
    go vet ./...
-   go build ./cmd/nexoroute
+   go build ./cmd/thruplane
    ```
 
 5. Update README or configuration examples when behavior changes.
@@ -41,7 +41,7 @@ A change is ready for review when it:
 
 ## Scope and compatibility
 
-NexoRoute exposes an OpenAI-compatible subset. Do not claim compatibility for a
+Thruplane exposes an OpenAI-compatible subset. Do not claim compatibility for a
 field or endpoint until tests cover it against the gateway contract. Preserve
 unknown JSON fields whenever the gateway does not need to interpret them.
 
@@ -50,5 +50,5 @@ marker.
 
 ## Licensing
 
-Unless stated otherwise, contributions submitted for inclusion in NexoRoute
+Unless stated otherwise, contributions submitted for inclusion in Thruplane
 Community are licensed under Apache License 2.0, as described in `LICENSE`.

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"nexoroute/internal/circuitbreaker"
-	"nexoroute/internal/ratelimit"
+	"github.com/lucianoaugusto1/thruplane/internal/circuitbreaker"
+	"github.com/lucianoaugusto1/thruplane/internal/ratelimit"
 )
 
 const streamBufferSize = 32 * 1024
@@ -42,7 +42,7 @@ func writeRateLimitError(w http.ResponseWriter, denied *ratelimit.Denial) {
 	if retryAfter := retryAfterSeconds(denied.RetryAfter); retryAfter != "" {
 		w.Header().Set("Retry-After", retryAfter)
 	}
-	w.Header().Set("X-NexoRoute-RateLimit-Reason", denied.Reason)
+	w.Header().Set("X-Thruplane-RateLimit-Reason", denied.Reason)
 	writeError(w, http.StatusTooManyRequests, "All eligible upstream targets are currently rate limited.", "rate_limit_error", "gateway_rate_limited")
 }
 

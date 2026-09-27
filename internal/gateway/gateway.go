@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	"nexoroute/internal/catalog"
-	"nexoroute/internal/circuitbreaker"
-	"nexoroute/internal/config"
-	"nexoroute/internal/provider"
-	"nexoroute/internal/ratelimit"
+	"github.com/lucianoaugusto1/thruplane/internal/catalog"
+	"github.com/lucianoaugusto1/thruplane/internal/circuitbreaker"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/ratelimit"
 )
 
 type Gateway struct {
@@ -89,13 +89,13 @@ func (g *Gateway) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 
 func setRouteHeaders(header http.Header, result executionResult) {
 	if safeRouteHeaderValue(result.provider) {
-		header.Set("X-NexoRoute-Provider", result.provider)
+		header.Set("X-Thruplane-Provider", result.provider)
 	}
 	if safeRouteHeaderValue(result.model) {
-		header.Set("X-NexoRoute-Model", result.model)
+		header.Set("X-Thruplane-Model", result.model)
 	}
-	header.Set("X-NexoRoute-Attempts", strconv.Itoa(result.attempts))
-	header.Set("X-NexoRoute-Fallbacks", strconv.Itoa(result.fallbacks))
+	header.Set("X-Thruplane-Attempts", strconv.Itoa(result.attempts))
+	header.Set("X-Thruplane-Fallbacks", strconv.Itoa(result.fallbacks))
 }
 
 func safeRouteHeaderValue(value string) bool {

@@ -16,7 +16,7 @@ func TestRunCLIVersionDoesNotLoadConfiguration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("runCLI() error = %v", err)
 	}
-	for _, value := range []string{"nexoroute", "version=dev", "revision=unknown", "build_date=unknown"} {
+	for _, value := range []string{"thruplane", "version=dev", "revision=unknown", "build_date=unknown"} {
 		if !strings.Contains(output.String(), value) {
 			t.Errorf("version output = %q, want %q", output.String(), value)
 		}

@@ -17,7 +17,7 @@
 | --- | --- |
 | Quick | `go test ./internal/...` |
 | Full | `go test ./...` |
-| Build | `go test ./... && go vet ./... && go build ./cmd/nexoroute` |
+| Build | `go test ./... && go vet ./... && go build ./cmd/thruplane` |
 | Performance smoke | `go test -run '^$' -bench . -benchtime=1x -benchmem ./bench/performance` |
 | Performance regression | `go run ./bench/performance compare -baseline baseline.json -candidate candidate.json` |
 

@@ -5,7 +5,7 @@
 
 ## Problem
 
-NexoRoute has protocol and failure tests, but it doesn't have a reproducible
+Thruplane has protocol and failure tests, but it doesn't have a reproducible
 end-to-end performance baseline. A microbenchmark for one parser can't show
 gateway-added latency, streaming first-token time, throughput, connection
 reuse, or behavior under failure and backpressure.

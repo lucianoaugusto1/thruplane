@@ -114,7 +114,7 @@ remains explicit and does not block the deterministic BYOK beta contract.
 
 ## Public Community launch
 
-**Goal:** Publish a credible open-source foundation under the NexoRoute working
+**Goal:** Publish a credible open-source foundation under the Thruplane working
 brand without overstating commercial readiness.
 
 ### Features
@@ -203,8 +203,8 @@ unbounded cost or coupling applications to physical model names.
 
 **Curated model aliases** - PLANNED
 
-- Add `nexoroute/fast`, `nexoroute/smart`, `nexoroute/embed`,
-  `nexoroute/guard`, and `nexoroute/auto`.
+- Add `thruplane/fast`, `thruplane/smart`, `thruplane/embed`,
+  `thruplane/guard`, and `thruplane/auto`.
 
 **Pro shared inference** - PLANNED
 
@@ -254,7 +254,7 @@ and privacy objectives.
 
 **Routing recommendations with approval** - PLANNED
 
-**Opt-in NexoRoute Autopilot** - PLANNED
+**Opt-in Thruplane Autopilot** - PLANNED
 
 ---
 

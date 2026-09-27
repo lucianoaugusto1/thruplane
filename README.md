@@ -1,17 +1,21 @@
-# NexoRoute
+# Thruplane
 
 **The open control plane for AI traffic.**
 
-NexoRoute is an open-source AI gateway written in Go. It gives applications one
+[![CI](https://github.com/lucianoaugusto1/thruplane/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianoaugusto1/thruplane/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go)](go.mod)
+
+Thruplane is an open-source AI gateway written in Go. It gives applications one
 OpenAI-compatible endpoint for hosted and local models, then centralizes model
 aliases, provider credentials, streaming, retries, and failover.
 
-NexoRoute Community is in beta under Apache License 2.0. NexoRoute Pro and
-NexoRoute Enterprise are planned commercial editions for teams that need cost
+Thruplane Community is in beta under Apache License 2.0. Thruplane Pro and
+Thruplane Enterprise are planned commercial editions for teams that need cost
 controls, governance, high availability, and support. Start with the
 [Community beta operations guide](docs/beta.md).
 
-## Why NexoRoute
+## Why Thruplane
 
 - Keep application code independent from provider URLs and credentials.
 - Route one public model alias to ordered direct-provider targets.
@@ -26,7 +30,7 @@ controls, governance, high availability, and support. Start with the
 - `POST /v1/chat/completions`, including SSE streaming
 - `GET /v1/models` and `GET /v1/models/{model}`
 - Direct adapters for OpenAI, Anthropic, Gemini, Vertex AI, Amazon Bedrock,
-  Azure OpenAI, Ollama, xAI, custom OpenAI-compatible APIs, and NexoRoute
+  Azure OpenAI, Ollama, xAI, custom OpenAI-compatible APIs, and Thruplane
   Inference
 - Rate-aware retries, per-target admission control, circuit breakers, and
   ordered fallback
@@ -61,6 +65,15 @@ the validation gates before public and paid releases.
 - Credentials for at least one configured provider, or a local Ollama server
 - Optional: Docker for container builds
 
+## Get the source
+
+Clone the public repository:
+
+```sh
+git clone https://github.com/lucianoaugusto1/thruplane.git
+cd thruplane
+```
+
 ## Run locally
 
 1. Copy the example configuration.
@@ -72,11 +85,11 @@ the validation gates before public and paid releases.
 2. Set the credentials you plan to use.
 
    ```sh
-   export NEXOROUTE_API_KEY="change-me"
+   export THRUPLANE_API_KEY="change-me"
    export OPENAI_API_KEY="your-openai-key"
    ```
 
-   Leave `NEXOROUTE_API_KEY` empty only for trusted local development. Ollama
+   Leave `THRUPLANE_API_KEY` empty only for trusted local development. Ollama
    does not require `OPENAI_API_KEY`.
 
 3. Optional: pull the example local model.
@@ -88,13 +101,13 @@ the validation gates before public and paid releases.
 4. Validate the configuration.
 
    ```sh
-   go run ./cmd/nexoroute -check-config -config config.yaml
+   go run ./cmd/thruplane -check-config -config config.yaml
    ```
 
-5. Start NexoRoute.
+5. Start Thruplane.
 
    ```sh
-   go run ./cmd/nexoroute -config config.yaml
+   go run ./cmd/thruplane -config config.yaml
    ```
 
 6. Check its health.
@@ -125,7 +138,7 @@ server:
     enabled: true
 ```
 
-Restart NexoRoute, then open `http://localhost:8080/playground/`. The page uses
+Restart Thruplane, then open `http://localhost:8080/playground/`. The page uses
 the public `/v1` API, keeps its API key and conversation only in browser memory,
 and uses server-configured provider credentials by default.
 
@@ -133,7 +146,7 @@ For onboarding, you can separately enable ephemeral provider credential tests:
 
 ```yaml
 server:
-  api_key: "${NEXOROUTE_API_KEY}"
+  api_key: "${THRUPLANE_API_KEY}"
   playground:
     enabled: true
     credential_testing:
@@ -143,7 +156,7 @@ server:
 ```
 
 This mode makes real, potentially billable provider calls. Entered credentials
-stay in tab memory and the active request; NexoRoute never saves them. See the
+stay in tab memory and the active request; Thruplane never saves them. See the
 [developer playground guide](docs/playground.md) for tools, media, route
 inspection, privacy boundaries, and deployment guidance.
 
@@ -153,14 +166,14 @@ List the public model aliases:
 
 ```sh
 curl http://localhost:8080/v1/models \
-  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}"
+  -H "Authorization: Bearer ${THRUPLANE_API_KEY}"
 ```
 
 Send a buffered chat completion through the `local` alias:
 
 ```sh
 curl http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}" \
+  -H "Authorization: Bearer ${THRUPLANE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "local",
@@ -172,7 +185,7 @@ Stream a completion:
 
 ```sh
 curl --no-buffer http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}" \
+  -H "Authorization: Bearer ${THRUPLANE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "local",
@@ -182,7 +195,7 @@ curl --no-buffer http://localhost:8080/v1/chat/completions \
 ```
 
 For OpenAI-compatible SDKs, use `http://localhost:8080/v1` as the base URL and
-the NexoRoute API key as the client API key.
+the Thruplane API key as the client API key.
 
 ## Configure routing
 
@@ -198,7 +211,7 @@ models:
         model: llama3.2:latest
 ```
 
-NexoRoute retries the current target before moving to the next target. It
+Thruplane retries the current target before moving to the next target. It
 retries temporary HTTP `408`, `429`, `500`, `502`, `503`, and `504` responses,
 plus transport errors. Retries honor `Retry-After`; otherwise they use bounded
 exponential backoff with jitter. Quota, billing, and spend-limit `429` errors
@@ -237,7 +250,7 @@ limiter. Zero request rate or concurrency means that dimension is unlimited;
 zero queue timeout fails over immediately. Set limits from the actual quota for
 the provider account, region, and model. Exact local token-per-minute
 accounting is not implemented because token reservation differs by provider;
-NexoRoute does observe supported upstream remaining/reset headers. See the
+Thruplane does observe supported upstream remaining/reset headers. See the
 [rate-limit and circuit-breaker operations guide](docs/rate-limits.md).
 
 OpenAI-compatible adapters replace the upstream `model` field and preserve
@@ -252,7 +265,7 @@ credentials, native translation behavior, and current feature limits.
 See [provider validation](docs/provider-validation.md) for deterministic
 fixture coverage and the opt-in live smoke-test procedure.
 
-For cataloged targets, NexoRoute checks the request against both model support
+For cataloged targets, Thruplane checks the request against both model support
 and adapter support before sending it upstream. Native adapters translate
 supported image and PDF inputs; Gemini and Vertex also translate inline audio.
 For example, an audio request skips an Anthropic target and can use a Gemini
@@ -312,17 +325,17 @@ unknown YAML fields or multiple YAML documents.
 Build the image:
 
 ```sh
-docker build -t nexoroute .
+docker build -t thruplane .
 ```
 
 Run it with your configuration mounted read-only:
 
 ```sh
 docker run --rm -p 8080:8080 \
-  -e NEXOROUTE_API_KEY \
+  -e THRUPLANE_API_KEY \
   -e OPENAI_API_KEY \
-  -v "$PWD/config.yaml:/etc/nexoroute/config.yaml:ro" \
-  nexoroute
+  -v "$PWD/config.yaml:/etc/thruplane/config.yaml:ro" \
+  thruplane
 ```
 
 When Ollama runs on the Docker host, replace its URL in `config.yaml` with a
@@ -336,7 +349,7 @@ Run the complete project gate:
 ```sh
 go test ./...
 go vet ./...
-go build ./cmd/nexoroute
+go build ./cmd/thruplane
 ```
 
 Run the race detector before merging concurrency-related changes:
@@ -372,7 +385,7 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 
 ## Current limitations
 
-- NexoRoute implements Chat Completions, not Responses, embeddings, image,
+- Thruplane implements Chat Completions, not Responses, embeddings, image,
   audio, or batch APIs.
 - `n` must be omitted or set to `1` so providers do not silently diverge.
 - Compatible adapters pass through tool use, vision, and structured-output
@@ -390,14 +403,14 @@ vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - Local limits, circuit breakers, and metrics are process-local. Community
   does not yet include persistent usage history, dynamic reload, distributed
   tracing, tenant-level policies, or distributed state across replicas.
-- If an upstream stream fails after headers are sent, NexoRoute closes the
+- If an upstream stream fails after headers are sent, Thruplane closes the
   stream without inventing a `[DONE]` event.
 
 ## License and brand
 
-NexoRoute Community is licensed under [Apache License 2.0](LICENSE). The
+Thruplane Community is licensed under [Apache License 2.0](LICENSE). The
 license covers the source code in this repository. Planned commercial modules
 may use separate terms.
 
-NexoRoute is a working brand pending formal trademark, domain, and registry
-clearance. See the [brand guide](docs/brand.md) for current naming rules.
+Thruplane is the project brand pending formal trademark clearance. See the
+[brand guide](docs/brand.md) for current naming rules and validation scope.

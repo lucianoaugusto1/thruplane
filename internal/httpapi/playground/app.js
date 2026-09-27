@@ -144,7 +144,7 @@
 
   function renderProviderFields() {
     const providerType = elements.providerType.value;
-    const usesAPIKey = ["openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "nexoroute-inference", "xai"].includes(providerType);
+    const usesAPIKey = ["openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "thruplane-inference", "xai"].includes(providerType);
     const usesAPIVersion = ["anthropic", "azure-openai"].includes(providerType);
     const vertex = providerType === "vertex";
     const bedrock = providerType === "bedrock";
@@ -161,7 +161,7 @@
   function providerCredential() {
     const type = elements.providerType.value;
     const provider = { type, base_url: elements.providerBaseURL.value.trim() };
-    if (["openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "nexoroute-inference", "xai"].includes(type)) {
+    if (["openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "thruplane-inference", "xai"].includes(type)) {
       provider.api_key = elements.providerAPIKey.value;
     }
     if (["anthropic", "azure-openai"].includes(type)) {
@@ -707,10 +707,10 @@
 
   function applyRouteHeaders(response) {
     const values = [
-      [elements.routeProvider, "X-NexoRoute-Provider"],
-      [elements.routeModel, "X-NexoRoute-Model"],
-      [elements.routeAttempts, "X-NexoRoute-Attempts"],
-      [elements.routeFallbacks, "X-NexoRoute-Fallbacks"],
+      [elements.routeProvider, "X-Thruplane-Provider"],
+      [elements.routeModel, "X-Thruplane-Model"],
+      [elements.routeAttempts, "X-Thruplane-Attempts"],
+      [elements.routeFallbacks, "X-Thruplane-Fallbacks"],
       [elements.requestID, "X-Request-Id"],
       [elements.upstreamRequestID, "X-Upstream-Request-Id"],
     ];
@@ -782,7 +782,7 @@
     const command = [
       `curl ${window.location.origin}${endpoint} \\`,
       "  -H 'Content-Type: application/json' \\",
-      "  -H 'Authorization: Bearer ${NEXOROUTE_API_KEY}' \\",
+      "  -H 'Authorization: Bearer ${THRUPLANE_API_KEY}' \\",
       `  --data-binary '${body}'`,
     ].join("\n");
     try {

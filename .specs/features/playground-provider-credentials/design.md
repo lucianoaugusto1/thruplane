@@ -42,7 +42,7 @@ trimming whitespace and a trailing slash, then validated as absolute HTTP(S)
 URLs without userinfo, query, or fragment.
 
 Built-in official endpoints need no allowlist entry when the request omits
-`base_url`. OpenAI-compatible, Azure OpenAI, and NexoRoute Inference require an
+`base_url`. OpenAI-compatible, Azure OpenAI, and Thruplane Inference require an
 explicit allowed URL because they have no safe universal default. Ollama can
 use its built-in loopback default.
 
@@ -71,7 +71,7 @@ alias before invoking the request-scoped gateway. Provider validation reuses
 the configuration package instead of duplicating adapter rules.
 
 The response is the existing normalized OpenAI-compatible response, including
-streaming and safe `X-NexoRoute-*` headers. Errors use the same OpenAI shape.
+streaming and safe `X-Thruplane-*` headers. Errors use the same OpenAI shape.
 
 ## Execution policy
 

@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strings"
 
-	"nexoroute/internal/config"
-	"nexoroute/internal/gateway"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/gateway"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
 const credentialEnvelopeAllowance = 64 << 10
@@ -124,7 +124,7 @@ func (t *credentialTester) providerConfig(input credentialProvider) (config.Prov
 		providerType = "xai"
 	}
 	switch providerType {
-	case "openai", "anthropic", "gemini", "vertex", "bedrock", "azure-openai", "ollama", "openai-compatible", "nexoroute-inference", "xai":
+	case "openai", "anthropic", "gemini", "vertex", "bedrock", "azure-openai", "ollama", "openai-compatible", "thruplane-inference", "xai":
 	default:
 		return config.ProviderConfig{}, newAPIRequestError(http.StatusBadRequest, "The provider type is not supported.", "invalid_request_error", "unsupported_provider")
 	}
@@ -164,7 +164,7 @@ func (t *credentialTester) providerConfig(input credentialProvider) (config.Prov
 
 func providerNeedsBaseURL(providerType string) bool {
 	switch providerType {
-	case "azure-openai", "openai-compatible", "nexoroute-inference":
+	case "azure-openai", "openai-compatible", "thruplane-inference":
 		return true
 	default:
 		return false
@@ -173,7 +173,7 @@ func providerNeedsBaseURL(providerType string) bool {
 
 func providerNeedsAPIKey(providerType string) bool {
 	switch providerType {
-	case "openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "nexoroute-inference", "xai":
+	case "openai", "anthropic", "gemini", "azure-openai", "openai-compatible", "thruplane-inference", "xai":
 		return true
 	default:
 		return false

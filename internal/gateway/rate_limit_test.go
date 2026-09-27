@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/catalog"
-	"nexoroute/internal/config"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/catalog"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
 func TestRetryDelayPrefersRetryAfterAndFallsBackToExponentialJitter(t *testing.T) {
@@ -273,7 +273,7 @@ func TestChatCompletionsSharesConcurrencyAcrossAliases(t *testing.T) {
 	if secondResponse.Code != http.StatusTooManyRequests {
 		t.Fatalf("second status = %d, want 429; body = %s", secondResponse.Code, secondResponse.Body.String())
 	}
-	assertHeader(t, secondResponse.Header(), "X-NexoRoute-RateLimit-Reason", "concurrency")
+	assertHeader(t, secondResponse.Header(), "X-Thruplane-RateLimit-Reason", "concurrency")
 	if !strings.Contains(secondResponse.Body.String(), "gateway_rate_limited") {
 		t.Fatalf("second body = %s, want gateway rate-limit code", secondResponse.Body.String())
 	}
@@ -369,7 +369,7 @@ func TestChatCompletionsEnforcesLocalRequestRate(t *testing.T) {
 			if response.Code != http.StatusTooManyRequests {
 				t.Fatalf("second status = %d, want 429", response.Code)
 			}
-			assertHeader(t, response.Header(), "X-NexoRoute-RateLimit-Reason", "request_rate")
+			assertHeader(t, response.Header(), "X-Thruplane-RateLimit-Reason", "request_rate")
 			assertHeader(t, response.Header(), "Retry-After", "1")
 		}
 	}

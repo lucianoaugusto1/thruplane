@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 type anthropicAdapter struct {

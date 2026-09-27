@@ -29,7 +29,7 @@ model aliases, retries, fallback, and public error rendering.
 The OpenAI-compatible family uses a raw JSON object only to replace `model`
 and the small number of provider-specific fields. It does not decode response
 bodies. This path covers OpenAI, Azure OpenAI, Ollama, xAI,
-OpenAI-compatible endpoints, and NexoRoute Inference.
+OpenAI-compatible endpoints, and Thruplane Inference.
 
 ## Native codecs
 

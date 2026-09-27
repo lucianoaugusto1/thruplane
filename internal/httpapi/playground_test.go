@@ -22,15 +22,15 @@ func TestPlaygroundClientContract(t *testing.T) {
 		`image_url`,
 		`file_data`,
 		`input_audio`,
-		`NEXOROUTE_API_KEY`,
+		`THRUPLANE_API_KEY`,
 		`PROVIDER_API_KEY`,
 		`GOOGLE_ACCESS_TOKEN`,
 		`AWS_ACCESS_KEY_ID`,
 		`AWS_SECRET_ACCESS_KEY`,
 		`credentialVerifiedRevision`,
 		`buildCredentialEnvelope`,
-		`X-NexoRoute-Provider`,
-		`X-NexoRoute-Attempts`,
+		`X-Thruplane-Provider`,
+		`X-Thruplane-Attempts`,
 	} {
 		if !strings.Contains(script, required) {
 			t.Errorf("app.js missing %q", required)
@@ -80,7 +80,7 @@ func TestPlaygroundInterfaceContract(t *testing.T) {
 		`id="credential-mode-section" hidden`,
 		`id="source-credential"`,
 		`id="provider-type"`,
-		`value="nexoroute-inference"`,
+		`value="thruplane-inference"`,
 		`value="xai"`,
 		`id="provider-secret-access-key" type="password"`,
 		`id="test-credential"`,

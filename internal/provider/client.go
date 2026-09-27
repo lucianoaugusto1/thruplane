@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 type RequestError struct {
@@ -94,7 +94,7 @@ func (c *Client) Do(ctx context.Context, body []byte, model string) (*http.Respo
 
 func newAdapter(cfg config.ProviderConfig) (adapter, error) {
 	switch cfg.Type {
-	case "", "openai", "openai-compatible", "nexoroute-inference", "xai":
+	case "", "openai", "openai-compatible", "thruplane-inference", "xai":
 		return newCompatibleAdapter(cfg, "/v1/chat/completions", "bearer", false)
 	case "ollama":
 		return newCompatibleAdapter(cfg, "/v1/chat/completions", "bearer", true)

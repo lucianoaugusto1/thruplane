@@ -36,7 +36,7 @@ not provide directory listings or arbitrary filesystem access.
 
 The gateway execution result records the final configured provider, provider
 model, number of upstream calls, and number of skipped targets. Successful or
-relayed upstream responses expose these as `X-NexoRoute-*` headers. The values
+relayed upstream responses expose these as `X-Thruplane-*` headers. The values
 contain route metadata only, never credentials or prompt content.
 
 ### Browser client

@@ -1,6 +1,6 @@
 package gateway
 
-import "nexoroute/internal/config"
+import "github.com/lucianoaugusto1/thruplane/internal/config"
 
 type gatewaySettings struct {
 	maxBodyBytes  int64

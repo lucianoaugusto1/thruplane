@@ -1,7 +1,7 @@
 # Provider adapters
 
-NexoRoute calls provider APIs directly from the customer-owned data plane. No
-aggregation gateway or NexoRoute-hosted control plane sits in the request path.
+Thruplane calls provider APIs directly from the customer-owned data plane. No
+aggregation gateway or Thruplane-hosted control plane sits in the request path.
 
 The public endpoint remains `POST /v1/chat/completions`. Each model alias maps
 to the provider-specific model identifier configured in `models.*.targets`.
@@ -18,7 +18,7 @@ to the provider-specific model identifier configured in `models.*.targets`.
 | `azure-openai` | Azure OpenAI v1 chat | Yes | Yes | `api-key` |
 | `ollama` | Ollama OpenAI compatibility | Yes | Yes | Optional bearer key |
 | `openai-compatible` | Configurable OpenAI compatibility | Yes | Yes | Optional bearer key |
-| `nexoroute-inference` | NexoRoute OpenAI compatibility | Yes | Yes | Bearer key |
+| `thruplane-inference` | Thruplane OpenAI compatibility | Yes | Yes | Bearer key |
 | `xai` | xAI Chat Completions | Yes | Yes | Bearer key |
 
 `grok` is accepted as a configuration alias and normalizes to the `xai`
@@ -109,7 +109,7 @@ Native adapters support the OpenAI Chat Completions tool loop:
 4. Append the assistant response and one `role: tool` message per result.
 5. Send the full conversation again to receive the final answer.
 
-NexoRoute preserves function names, JSON Schema parameters, call identifiers,
+Thruplane preserves function names, JSON Schema parameters, call identifiers,
 JSON arguments, multiple calls, tool results, and `finish_reason: tool_calls`.
 Anthropic and Google tool calls are also normalized during streaming.
 
@@ -125,7 +125,7 @@ The native portability contract has these deliberate limits:
   omitted or `true`.
 - Legacy `functions` and `function_call` fields are rejected. Use `tools` and
   `tool_choice`.
-- Tool execution stays in your application. NexoRoute translates the protocol
+- Tool execution stays in your application. Thruplane translates the protocol
   but never executes a function on the customer's behalf.
 
 ## OpenAI
@@ -178,7 +178,7 @@ providers:
     access_token: "${GOOGLE_ACCESS_TOKEN}"
 ```
 
-NexoRoute builds the regional Vertex endpoint from `location`. Supply a
+Thruplane builds the regional Vertex endpoint from `location`. Supply a
 short-lived OAuth access token. Automatic workload-identity and metadata-server
 token refresh are planned secret-provider integrations.
 
@@ -198,7 +198,7 @@ The adapter calls the regional Bedrock Runtime Converse endpoint and signs each
 request with AWS Signature Version 4. Use short-lived credentials in
 production. Function tools use Converse `toolConfig`, `toolUse`, and
 `toolResult` blocks. Streaming returns a `400 unsupported_streaming` error
-before any network request until NexoRoute includes a CRC-validated AWS
+before any network request until Thruplane includes a CRC-validated AWS
 event-stream decoder.
 
 ## Azure OpenAI
@@ -247,19 +247,19 @@ providers:
     api_key: "${PRIVATE_MODELS_API_KEY}"
 ```
 
-The base URL is required and NexoRoute appends `/v1/chat/completions`.
+The base URL is required and Thruplane appends `/v1/chat/completions`.
 
-## NexoRoute Inference
+## Thruplane Inference
 
 ```yaml
 providers:
   inference:
-    type: nexoroute-inference
-    base_url: "${NEXOROUTE_INFERENCE_URL}"
-    api_key: "${NEXOROUTE_INFERENCE_KEY}"
+    type: thruplane-inference
+    base_url: "${THRUPLANE_INFERENCE_URL}"
+    api_key: "${THRUPLANE_INFERENCE_KEY}"
 ```
 
-The protocol adapter is available now. The commercial hosted NexoRoute
+The protocol adapter is available now. The commercial hosted Thruplane
 Inference service remains planned, so configure this type only with an
 endpoint you operate or have been given.
 
@@ -267,7 +267,7 @@ endpoint you operate or have been given.
 
 All providers share one concurrency-safe HTTP transport with HTTP/2 enabled,
 connection pooling, 512 total idle connections, and 64 idle connections per
-host. NexoRoute applies a response-header timeout but no global response-body
+host. Thruplane applies a response-header timeout but no global response-body
 timeout, so request cancellation controls long-running streams.
 
 Per-target request rate, concurrency, queueing, adaptive provider cooldown,

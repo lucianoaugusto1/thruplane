@@ -148,7 +148,7 @@ func validateProvider(name string, provider ProviderConfig) error {
 	switch provider.Type {
 	case "", "openai", "anthropic", "gemini", "vertex", "bedrock",
 		"azure-openai", "ollama", "openai-compatible",
-		"nexoroute-inference", "xai":
+		"thruplane-inference", "xai":
 	default:
 		return fmt.Errorf("provider %q has unsupported type %q", name, provider.Type)
 	}

@@ -1,6 +1,6 @@
-# NexoRoute editions
+# Thruplane editions
 
-NexoRoute uses an open-core model. Community provides the self-hosted gateway
+Thruplane uses an open-core model. Community provides the self-hosted gateway
 and is currently in beta. Planned paid editions add organizational workflows,
 governance, and assurance around that open core.
 
@@ -36,7 +36,7 @@ not generally available features or contractual commitments.
 | Weighted and policy-based routing | Planned open source | SLO automation | Governed |
 | Guardrail rules and webhooks | Planned open source | Managed catalog | Organization policy |
 | Replay, shadow traffic, and canary rollout | Not planned | Planned | Planned |
-| NexoRoute-hosted inference | Not included | Shared credits | Reserved or dedicated |
+| Thruplane-hosted inference | Not included | Shared credits | Reserved or dedicated |
 | AutoRouter | Static local policy | Heuristic and semantic | Custom and governed |
 | LLM routing layer | Not included | Selective and metered | Custom and governed |
 | Web management console | Not planned | Planned | Planned |
@@ -47,7 +47,7 @@ not generally available features or contractual commitments.
 | Secret-manager and KMS integrations | Environment variables | Limited | Planned |
 | Support | Community | Priority | Contracted with SLA |
 
-## NexoRoute Community
+## Thruplane Community
 
 Community targets individual developers, startups, and platform teams that can
 operate their own gateway. Apache License 2.0 allows commercial use,
@@ -58,9 +58,9 @@ work includes additional providers, OpenTelemetry traces, multiple local keys,
 token-aware local quotas, more endpoint families, and stronger routing
 primitives.
 
-## NexoRoute Pro
+## Thruplane Pro
 
-Pro is intended for teams that want to operate NexoRoute without building their
+Pro is intended for teams that want to operate Thruplane without building their
 own management layer. Candidate capabilities include:
 
 - Team workspaces and virtual API keys
@@ -71,14 +71,14 @@ own management layer. Candidate capabilities include:
 - SLO-based routing recommendations and opt-in Autopilot
 - Advanced routing and policy templates
 - A privacy-preserving hosted control plane
-- Monthly compute credits for shared NexoRoute Inference
+- Monthly compute credits for shared Thruplane Inference
 - AutoRouter with heuristic, semantic, and selective LLM routing
 - Priority support
 
 The first Pro release must be informed by customer discovery. This repository
 does not publish prices or release dates yet.
 
-## NexoRoute Enterprise
+## Thruplane Enterprise
 
 Enterprise is intended for organizations with governance, security, and
 availability requirements. Candidate capabilities include:
@@ -103,7 +103,7 @@ A practical launch sequence is:
 2. Interview operators about cost, access, and policy pain.
 3. Launch Pro around the smallest repeated operational workflow.
 4. Sell Enterprise only after security, support, and HA commitments are real.
-5. Consider NexoRoute Cloud after the self-hosted operational model is stable.
+5. Consider Thruplane Cloud after the self-hosted operational model is stable.
 
 Describe paid-plan model usage as included inference backed by compute credits,
 limits, and explicit overage. Do not market inference as unlimited or free.

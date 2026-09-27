@@ -1,6 +1,6 @@
 # Model catalog
 
-NexoRoute ships a versioned model catalog under `internal/catalog/data`. The
+Thruplane ships a versioned model catalog under `internal/catalog/data`. The
 catalog records facts that the gateway needs for capability-safe routing and
 model discovery. The files are embedded in the executable and parsed once at
 startup, so they don't add file I/O or YAML parsing to the request path.
@@ -13,7 +13,7 @@ gateway endpoint is Chat Completions only; an operation such as `responses` in
 the catalog is not a gateway endpoint.
 
 The catalog is curated, not exhaustive. Providers release, rename, and retire
-models independently of NexoRoute releases. Use the provider's live model API
+models independently of Thruplane releases. Use the provider's live model API
 or console to confirm availability in your account and region.
 
 ## Recorded fields
@@ -42,7 +42,7 @@ models. They change with region, service tier, prompt size, output size,
 reasoning effort, concurrency, and provider load. Ollama additionally depends
 on local hardware, quantization, and runtime settings.
 
-NexoRoute leaves `time_to_first_token_ms` and
+Thruplane leaves `time_to_first_token_ms` and
 `output_tokens_per_second` unset unless a value has a reproducible measurement
 method. It never converts marketing terms such as "fast" into fabricated
 numbers. `latency_class` preserves an official qualitative comparison when one
@@ -67,12 +67,12 @@ exists.
 - xAI: Current Grok chat models, cache rates, and long-context pricing.
 - OpenAI-compatible: No built-in model assumptions. The endpoint owner defines
   its models and semantics.
-- NexoRoute Inference: No built-in model entries until the hosted service has a
+- Thruplane Inference: No built-in model entries until the hosted service has a
   published, versioned model contract.
 
 ## Routing policy
 
-NexoRoute inspects Chat Completions requests for input and output modalities,
+Thruplane inspects Chat Completions requests for input and output modalities,
 function tools, strict schemas, parallel calls, structured output, and
 streaming. Known models are eligible only if both the catalog entry and the
 adapter support every required feature. Native Anthropic and Bedrock adapters

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 type bedrockAdapter struct {

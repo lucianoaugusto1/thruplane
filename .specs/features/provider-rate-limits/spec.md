@@ -5,7 +5,7 @@
 
 ## Problem
 
-NexoRoute retries throttled and transient upstream responses immediately. That
+Thruplane retries throttled and transient upstream responses immediately. That
 can amplify provider overload, consume quota with unsuccessful requests, and
 create a retry storm across concurrent gateway requests. Operators also cannot
 bound concurrency or request rate for a provider/model target before traffic is
@@ -69,7 +69,7 @@ never replay a request after public streaming output has begun.
 
 WHEN all eligible targets are locally unavailable before an upstream call THEN
 the gateway SHALL return status `429`, code `gateway_rate_limited`, a valid
-`Retry-After` value when known, and an `X-NexoRoute-RateLimit-Reason` header.
+`Retry-After` value when known, and an `X-Thruplane-RateLimit-Reason` header.
 
 ### RL-08: Configuration safety
 

@@ -5,16 +5,16 @@
 
 ## Goal
 
-Connect each customer-owned NexoRoute data plane directly to model provider
-APIs. The initial contract remains `POST /v1/chat/completions`; NexoRoute must
+Connect each customer-owned Thruplane data plane directly to model provider
+APIs. The initial contract remains `POST /v1/chat/completions`; Thruplane must
 not require another gateway, proxy, or aggregation service in the request path.
 
 ## Requirements
 
 ### PA-01: Supported providers
 
-NexoRoute must recognize `openai`, `anthropic`, `gemini`, `vertex`, `bedrock`,
-`azure-openai`, `ollama`, `openai-compatible`, `nexoroute-inference`, and
+Thruplane must recognize `openai`, `anthropic`, `gemini`, `vertex`, `bedrock`,
+`azure-openai`, `ollama`, `openai-compatible`, `thruplane-inference`, and
 `xai`. It must accept `grok` as an alias for `xai`.
 
 ### PA-02: Direct transport
@@ -25,7 +25,7 @@ request cancellation without a global response-body timeout.
 
 ### PA-03: Compatible fast path
 
-OpenAI, Azure OpenAI, Ollama, xAI, OpenAI-compatible, and NexoRoute Inference
+OpenAI, Azure OpenAI, Ollama, xAI, OpenAI-compatible, and Thruplane Inference
 must preserve the OpenAI-shaped request and response whenever their protocol
 allows it. The adapter may rewrite provider-required fields, paths, and
 credentials without decoding the response body.

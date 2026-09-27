@@ -1,6 +1,6 @@
 # Community beta operations guide
 
-NexoRoute Community Beta is a self-hosted, bring-your-own-key gateway for
+Thruplane Community Beta is a self-hosted, bring-your-own-key gateway for
 development teams and design partners. It is useful for OpenAI-compatible Chat
 Completions, model aliases, direct provider adapters, streaming, retries,
 fallbacks, local admission control, and operational diagnosis.
@@ -19,7 +19,7 @@ gofmt -l ./cmd ./internal ./bench ./tests
 go test ./...
 go test -race ./...
 go vet ./...
-go build ./cmd/nexoroute
+go build ./cmd/thruplane
 go test -run '^$' -bench . -benchtime=1x -benchmem ./bench/performance
 ```
 
@@ -32,8 +32,8 @@ base and candidate runs on the same runner.
 For a local development build, run:
 
 ```sh
-go build -o nexoroute ./cmd/nexoroute
-./nexoroute -version
+go build -o thruplane ./cmd/thruplane
+./thruplane -version
 ```
 
 For a distributable beta build, inject the version, revision, and UTC build
@@ -48,8 +48,8 @@ LDFLAGS="${LDFLAGS} -X main.revision=${REVISION}"
 LDFLAGS="${LDFLAGS} -X main.buildDate=${BUILD_DATE}"
 go build -trimpath \
   -ldflags "${LDFLAGS}" \
-  -o nexoroute ./cmd/nexoroute
-./nexoroute -version
+  -o thruplane ./cmd/thruplane
+./thruplane -version
 ```
 
 Development builds report `dev` and `unknown` values unless you inject build
@@ -66,7 +66,7 @@ metadata. The CI candidate build always injects metadata.
 2. Set one inbound gateway key and the provider credentials you use.
 
    ```sh
-   export NEXOROUTE_API_KEY="replace-with-a-long-random-value"
+   export THRUPLANE_API_KEY="replace-with-a-long-random-value"
    export OPENAI_API_KEY="replace-with-a-scoped-provider-key"
    ```
 
@@ -86,7 +86,7 @@ metadata. The CI candidate build always injects metadata.
 4. Validate the exact file and environment before opening a listener.
 
    ```sh
-   ./nexoroute -check-config -config config.yaml
+   ./thruplane -check-config -config config.yaml
    ```
 
    A valid file prints `configuration valid: config.yaml` and exits with code
@@ -98,7 +98,7 @@ metadata. The CI candidate build always injects metadata.
 Start the gateway in the foreground for the first smoke test:
 
 ```sh
-./nexoroute -config config.yaml
+./thruplane -config config.yaml
 ```
 
 From another terminal, verify liveness and route readiness:
@@ -135,14 +135,14 @@ List the configured aliases:
 
 ```sh
 curl --fail http://localhost:8080/v1/models \
-  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}"
+  -H "Authorization: Bearer ${THRUPLANE_API_KEY}"
 ```
 
 Send a buffered request. Replace `local` with the alias under test:
 
 ```sh
 curl --fail http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}" \
+  -H "Authorization: Bearer ${THRUPLANE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "local",
@@ -154,7 +154,7 @@ Send a streaming request and confirm that output arrives incrementally:
 
 ```sh
 curl --fail --no-buffer http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer ${NEXOROUTE_API_KEY}" \
+  -H "Authorization: Bearer ${THRUPLANE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "local",
@@ -166,10 +166,10 @@ curl --fail --no-buffer http://localhost:8080/v1/chat/completions \
 Inspect these response headers during diagnosis:
 
 - `X-Request-Id`
-- `X-NexoRoute-Provider`
-- `X-NexoRoute-Model`
-- `X-NexoRoute-Attempts`
-- `X-NexoRoute-Fallbacks`
+- `X-Thruplane-Provider`
+- `X-Thruplane-Model`
+- `X-Thruplane-Attempts`
+- `X-Thruplane-Fallbacks`
 
 Use the [developer playground](playground.md) to exercise tools, images, PDFs,
 and supported audio inputs without building a test client. The browser does
@@ -187,7 +187,7 @@ Use an immutable binary and configuration pair for each beta revision.
 6. Run the buffered and streaming smoke requests.
 7. Restore the previous binary and config pair if probes or requests fail.
 
-NexoRoute does not hot reload configuration in this beta. A process restart is
+Thruplane does not hot reload configuration in this beta. A process restart is
 the configuration transaction boundary. Circuit-breaker, rate-limit, and
 metrics state are process-local and reset on restart.
 
@@ -211,7 +211,7 @@ metrics state are process-local and reset on restart.
 
 ## Report beta findings
 
-Include the NexoRoute version output, provider type, upstream model ID, region
+Include the Thruplane version output, provider type, upstream model ID, region
 when relevant, request ID, HTTP status, and a sanitized request shape. Remove
 prompts, response content, files, API keys, access tokens, account IDs, and
 authorization headers.

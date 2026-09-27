@@ -209,7 +209,7 @@ func (l *Limiter) Observe(providerType string, status int, headers http.Header) 
 
 	providerType = strings.ToLower(strings.TrimSpace(providerType))
 	switch providerType {
-	case "openai", "azure-openai", "openai-compatible", "nexoroute-inference", "xai", "ollama":
+	case "openai", "azure-openai", "openai-compatible", "thruplane-inference", "xai", "ollama":
 		l.observeDurationReset(headers, now, "X-RateLimit-Remaining-Requests", "X-RateLimit-Reset-Requests")
 		l.observeDurationReset(headers, now, "X-RateLimit-Remaining-Tokens", "X-RateLimit-Reset-Tokens")
 		l.observeDurationReset(headers, now, "X-RateLimit-Remaining-Project-Tokens", "X-RateLimit-Reset-Project-Tokens")

@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 type compatibleAdapter struct {

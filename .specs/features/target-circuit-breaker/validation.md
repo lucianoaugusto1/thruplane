@@ -22,7 +22,7 @@
 go test -count=1 ./...
 go test -race -count=1 ./...
 go vet ./...
-go build ./cmd/nexoroute
+go build ./cmd/thruplane
 git diff --check
 ```
 
@@ -32,7 +32,7 @@ half-open transitions.
 
 ## Deliberate boundary
 
-Circuit state is process-local and passive. NexoRoute learns health from real
+Circuit state is process-local and passive. Thruplane learns health from real
 requests and doesn't run background probes. `429` and rate-limit cooldown don't
 affect readiness because restarting a gateway doesn't restore provider quota.
 Streaming responses count as healthy when upstream headers succeed; detecting

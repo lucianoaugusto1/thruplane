@@ -39,7 +39,7 @@ co-located tests and affected media fixtures.
 ## Verification
 
 - `go test ./...` and `go test -race ./...` passed on September 22, 2026.
-- `go vet ./...`, `go build -o /dev/null ./cmd/nexoroute`, and
+- `go vet ./...`, `go build -o /dev/null ./cmd/thruplane`, and
   `git diff --check` passed.
 - Public gateway tests cover uncataloged native rejection before network I/O
   and compatible passthrough. Live provider conformance is a separate task.

@@ -332,7 +332,7 @@ providers: {}
 }
 
 func TestExampleConfigurationLoads(t *testing.T) {
-	t.Setenv("NEXOROUTE_API_KEY", "gateway-key")
+	t.Setenv("THRUPLANE_API_KEY", "gateway-key")
 	t.Setenv("OPENAI_API_KEY", "provider-key")
 	if _, err := Load(filepath.Join("..", "..", "config.example.yaml")); err != nil {
 		t.Fatalf("Load(config.example.yaml) error = %v", err)
@@ -608,7 +608,7 @@ providers:
     type: openai-compatible
     base_url: https://models.example.com
   inference:
-    type: nexoroute-inference
+    type: thruplane-inference
     base_url: https://inference.example.com
   xai: {type: xai}
 models:
@@ -637,7 +637,7 @@ func TestLoadRejectsMissingTypeSpecificProviderFields(t *testing.T) {
 		{"bedrock secret", "type: bedrock\n    region: us-east-1\n    access_key_id: key", "secret_access_key"},
 		{"azure URL", "type: azure-openai", "base_url"},
 		{"compatible URL", "type: openai-compatible", "base_url"},
-		{"inference URL", "type: nexoroute-inference", "base_url"},
+		{"inference URL", "type: thruplane-inference", "base_url"},
 	}
 
 	for _, tt := range tests {

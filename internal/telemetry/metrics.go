@@ -154,55 +154,55 @@ func (m *Metrics) render(ready Readiness) []byte {
 	defer m.mu.Unlock()
 
 	var output bytes.Buffer
-	writeMetadata(&output, "nexoroute_build_info", "Build identity for this NexoRoute process.", "gauge")
-	fmt.Fprintf(&output, "nexoroute_build_info%s 1\n", labels(
+	writeMetadata(&output, "thruplane_build_info", "Build identity for this Thruplane process.", "gauge")
+	fmt.Fprintf(&output, "thruplane_build_info%s 1\n", labels(
 		"build_date", m.build.Date,
 		"revision", m.build.Revision,
 		"version", m.build.Version,
 	))
 
-	writeMetadata(&output, "nexoroute_http_requests_in_flight", "Current HTTP requests being handled.", "gauge")
-	fmt.Fprintf(&output, "nexoroute_http_requests_in_flight %d\n", m.inFlight)
+	writeMetadata(&output, "thruplane_http_requests_in_flight", "Current HTTP requests being handled.", "gauge")
+	fmt.Fprintf(&output, "thruplane_http_requests_in_flight %d\n", m.inFlight)
 
-	writeMetadata(&output, "nexoroute_http_requests_total", "Completed HTTP requests by bounded route and status.", "counter")
+	writeMetadata(&output, "thruplane_http_requests_total", "Completed HTTP requests by bounded route and status.", "counter")
 	for _, key := range sortedHTTPKeys(m.httpRequests) {
-		fmt.Fprintf(&output, "nexoroute_http_requests_total%s %d\n", labels(
+		fmt.Fprintf(&output, "thruplane_http_requests_total%s %d\n", labels(
 			"method", key.method,
 			"route", key.route,
 			"status", strconv.Itoa(key.status),
 		), m.httpRequests[key])
 	}
 
-	writeMetadata(&output, "nexoroute_http_request_duration_seconds", "End-to-end HTTP handler duration in seconds.", "histogram")
+	writeMetadata(&output, "thruplane_http_request_duration_seconds", "End-to-end HTTP handler duration in seconds.", "histogram")
 	for _, key := range sortedHTTPRoutes(m.httpDuration) {
-		writeHistogram(&output, "nexoroute_http_request_duration_seconds", []string{
+		writeHistogram(&output, "thruplane_http_request_duration_seconds", []string{
 			"method", key.method,
 			"route", key.route,
 		}, m.httpDuration[key], durationBuckets)
 	}
 
-	writeMetadata(&output, "nexoroute_route_selections_total", "Completed requests by final selected provider and model.", "counter")
+	writeMetadata(&output, "thruplane_route_selections_total", "Completed requests by final selected provider and model.", "counter")
 	for _, key := range sortedRouteKeys(m.routes) {
-		fmt.Fprintf(&output, "nexoroute_route_selections_total%s %d\n", routeLabels(key), m.routes[key])
+		fmt.Fprintf(&output, "thruplane_route_selections_total%s %d\n", routeLabels(key), m.routes[key])
 	}
 
-	writeMetadata(&output, "nexoroute_request_attempts", "Upstream attempts per completed routed request, labeled by the final selected route.", "histogram")
+	writeMetadata(&output, "thruplane_request_attempts", "Upstream attempts per completed routed request, labeled by the final selected route.", "histogram")
 	for _, key := range sortedRouteHistograms(m.attempts) {
-		writeHistogram(&output, "nexoroute_request_attempts", []string{
+		writeHistogram(&output, "thruplane_request_attempts", []string{
 			"model", key.model,
 			"provider", key.provider,
 		}, m.attempts[key], attemptBuckets)
 	}
 
-	writeMetadata(&output, "nexoroute_request_fallbacks", "Fallback count per completed routed request, labeled by the final selected route.", "histogram")
+	writeMetadata(&output, "thruplane_request_fallbacks", "Fallback count per completed routed request, labeled by the final selected route.", "histogram")
 	for _, key := range sortedRouteHistograms(m.fallbacks) {
-		writeHistogram(&output, "nexoroute_request_fallbacks", []string{
+		writeHistogram(&output, "thruplane_request_fallbacks", []string{
 			"model", key.model,
 			"provider", key.provider,
 		}, m.fallbacks[key], fallbackBuckets)
 	}
 
-	writeMetadata(&output, "nexoroute_targets", "Configured upstream targets by aggregate readiness state.", "gauge")
+	writeMetadata(&output, "thruplane_targets", "Configured upstream targets by aggregate readiness state.", "gauge")
 	states := []struct {
 		name  string
 		value int
@@ -213,7 +213,7 @@ func (m *Metrics) render(ready Readiness) []byte {
 		{name: "total", value: ready.Total},
 	}
 	for _, state := range states {
-		fmt.Fprintf(&output, "nexoroute_targets%s %d\n", labels("state", state.name), state.value)
+		fmt.Fprintf(&output, "thruplane_targets%s %d\n", labels("state", state.name), state.value)
 	}
 	return output.Bytes()
 }

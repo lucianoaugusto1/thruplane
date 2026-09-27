@@ -59,7 +59,7 @@
 | `go test ./...` | Pass; no failures. |
 | `go test -race ./...` | Pass; no races or failures. |
 | `go vet ./...` | Pass. |
-| `go build ./cmd/nexoroute` | Pass. |
+| `go build ./cmd/thruplane` | Pass. |
 | One-run benchmark matrix | Pass for all gateway and direct scenarios. |
 | Metadata binary and example-config preflight | Pass. |
 

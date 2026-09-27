@@ -31,23 +31,23 @@ func TestMetricsExposeCoreFamilies(t *testing.T) {
 		t.Fatalf("Content-Type = %q", got)
 	}
 	assertContainsAll(t, recorder.Body.String(),
-		`nexoroute_build_info{build_date="2026-09-25T00:00:00Z",revision="abc123",version="v0.1.0-beta.1"} 1`,
-		`nexoroute_http_requests_in_flight 1`,
-		`nexoroute_http_requests_total{method="POST",route="/v1/chat/completions",status="200"} 1`,
-		`nexoroute_http_request_duration_seconds_count{method="POST",route="/v1/chat/completions"} 1`,
-		`nexoroute_http_request_duration_seconds_sum{method="POST",route="/v1/chat/completions"} 0.025`,
-		`nexoroute_route_selections_total{model="model-a",provider="primary"} 1`,
-		`nexoroute_request_attempts_sum{model="model-a",provider="primary"} 2`,
-		`nexoroute_request_fallbacks_sum{model="model-a",provider="primary"} 1`,
-		`nexoroute_targets{state="available"} 2`,
-		`nexoroute_targets{state="open"} 1`,
-		`nexoroute_targets{state="total"} 3`,
+		`thruplane_build_info{build_date="2026-09-25T00:00:00Z",revision="abc123",version="v0.1.0-beta.1"} 1`,
+		`thruplane_http_requests_in_flight 1`,
+		`thruplane_http_requests_total{method="POST",route="/v1/chat/completions",status="200"} 1`,
+		`thruplane_http_request_duration_seconds_count{method="POST",route="/v1/chat/completions"} 1`,
+		`thruplane_http_request_duration_seconds_sum{method="POST",route="/v1/chat/completions"} 0.025`,
+		`thruplane_route_selections_total{model="model-a",provider="primary"} 1`,
+		`thruplane_request_attempts_sum{model="model-a",provider="primary"} 2`,
+		`thruplane_request_fallbacks_sum{model="model-a",provider="primary"} 1`,
+		`thruplane_targets{state="available"} 2`,
+		`thruplane_targets{state="open"} 1`,
+		`thruplane_targets{state="total"} 3`,
 	)
 
 	metrics.RequestFinished()
 	recorder = httptest.NewRecorder()
 	metrics.ServeHTTP(recorder, httptest.NewRequest("GET", "/metrics", nil))
-	if !strings.Contains(recorder.Body.String(), "nexoroute_http_requests_in_flight 0") {
+	if !strings.Contains(recorder.Body.String(), "thruplane_http_requests_in_flight 0") {
 		t.Fatal("in-flight gauge did not return to zero")
 	}
 }
@@ -90,7 +90,7 @@ func TestMetricsSupportConcurrentUpdates(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	metrics.ServeHTTP(recorder, httptest.NewRequest("GET", "/metrics", nil))
 	wantCount := " 1600\n"
-	if !strings.Contains(recorder.Body.String(), `nexoroute_http_requests_total{method="GET",route="/healthz",status="200"}`+wantCount) {
+	if !strings.Contains(recorder.Body.String(), `thruplane_http_requests_total{method="GET",route="/healthz",status="200"}`+wantCount) {
 		t.Fatalf("HTTP request count missing from:\n%s", recorder.Body.String())
 	}
 }

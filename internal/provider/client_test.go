@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 func TestNewClientsReuseTransportWithResponseHeaderTimeout(t *testing.T) {
@@ -72,7 +72,7 @@ func TestCompatibleProviderEndpointsAndAuthentication(t *testing.T) {
 	}{
 		{"openai", "openai", "", "/v1/chat/completions", "", "Bearer secret", ""},
 		{"compatible", "openai-compatible", "", "/v1/chat/completions", "", "Bearer secret", ""},
-		{"inference", "nexoroute-inference", "", "/v1/chat/completions", "", "Bearer secret", ""},
+		{"inference", "thruplane-inference", "", "/v1/chat/completions", "", "Bearer secret", ""},
 		{"xai", "xai", "", "/v1/chat/completions", "", "Bearer secret", ""},
 		{"ollama", "ollama", "", "/v1/chat/completions", "", "Bearer secret", ""},
 		{"azure", "azure-openai", "2025-01-01-preview", "/openai/v1/chat/completions", "api-version=2025-01-01-preview", "", "secret"},

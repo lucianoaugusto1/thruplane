@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sort"
 
-	"nexoroute/internal/catalog"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/catalog"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
 type modelInfo struct {
@@ -87,7 +87,7 @@ func newModelInfo(alias string) modelInfo {
 		ID:      alias,
 		Object:  "model",
 		Created: 0,
-		OwnedBy: "nexoroute",
+		OwnedBy: "thruplane",
 	}
 }
 

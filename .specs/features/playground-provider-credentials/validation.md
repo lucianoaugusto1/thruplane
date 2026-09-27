@@ -39,7 +39,7 @@ to provider credential mode, tested a synthetic provider key, enabled chat,
 streamed a response, and displayed provider, physical model, status, TTFT,
 total latency, attempts, fallbacks, usage, and request identifiers.
 
-The copied credential-mode command contained `${NEXOROUTE_API_KEY}` and
+The copied credential-mode command contained `${THRUPLANE_API_KEY}` and
 `${PROVIDER_API_KEY}` and contained neither entered synthetic key. Provider
 selection also showed Bedrock region, access-key, secret-key, and session-token
 fields while hiding the generic API-key field.
@@ -56,7 +56,7 @@ node --check internal/httpapi/playground/app.js
 go test ./...
 go test -race ./...
 go vet ./...
-go build ./cmd/nexoroute
+go build ./cmd/thruplane
 git diff --check
 ```
 

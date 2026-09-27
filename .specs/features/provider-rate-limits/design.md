@@ -55,7 +55,7 @@ fallback.
 OpenAI duration reset headers and Anthropic RFC3339 reset headers can extend a
 target cooldown when the corresponding remaining count is zero. A direct
 `Retry-After` on `429` or `503` also extends the cooldown. Provider headers are
-relayed to callers; local rejections use NexoRoute-specific reason metadata.
+relayed to callers; local rejections use Thruplane-specific reason metadata.
 
 ## Compatibility and performance
 

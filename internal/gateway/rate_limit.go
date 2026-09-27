@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"nexoroute/internal/config"
-	"nexoroute/internal/ratelimit"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/ratelimit"
 )
 
 const errorBodyInspectionLimit = 64 << 10
@@ -76,7 +76,7 @@ func permanentRateLimitError(providerType string, body []byte) bool {
 
 	var permanent []string
 	switch strings.ToLower(providerType) {
-	case "openai", "azure-openai", "openai-compatible", "nexoroute-inference", "xai", "ollama":
+	case "openai", "azure-openai", "openai-compatible", "thruplane-inference", "xai", "ollama":
 		permanent = []string{
 			"insufficient_quota",
 			"billing_hard_limit_reached",

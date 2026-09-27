@@ -1,4 +1,4 @@
-module nexoroute
+module github.com/lucianoaugusto1/thruplane
 
 go 1.26.0
 

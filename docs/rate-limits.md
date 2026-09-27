@@ -1,6 +1,6 @@
 # Rate limits, retries, and circuit breakers
 
-NexoRoute protects provider capacity in two layers: local admission before a
+Thruplane protects provider capacity in two layers: local admission before a
 request leaves the process, and adaptive retry behavior after an upstream
 response. Both layers run in the customer-owned data plane and add no external
 service to the request path.
@@ -57,14 +57,14 @@ backoff waits. It does not include the target's initial admission queue.
 
 For temporary `429` and `503` responses, a valid `Retry-After` is the minimum
 delay and is never shortened to fit `max_delay`. If it does not fit in the
-remaining budget, NexoRoute moves to the next target or returns the original
+remaining budget, Thruplane moves to the next target or returns the original
 upstream error. Without a valid hint, the gateway uses exponential backoff
 capped by `max_delay` and adds equal jitter. `408`, `500`, `502`, `503`, `504`,
 and transport failures follow the same bounded fallback policy.
 
 Known quota, billing, and spend-limit errors that require operator action are
 not repeated against the same target. They remain eligible for fallback to a
-different provider/model. NexoRoute does not retry a stream after public output
+different provider/model. Thruplane does not retry a stream after public output
 has begun.
 
 This follows the [official OpenAI rate-limit guidance](https://developers.openai.com/api/docs/guides/rate-limits):
@@ -73,7 +73,7 @@ and bound both attempts and total retry time.
 
 ## Adaptive provider cooldown
 
-NexoRoute extends a shared target cooldown when it receives:
+Thruplane extends a shared target cooldown when it receives:
 
 - `Retry-After` on `429` or `503`;
 - OpenAI-style `x-ratelimit-remaining-*` equal to zero with a valid duration in
@@ -98,7 +98,7 @@ the gateway returns:
 
 ```http
 HTTP/1.1 429 Too Many Requests
-X-NexoRoute-RateLimit-Reason: request_rate
+X-Thruplane-RateLimit-Reason: request_rate
 Retry-After: 1
 Content-Type: application/json
 ```
@@ -153,7 +153,7 @@ probe. A successful response closes the circuit. A health failure reopens it
 for the full duration. Other concurrent requests continue fallback while that
 probe is active.
 
-If every eligible target is already circuit-open, NexoRoute returns:
+If every eligible target is already circuit-open, Thruplane returns:
 
 ```http
 HTTP/1.1 503 Service Unavailable
@@ -172,7 +172,7 @@ Content-Type: application/json
 }
 ```
 
-`Retry-After` is present when NexoRoute can calculate a positive delay.
+`Retry-After` is present when Thruplane can calculate a positive delay.
 
 ## Liveness and readiness
 

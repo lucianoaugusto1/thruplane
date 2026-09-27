@@ -30,7 +30,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 }
 
 func runBenchmark(args []string, stdout, stderr io.Writer) error {
-	flags := flag.NewFlagSet("nexoroute-performance", flag.ContinueOnError)
+	flags := flag.NewFlagSet("thruplane-performance", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	scenarioName := flags.String("scenario", "all", "scenario name or all")
 	requests := flags.Int("requests", 200, "measured requests per phase")
@@ -134,7 +134,7 @@ func runBenchmark(args []string, stdout, stderr io.Writer) error {
 }
 
 func runCompare(args []string, stdout, stderr io.Writer) error {
-	flags := flag.NewFlagSet("nexoroute-performance compare", flag.ContinueOnError)
+	flags := flag.NewFlagSet("thruplane-performance compare", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	baselinePath := flags.String("baseline", "", "baseline artifact path")
 	candidatePath := flags.String("candidate", "", "candidate artifact path")
@@ -194,7 +194,7 @@ func defaultRevision() string {
 }
 
 func defaultEnvironment() string {
-	if environment := os.Getenv("NEXOROUTE_PERF_ENVIRONMENT"); environment != "" {
+	if environment := os.Getenv("THRUPLANE_PERF_ENVIRONMENT"); environment != "" {
 		return environment
 	}
 	return fmt.Sprintf("local-%s-%s-%dcpu", runtime.GOOS, runtime.GOARCH, runtime.NumCPU())

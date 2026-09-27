@@ -6,7 +6,7 @@
 ## Execution plan
 
 ```text
-T1 -> T2 -> T3 -> T4 -> T5
+T1 -> T2 -> T3 -> T4 -> T5 -> T6
 ```
 
 ### T1: Define the product identity ✅
@@ -27,7 +27,7 @@ T1 -> T2 -> T3 -> T4 -> T5
 
 **What:** Rename the Go module, imports, command, binary, image, example key,
 and model ownership metadata.
-**Where:** `go.mod`, Go sources and tests, `cmd/nexoroute/`, `Dockerfile`,
+**Where:** `go.mod`, Go sources and tests, `cmd/thruplane/`, `Dockerfile`,
 `config.example.yaml`, `.gitignore`, `.dockerignore`
 **Depends on:** T1
 **Requirements:** BR-01, BR-02
@@ -37,8 +37,8 @@ and model ownership metadata.
 **Done when:**
 
 - [x] `go test -race ./...`, `go vet ./...`, and
-  `go build ./cmd/nexoroute` pass.
-- [x] Docker builds an image containing the `/nexoroute` binary.
+  `go build ./cmd/thruplane` pass.
+- [x] Docker builds an image containing the `/thruplane` binary.
 - [x] Existing test count does not decrease.
 
 ### T3: Establish the open-source and commercial story ✅
@@ -87,3 +87,19 @@ and rerun the final gate there.
 - [x] Destination contains the repository and complete Git history.
 - [x] Build gate passes from the destination.
 - [x] Source path no longer contains the repository.
+
+### T6: Publish the public repository
+
+**What:** Create the public Thruplane repository and publish the validated
+default branch.
+**Where:** `github.com/lucianoaugusto1/thruplane`
+**Depends on:** T5
+**Requirements:** BR-08
+**Tests:** Remote inspection and GitHub Actions
+**Gate:** Build
+
+**Done when:**
+
+- [ ] The public repository exists with `main` as its default branch.
+- [ ] The local `origin` points to the public repository.
+- [ ] The rebranded commit is available on `origin/main`.

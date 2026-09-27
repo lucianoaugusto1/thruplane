@@ -23,7 +23,7 @@
 ```text
 go test -race ./...
 go vet ./...
-go build ./cmd/nexoroute
+go build ./cmd/thruplane
 ```
 
 All gates pass without live provider credentials or network calls.

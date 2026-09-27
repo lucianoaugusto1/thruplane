@@ -91,7 +91,7 @@ safe route headers.
 ### T5: Add CLI preflight and build identity
 
 **What:** Add `-check-config` and `-version` modes with deterministic tests.  
-**Where:** `cmd/nexoroute/main.go`, `cmd/nexoroute/main_test.go`  
+**Where:** `cmd/thruplane/main.go`, `cmd/thruplane/main_test.go`
 **Depends on:** T4  
 **Requirement:** BETA-01, BETA-02  
 **Tests:** Unit and build  
@@ -102,7 +102,7 @@ safe route headers.
 - [x] Preflight accepts valid config and rejects invalid config without
   starting a listener.
 - [x] Version mode works without a config file.
-- [x] `go test ./... && go vet ./... && go build ./cmd/nexoroute` passes.
+- [x] `go test ./... && go vet ./... && go build ./cmd/thruplane` passes.
 
 **Verify:** Run the build gate and invoke both CLI modes.
 
@@ -152,7 +152,7 @@ then run the complete beta gate.
 go test ./...
 go test -race ./...
 go vet ./...
-go build ./cmd/nexoroute
+go build ./cmd/thruplane
 go test -run '^$' -bench . -benchtime=1x -benchmem ./bench/performance
 ```
 

@@ -1,6 +1,6 @@
 # Performance testing
 
-NexoRoute includes a local performance and load harness in
+Thruplane includes a local performance and load harness in
 `bench/performance`. It runs the real HTTP API, gateway routing, provider
 client, adapter, retry, fallback, and streaming paths against synthetic local
 upstreams.
@@ -169,15 +169,15 @@ go run ./bench/performance \
   -requests 5000 \
   -concurrency 32 \
   -warmup 200 \
-  -cpuprofile /tmp/nexoroute-cpu.pprof \
-  -memprofile /tmp/nexoroute-heap.pprof
+  -cpuprofile /tmp/thruplane-cpu.pprof \
+  -memprofile /tmp/thruplane-heap.pprof
 ```
 
 Inspect the profiles:
 
 ```sh
-go tool pprof -top /tmp/nexoroute-cpu.pprof
-go tool pprof -top /tmp/nexoroute-heap.pprof
+go tool pprof -top /tmp/thruplane-cpu.pprof
+go tool pprof -top /tmp/thruplane-heap.pprof
 ```
 
 Use a long enough run for a meaningful CPU sample. Very short smoke runs can

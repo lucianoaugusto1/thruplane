@@ -52,7 +52,7 @@ existing strict configuration loader.
 
 - **Purpose:** Validate configuration without listening and report build
   identity without reading configuration.
-- **Location:** `cmd/nexoroute/main.go`.
+- **Location:** `cmd/thruplane/main.go`.
 - **Dependencies:** Existing loader; build variables supplied through
   `-ldflags` when packaging.
 
@@ -72,14 +72,14 @@ authorization headers.
 
 | Metric | Type | Labels |
 | --- | --- | --- |
-| `nexoroute_http_requests_total` | Counter | method, route, status |
-| `nexoroute_http_request_duration_seconds` | Histogram | method, route |
-| `nexoroute_http_requests_in_flight` | Gauge | none |
-| `nexoroute_route_selections_total` | Counter | provider, model |
-| `nexoroute_request_attempts` | Histogram | provider, model |
-| `nexoroute_request_fallbacks` | Histogram | provider, model |
-| `nexoroute_targets` | Gauge | state |
-| `nexoroute_build_info` | Gauge | version, revision, build_date |
+| `thruplane_http_requests_total` | Counter | method, route, status |
+| `thruplane_http_request_duration_seconds` | Histogram | method, route |
+| `thruplane_http_requests_in_flight` | Gauge | none |
+| `thruplane_route_selections_total` | Counter | provider, model |
+| `thruplane_request_attempts` | Histogram | provider, model |
+| `thruplane_request_fallbacks` | Histogram | provider, model |
+| `thruplane_targets` | Gauge | state |
+| `thruplane_build_info` | Gauge | version, revision, build_date |
 
 The attempt and fallback histograms describe the complete request and use the
 final selected route as labels. They do not claim per-attempt attribution.

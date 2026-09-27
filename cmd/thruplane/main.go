@@ -14,12 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"nexoroute/internal/catalog"
-	"nexoroute/internal/config"
-	"nexoroute/internal/gateway"
-	"nexoroute/internal/httpapi"
-	"nexoroute/internal/provider"
-	"nexoroute/internal/telemetry"
+	"github.com/lucianoaugusto1/thruplane/internal/catalog"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/gateway"
+	"github.com/lucianoaugusto1/thruplane/internal/httpapi"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/telemetry"
 )
 
 var (
@@ -31,13 +31,13 @@ var (
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	if err := runCLI(os.Args[1:], os.Stdout, logger); err != nil {
-		logger.Error("NexoRoute stopped", "error", err)
+		logger.Error("Thruplane stopped", "error", err)
 		os.Exit(1)
 	}
 }
 
 func runCLI(args []string, stdout io.Writer, logger *slog.Logger) error {
-	flags := flag.NewFlagSet("nexoroute", flag.ContinueOnError)
+	flags := flag.NewFlagSet("thruplane", flag.ContinueOnError)
 	flags.SetOutput(stdout)
 	configPath := flags.String("config", "config.yaml", "path to the gateway YAML configuration")
 	checkConfig := flags.Bool("check-config", false, "validate configuration and exit")
@@ -56,7 +56,7 @@ func runCLI(args []string, stdout io.Writer, logger *slog.Logger) error {
 	}
 	if *showVersion {
 		build := currentBuildInfo()
-		fmt.Fprintf(stdout, "nexoroute version=%s revision=%s build_date=%s\n", build.Version, build.Revision, build.Date)
+		fmt.Fprintf(stdout, "thruplane version=%s revision=%s build_date=%s\n", build.Version, build.Revision, build.Date)
 		return nil
 	}
 	if *checkConfig {
@@ -87,7 +87,7 @@ func run(configPath string, logger *slog.Logger) error {
 
 	serveErr := make(chan error, 1)
 	go func() {
-		logger.Info("NexoRoute listening", "address", server.Addr)
+		logger.Info("Thruplane listening", "address", server.Addr)
 		serveErr <- server.ListenAndServe()
 	}()
 
@@ -98,7 +98,7 @@ func run(configPath string, logger *slog.Logger) error {
 		}
 		return fmt.Errorf("serve HTTP: %w", err)
 	case <-ctx.Done():
-		logger.Info("NexoRoute shutting down")
+		logger.Info("Thruplane shutting down")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Server.ShutdownTimeout))

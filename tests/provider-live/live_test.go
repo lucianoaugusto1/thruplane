@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/config"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
 const maxLiveResponseBytes = 4 << 20
@@ -91,10 +91,10 @@ func TestNativeProviderLive(t *testing.T) {
 func loadLiveSettings(t *testing.T) liveSettings {
 	t.Helper()
 	settings := liveSettings{
-		provider: strings.ToLower(requiredLiveEnv(t, "NEXOROUTE_LIVE_PROVIDER")),
-		model:    requiredLiveEnv(t, "NEXOROUTE_LIVE_MODEL"),
+		provider: strings.ToLower(requiredLiveEnv(t, "THRUPLANE_LIVE_PROVIDER")),
+		model:    requiredLiveEnv(t, "THRUPLANE_LIVE_MODEL"),
 	}
-	scenarioList := requiredLiveEnv(t, "NEXOROUTE_LIVE_SCENARIOS")
+	scenarioList := requiredLiveEnv(t, "THRUPLANE_LIVE_SCENARIOS")
 	seen := make(map[string]bool)
 	for _, value := range strings.Split(scenarioList, ",") {
 		name := strings.ToLower(strings.TrimSpace(value))
@@ -105,18 +105,18 @@ func loadLiveSettings(t *testing.T) liveSettings {
 		settings.scenarios = append(settings.scenarios, name)
 	}
 	if len(settings.scenarios) == 0 {
-		t.Fatal("NEXOROUTE_LIVE_SCENARIOS must select at least one scenario")
+		t.Fatal("THRUPLANE_LIVE_SCENARIOS must select at least one scenario")
 	}
-	maxTokens, err := strconv.Atoi(requiredLiveEnv(t, "NEXOROUTE_LIVE_MAX_TOKENS"))
+	maxTokens, err := strconv.Atoi(requiredLiveEnv(t, "THRUPLANE_LIVE_MAX_TOKENS"))
 	if err != nil || maxTokens < 1 || maxTokens > 128 {
-		t.Fatal("NEXOROUTE_LIVE_MAX_TOKENS must be an integer from 1 to 128")
+		t.Fatal("THRUPLANE_LIVE_MAX_TOKENS must be an integer from 1 to 128")
 	}
 	settings.maxTokens = maxTokens
 	settings.timeout = 90 * time.Second
-	if value := strings.TrimSpace(os.Getenv("NEXOROUTE_LIVE_TIMEOUT")); value != "" {
+	if value := strings.TrimSpace(os.Getenv("THRUPLANE_LIVE_TIMEOUT")); value != "" {
 		settings.timeout, err = time.ParseDuration(value)
 		if err != nil || settings.timeout <= 0 || settings.timeout > 10*time.Minute {
-			t.Fatal("NEXOROUTE_LIVE_TIMEOUT must be greater than zero and at most 10m")
+			t.Fatal("THRUPLANE_LIVE_TIMEOUT must be greater than zero and at most 10m")
 		}
 	}
 	return settings
@@ -153,9 +153,9 @@ func liveProviderConfig(t *testing.T, providerType string) config.ProviderConfig
 		cfg.SessionToken = strings.TrimSpace(os.Getenv("AWS_SESSION_TOKEN"))
 		cfg.BaseURL = "https://bedrock-runtime." + cfg.Region + ".amazonaws.com"
 	default:
-		t.Fatalf("NEXOROUTE_LIVE_PROVIDER must be anthropic, gemini, vertex, or bedrock")
+		t.Fatalf("THRUPLANE_LIVE_PROVIDER must be anthropic, gemini, vertex, or bedrock")
 	}
-	if override := strings.TrimSpace(os.Getenv("NEXOROUTE_LIVE_BASE_URL")); override != "" {
+	if override := strings.TrimSpace(os.Getenv("THRUPLANE_LIVE_BASE_URL")); override != "" {
 		cfg.BaseURL = strings.TrimRight(override, "/")
 	}
 	return cfg
@@ -180,8 +180,8 @@ func buildLiveScenario(settings liveSettings, name string) (liveScenario, error)
 	case "text":
 		request["messages"] = []any{map[string]any{"role": "user", "content": "Reply with one short sentence."}}
 	case "tools":
-		scenario.toolName = "nexoroute_probe"
-		request["messages"] = []any{map[string]any{"role": "user", "content": "Call nexoroute_probe with value ready."}}
+		scenario.toolName = "thruplane_probe"
+		request["messages"] = []any{map[string]any{"role": "user", "content": "Call thruplane_probe with value ready."}}
 		request["tools"] = []any{map[string]any{
 			"type": "function",
 			"function": map[string]any{
@@ -241,7 +241,7 @@ func livePNGDataURI() (string, error) {
 }
 
 func livePDFDataURI() string {
-	content := "BT /F1 12 Tf 20 100 Td (NexoRoute live PDF) Tj ET"
+	content := "BT /F1 12 Tf 20 100 Td (Thruplane live PDF) Tj ET"
 	objects := []string{
 		"<< /Type /Catalog /Pages 2 0 R >>",
 		"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",

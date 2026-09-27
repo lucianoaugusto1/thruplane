@@ -1,4 +1,4 @@
-# NexoRoute
+# Thruplane
 
 **Vision:** Make reliable AI traffic control accessible as open-source
 infrastructure, with a clear path to managed operations and enterprise
@@ -71,6 +71,6 @@ fallback behavior otherwise leak into every application.
   complete LiteLLM feature parity.
 - Commercial: Label roadmap capabilities as planned until they are implemented
   and validated.
-- Brand: Treat NexoRoute as a working name until legal and registry clearance.
+- Brand: Treat Thruplane as a working name until legal and registry clearance.
 - Validation: Local protocol tests do not replace live, region-specific
   provider conformance or end-to-end latency measurements.

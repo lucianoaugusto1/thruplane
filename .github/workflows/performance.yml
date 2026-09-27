@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      PERF_DIRECTORY: ${{ runner.temp }}/nexoroute-performance
-      NEXOROUTE_PERF_ENVIRONMENT: github-ubuntu-24.04-x64
+      PERF_DIRECTORY: ${{ runner.temp }}/thruplane-performance
+      THRUPLANE_PERF_ENVIRONMENT: github-ubuntu-24.04-x64
 
     steps:
       - name: Check out candidate
@@ -64,7 +64,7 @@ jobs:
 
       - name: Measure base revision
         if: steps.baseline.outputs.supported == 'true'
-        working-directory: ${{ runner.temp }}/nexoroute-performance/base
+        working-directory: ${{ runner.temp }}/thruplane-performance/base
         env:
           BASELINE_SHA: ${{ steps.baseline.outputs.sha }}
         run: |
@@ -76,7 +76,7 @@ jobs:
             -runs 5 \
             -artifact "${PERF_DIRECTORY}/baseline.json" \
             -revision "${BASELINE_SHA}" \
-            -environment "${NEXOROUTE_PERF_ENVIRONMENT}"
+            -environment "${THRUPLANE_PERF_ENVIRONMENT}"
 
       - name: Measure candidate revision
         env:
@@ -90,7 +90,7 @@ jobs:
             -runs 5 \
             -artifact "${PERF_DIRECTORY}/candidate.json" \
             -revision "${CANDIDATE_SHA}" \
-            -environment "${NEXOROUTE_PERF_ENVIRONMENT}"
+            -environment "${THRUPLANE_PERF_ENVIRONMENT}"
 
       - name: Enforce performance thresholds
         if: steps.baseline.outputs.supported == 'true'
@@ -106,6 +106,6 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: performance-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/nexoroute-performance/*.json
+          path: ${{ runner.temp }}/thruplane-performance/*.json
           if-no-files-found: error
           retention-days: 30

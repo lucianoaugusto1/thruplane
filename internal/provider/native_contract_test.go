@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 func TestNativeDecoderRejectsUntranslatedFields(t *testing.T) {

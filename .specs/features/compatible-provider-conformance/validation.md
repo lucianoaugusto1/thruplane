@@ -23,7 +23,7 @@ contact OpenAI, Azure OpenAI, Ollama, xAI, or another external endpoint.
 go test -count=1 ./...
 go test -race -count=1 ./...
 go vet ./...
-go build ./cmd/nexoroute
+go build ./cmd/thruplane
 git diff --check
 ```
 
@@ -32,6 +32,6 @@ production change to satisfy the consolidated conformance contract.
 
 ## Claim boundary
 
-The fixtures prove NexoRoute's endpoint, authentication, request rewrite, and
+The fixtures prove Thruplane's endpoint, authentication, request rewrite, and
 response-passthrough behavior. They don't prove that every provider or model
 accepts every forwarded OpenAI field. Live evidence remains unverified.

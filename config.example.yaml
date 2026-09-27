@@ -1,6 +1,6 @@
 server:
   address: ":8080"
-  api_key: "${NEXOROUTE_API_KEY}"
+  api_key: "${THRUPLANE_API_KEY}"
   max_body_bytes: 1048576
   read_header_timeout: 5s
   shutdown_timeout: 10s
@@ -34,7 +34,7 @@ providers:
     base_url: http://localhost:11434
 
   # See docs/providers.md for Anthropic, Gemini, Vertex AI, Bedrock,
-  # Azure OpenAI, xAI/Grok, custom OpenAI-compatible APIs, and NexoRoute
+  # Azure OpenAI, xAI/Grok, custom OpenAI-compatible APIs, and Thruplane
   # Inference configuration.
 
 models:

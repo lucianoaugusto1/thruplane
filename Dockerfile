@@ -6,11 +6,11 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
-    -o /out/nexoroute ./cmd/nexoroute
+    -o /out/thruplane ./cmd/thruplane
 
 FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/nexoroute /nexoroute
-COPY config.example.yaml /etc/nexoroute/config.yaml
+COPY --from=build /out/thruplane /thruplane
+COPY config.example.yaml /etc/thruplane/config.yaml
 EXPOSE 8080
-ENTRYPOINT ["/nexoroute"]
-CMD ["-config", "/etc/nexoroute/config.yaml"]
+ENTRYPOINT ["/thruplane"]
+CMD ["-config", "/etc/thruplane/config.yaml"]

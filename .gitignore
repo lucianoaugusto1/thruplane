@@ -1,5 +1,6 @@
 .DS_Store
-/nexoroute
+.idea/
+/thruplane
 config.yaml
 coverage.out
 work/

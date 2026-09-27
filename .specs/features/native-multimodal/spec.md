@@ -4,7 +4,7 @@
 
 The model catalog records image, document, and audio support, but native
 adapters currently reject every non-text content part. Customers cannot use
-these model capabilities through a direct NexoRoute integration.
+these model capabilities through a direct Thruplane integration.
 
 ## Goals
 

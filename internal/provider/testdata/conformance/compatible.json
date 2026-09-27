@@ -40,8 +40,8 @@
       }
     },
     {
-      "name": "nexoroute-inference",
-      "type": "nexoroute-inference",
+      "name": "thruplane-inference",
+      "type": "thruplane-inference",
       "path": "/v1/chat/completions",
       "headers": {
         "Content-Type": "application/json",

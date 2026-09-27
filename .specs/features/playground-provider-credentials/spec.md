@@ -33,7 +33,7 @@ WHEN enabled THEN the playground itself SHALL also be enabled and
 
 WHEN constructing credentials THEN the UI and endpoint SHALL accept `openai`,
 `anthropic`, `gemini`, `vertex`, `bedrock`, `azure-openai`, `ollama`,
-`openai-compatible`, `nexoroute-inference`, and `xai`. The form SHALL expose
+`openai-compatible`, `thruplane-inference`, and `xai`. The form SHALL expose
 only the fields relevant to the selected adapter.
 
 ### PCR-03: Ephemeral secret boundary
@@ -59,7 +59,7 @@ rejected.
 
 ### PCR-06: Request-scoped execution
 
-WHEN a credential request is accepted THEN NexoRoute SHALL construct a
+WHEN a credential request is accepted THEN Thruplane SHALL construct a
 request-scoped provider client and one-target gateway without mutating shared
 providers, aliases, limiters, breakers, or routes. It SHALL use no automatic
 retry or fallback so a test cannot silently create duplicate billable calls.

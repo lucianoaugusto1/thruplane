@@ -1,7 +1,7 @@
 # Commercial rebrand validation
 
-**Date:** September 18, 2026
-**Overall:** PASS
+**Date:** September 27, 2026
+**Overall:** LOCAL PASS; PUBLICATION PENDING
 
 ## Requirement results
 
@@ -14,17 +14,19 @@
 | BR-05 | PASS | Contribution and private security paths exist |
 | BR-06 | PASS | Paid capabilities are consistently labeled planned |
 | BR-07 | PASS | Full gate passed from the requested destination |
+| BR-08 | PENDING | Public repository creation and first push |
 
 ## Verification record
 
-- `go test -race ./...` passed with 29 top-level tests and 16 table-driven
-  subtests.
+- `go test ./...` passed.
+- `go test -race ./...` passed across all packages.
 - `go vet ./...` passed.
-- `go build ./cmd/nexoroute` passed.
-- `docker build -t nexoroute:local-test .` passed.
-- The Apache License 2.0 file matches the Apache Software Foundation source.
-- A full tracked-file search found no obsolete product, module, command,
-  environment-variable, image, or binary identity outside historical context.
+- `go build ./cmd/thruplane` passed.
+- `docker build -t thruplane:local-test .` passed.
+- The built binary reported the `thruplane` command identity.
+- A full worktree search found no obsolete product, module, command,
+  environment-variable, image, metric, or HTTP-header identity.
+- A redacted history scan found no common provider or GitHub secret patterns.
 
 ## Destination verification
 

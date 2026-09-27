@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 func TestBedrockAdapterSignsAndTranslatesBufferedChat(t *testing.T) {

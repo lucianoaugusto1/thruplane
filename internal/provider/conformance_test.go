@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
 )
 
 type conformanceFixture struct {
@@ -136,7 +136,7 @@ func TestCompatibleProviderConformanceFixtures(t *testing.T) {
 
 	wantTypes := map[string]bool{
 		"openai": true, "azure-openai": true, "ollama": true,
-		"openai-compatible": true, "nexoroute-inference": true, "xai": true,
+		"openai-compatible": true, "thruplane-inference": true, "xai": true,
 	}
 	seenTypes := make(map[string]bool, len(fixture.Providers))
 	for _, fixtureProvider := range fixture.Providers {

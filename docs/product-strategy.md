@@ -1,4 +1,4 @@
-# NexoRoute product strategy
+# Thruplane product strategy
 
 **Status:** Working direction
 **Updated:** September 19, 2026
@@ -10,7 +10,7 @@ and verified.
 
 ## Product thesis
 
-NexoRoute must become more than a Go implementation of an existing LLM
+Thruplane must become more than a Go implementation of an existing LLM
 gateway. Its strongest position is:
 
 > The gateway that finds the lowest-cost model that meets your quality,
@@ -19,29 +19,29 @@ gateway. Its strongest position is:
 
 The short product promise is:
 
-> NexoRoute makes every model replaceable, measurable, and governed.
+> Thruplane makes every model replaceable, measurable, and governed.
 
-NexoRoute combines an open, portable Go data plane with optional commercial
+Thruplane combines an open, portable Go data plane with optional commercial
 operations and governance. Teams keep control of their traffic and
 configuration while paid editions reduce the work required to operate the
 gateway across teams and regulated environments.
 
 ## Three product fronts
 
-NexoRoute develops as three connected products with separate responsibilities:
+Thruplane develops as three connected products with separate responsibilities:
 
 | Front | Product | Responsibility |
 | --- | --- | --- |
-| 1 | NexoRoute Gateway | Open data plane, protocols, BYOK, security, and resilience |
-| 2 | NexoRoute Inference | Curated hosted open-weight models with paid-plan usage allowances |
-| 3 | NexoRoute Intelligence | AutoRouter, Flight Recorder, evaluations, and optimization |
+| 1 | Thruplane Gateway | Open data plane, protocols, BYOK, security, and resilience |
+| 2 | Thruplane Inference | Curated hosted open-weight models with paid-plan usage allowances |
+| 3 | Thruplane Intelligence | AutoRouter, Flight Recorder, evaluations, and optimization |
 
 Gateway drives adoption and remains independently useful. Inference creates a
 recurring usage business. Intelligence differentiates the platform through
 measured routing decisions rather than provider aggregation alone.
 
 Each front must remain independently observable and replaceable. A customer
-can use Gateway with only bring-your-own-key providers, use NexoRoute Inference
+can use Gateway with only bring-your-own-key providers, use Thruplane Inference
 without enabling automated routing, or enable Intelligence across both hosted
 and external models.
 
@@ -66,7 +66,7 @@ References:
 - [Cloudflare Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/)
 - [OpenRouter free model collection](https://openrouter.ai/collections/free-models)
 
-NexoRoute needs these table-stakes features, but it must differentiate through
+Thruplane needs these table-stakes features, but it must differentiate through
 safe model change, outcome-based routing, private deployment, and agent
 governance.
 
@@ -121,7 +121,7 @@ themselves. Candidate capabilities include:
 - Shadow traffic, replay, canary rollout, A/B tests, and regression reports.
 - SLO-based routing recommendations and opt-in automation.
 - A privacy-preserving hosted control plane.
-- Shared NexoRoute Inference usage included through monthly compute credits.
+- Shared Thruplane Inference usage included through monthly compute credits.
 - Priority support.
 
 Pro sells faster, safer operations rather than access to basic gateway
@@ -142,20 +142,20 @@ assurance. Candidate capabilities include:
 - Geographic routing and data-residency enforcement.
 - High-availability, multi-region, disaster-recovery, and backup options.
 - BYOC, on-premises, and air-gapped deployment patterns.
-- Reserved or dedicated NexoRoute Inference capacity.
+- Reserved or dedicated Thruplane Inference capacity.
 - Private and customer-specific hosted models.
 - Contracted support, security response, upgrade planning, and SLAs.
 
 Enterprise claims must follow working implementations, operational evidence,
 and support readiness.
 
-## NexoRoute Inference
+## Thruplane Inference
 
-NexoRoute Inference is the second product front. It provides curated hosted
+Thruplane Inference is the second product front. It provides curated hosted
 open-weight models through the same API as customer-managed providers.
 
 Commercial material must describe this benefit as **included inference** or
-**included model usage**, not free or unlimited inference. NexoRoute still pays
+**included model usage**, not free or unlimited inference. Thruplane still pays
 for compute, and an unlimited promise would create unpredictable margins and an
 abuse surface.
 
@@ -189,13 +189,13 @@ larger pool of nominally free tokens.
 
 Start with a small catalog based on stable capabilities:
 
-- `nexoroute/fast` for chat, classification, and simple tasks.
-- `nexoroute/smart` for higher-quality general work.
-- `nexoroute/embed` for embeddings and semantic routing.
-- `nexoroute/guard` for moderation, PII, and safety checks.
-- `nexoroute/auto` as the virtual alias controlled by AutoRouter.
+- `thruplane/fast` for chat, classification, and simple tasks.
+- `thruplane/smart` for higher-quality general work.
+- `thruplane/embed` for embeddings and semantic routing.
+- `thruplane/guard` for moderation, PII, and safety checks.
+- `thruplane/auto` as the virtual alias controlled by AutoRouter.
 
-Aliases decouple the application contract from a physical model. NexoRoute can
+Aliases decouple the application contract from a physical model. Thruplane can
 change the serving model only within published compatibility, quality, and
 change-management rules.
 
@@ -203,7 +203,7 @@ change-management rules.
 
 Validate demand before operating a fixed GPU fleet:
 
-1. Start with metered serverless inference providers behind NexoRoute.
+1. Start with metered serverless inference providers behind Thruplane.
 2. Measure utilization, gross margin, latency, concurrency, and cache benefit.
 3. Move stable workloads to reserved capacity when utilization justifies it.
 4. Operate dedicated infrastructure only where it improves economics or meets
@@ -224,7 +224,7 @@ capacity changes.
 
 ## Strategic product bets
 
-### NexoRoute AutoRouter and Autopilot
+### Thruplane AutoRouter and Autopilot
 
 AutoRouter is the decision engine in the third product front. Autopilot is the
 opt-in control loop that applies AutoRouter recommendations automatically.
@@ -241,7 +241,7 @@ policy:
   data_classification: confidential
   allowed_regions: [br, us]
   provider_preference:
-    - nexoroute_included
+    - thruplane_included
     - customer_byok
   maximum_escalation_levels: 2
 ```
@@ -272,7 +272,7 @@ receipt that records the selected route, confidence, policy inputs, escalation,
 and fallback.
 
 The LLM routing layer must not run on every request. It adds latency, cost, and
-another failure dependency. NexoRoute must cache eligible routing decisions and
+another failure dependency. Thruplane must cache eligible routing decisions and
 fall back to deterministic policy whenever the semantic or LLM layer fails.
 
 Community receives the policy schema and deterministic local rules. Pro adds
@@ -282,7 +282,7 @@ constraints, regional enforcement, and approval workflows.
 
 The intended request lifecycle is:
 
-1. Prefer an eligible NexoRoute model covered by included usage.
+1. Prefer an eligible Thruplane model covered by included usage.
 2. Validate the quality floor, budget, latency goal, and policy constraints.
 3. Escalate to a stronger included or BYOK model only when necessary.
 4. Record the decision and outcome through Flight Recorder.
@@ -330,13 +330,13 @@ data plane and tracing model are stable.
 
 ### Privacy-preserving control plane
 
-The NexoRoute data plane runs inside the customer's infrastructure. A hosted
+The Thruplane data plane runs inside the customer's infrastructure. A hosted
 control plane can receive configuration, aggregate metrics, sanitized audit
 events, costs, and health signals without receiving prompts or responses by
 default.
 
 This split offers SaaS-like operations without forcing sensitive AI traffic
-through NexoRoute infrastructure.
+through Thruplane infrastructure.
 
 ## Delivery sequence
 
@@ -354,7 +354,7 @@ through NexoRoute infrastructure.
 - Add PostgreSQL and Redis state.
 - Add projects, keys, usage, costs, budgets, quotas, and alerts.
 - Add the first web console and hosted control-plane boundary.
-- Pilot NexoRoute Inference with compute credits and a small alias catalog.
+- Pilot Thruplane Inference with compute credits and a small alias catalog.
 
 ### v0.4: Safe model rollout
 

@@ -14,16 +14,16 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/config"
-	"nexoroute/internal/gateway"
-	"nexoroute/internal/provider"
-	"nexoroute/internal/telemetry"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/gateway"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/telemetry"
 )
 
 func TestHealthIsPublicAndHasRequestID(t *testing.T) {
 	t.Parallel()
 
-	handler := New(config.Config{Server: config.ServerConfig{APIKey: "nexoroute-secret"}}, nil, discardLogger())
+	handler := New(config.Config{Server: config.ServerConfig{APIKey: "thruplane-secret"}}, nil, discardLogger())
 	request := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	response := httptest.NewRecorder()
 
@@ -49,7 +49,7 @@ func TestReadinessIsPublicAndReflectsOpenTargets(t *testing.T) {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
 	t.Cleanup(upstream.Close)
-	cfg := testConfig(upstream.URL, "nexoroute-secret")
+	cfg := testConfig(upstream.URL, "thruplane-secret")
 	cfg.Routing.CircuitBreaker = config.CircuitBreakerConfig{
 		FailureThreshold: 1,
 		OpenDuration:     config.Duration(time.Minute),
@@ -67,13 +67,13 @@ func TestReadinessIsPublicAndReflectsOpenTargets(t *testing.T) {
 	chatRequest := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(
 		`{"model":"fast","messages":[{"role":"user","content":"hello"}]}`,
 	))
-	chatRequest.Header.Set("Authorization", "Bearer nexoroute-secret")
+	chatRequest.Header.Set("Authorization", "Bearer thruplane-secret")
 	handler.ServeHTTP(httptest.NewRecorder(), chatRequest)
 
 	notReady := httptest.NewRecorder()
 	handler.ServeHTTP(notReady, httptest.NewRequest(http.MethodGet, "/readyz", nil))
 	assertReadinessResponse(t, notReady, http.StatusServiceUnavailable, "not_ready", 1, 0, 1)
-	for _, sensitive := range []string{"provider", "provider-model", upstream.URL, "nexoroute-secret"} {
+	for _, sensitive := range []string{"provider", "provider-model", upstream.URL, "thruplane-secret"} {
 		if strings.Contains(notReady.Body.String(), sensitive) {
 			t.Errorf("readiness body contains sensitive target detail %q: %s", sensitive, notReady.Body.String())
 		}
@@ -90,12 +90,12 @@ func TestProtectedRoutesRequireConfiguredBearerToken(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.Config{
-		Server: config.ServerConfig{APIKey: "nexoroute-secret"},
+		Server: config.ServerConfig{APIKey: "thruplane-secret"},
 		Models: map[string]config.ModelConfig{"fast": {}},
 	}
 	handler := New(cfg, gateway.New(cfg, nil), discardLogger())
 
-	for _, authorization := range []string{"", "Bearer wrong", "Basic nexoroute-secret"} {
+	for _, authorization := range []string{"", "Bearer wrong", "Basic thruplane-secret"} {
 		request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
 		request.Header.Set("Authorization", authorization)
 		response := httptest.NewRecorder()
@@ -107,7 +107,7 @@ func TestProtectedRoutesRequireConfiguredBearerToken(t *testing.T) {
 	}
 
 	request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
-	request.Header.Set("Authorization", "bearer nexoroute-secret")
+	request.Header.Set("Authorization", "bearer thruplane-secret")
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
 	if response.Code != http.StatusOK {
@@ -250,14 +250,14 @@ func TestMetricsExposeBoundedOperationalDataWithoutSecrets(t *testing.T) {
 		t.Fatalf("metrics status = %d, want 200; body = %s", metrics.Code, metrics.Body.String())
 	}
 	assertContainsAll(t, metrics.Body.String(),
-		`nexoroute_build_info{build_date="2026-09-26T00:00:00Z",revision="abc123",version="v0.1.0-beta.1"} 1`,
-		`nexoroute_http_requests_total{method="GET",route="unmatched",status="404"} 1`,
-		`nexoroute_http_requests_total{method="POST",route="/v1/chat/completions",status="200"} 1`,
-		`nexoroute_route_selections_total{model="provider-model",provider="provider"} 1`,
-		`nexoroute_request_attempts_sum{model="provider-model",provider="provider"} 1`,
-		`nexoroute_request_fallbacks_sum{model="provider-model",provider="provider"} 0`,
-		`nexoroute_targets{state="available"} 1`,
-		`nexoroute_targets{state="total"} 1`,
+		`thruplane_build_info{build_date="2026-09-26T00:00:00Z",revision="abc123",version="v0.1.0-beta.1"} 1`,
+		`thruplane_http_requests_total{method="GET",route="unmatched",status="404"} 1`,
+		`thruplane_http_requests_total{method="POST",route="/v1/chat/completions",status="200"} 1`,
+		`thruplane_route_selections_total{model="provider-model",provider="provider"} 1`,
+		`thruplane_request_attempts_sum{model="provider-model",provider="provider"} 1`,
+		`thruplane_request_fallbacks_sum{model="provider-model",provider="provider"} 0`,
+		`thruplane_targets{state="available"} 1`,
+		`thruplane_targets{state="total"} 1`,
 	)
 	for _, sensitive := range []string{
 		"prompt-secret-value", "gateway-secret-value", "header-secret-value",
@@ -273,7 +273,7 @@ func TestPlaygroundServesOnlyEmbeddedAssetsWithSecurityHeaders(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.Config{Server: config.ServerConfig{
-		APIKey:     "nexoroute-secret",
+		APIKey:     "thruplane-secret",
 		Playground: config.PlaygroundConfig{Enabled: true},
 	}}
 	handler := New(cfg, nil, discardLogger())
@@ -289,7 +289,7 @@ func TestPlaygroundServesOnlyEmbeddedAssetsWithSecurityHeaders(t *testing.T) {
 		contentType string
 		contains    string
 	}{
-		{path: "/playground/", contentType: "text/html; charset=utf-8", contains: "NexoRoute Playground"},
+		{path: "/playground/", contentType: "text/html; charset=utf-8", contains: "Thruplane Playground"},
 		{path: "/playground/app.js", contentType: "text/javascript; charset=utf-8", contains: "use strict"},
 		{path: "/playground/styles.css", contentType: "text/css; charset=utf-8", contains: ":root"},
 	}

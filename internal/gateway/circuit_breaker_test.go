@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"nexoroute/internal/catalog"
-	"nexoroute/internal/circuitbreaker"
-	"nexoroute/internal/config"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/catalog"
+	"github.com/lucianoaugusto1/thruplane/internal/circuitbreaker"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
 func TestCircuitBreakerOpensAndSkipsPrimaryTarget(t *testing.T) {
@@ -40,8 +40,8 @@ func TestCircuitBreakerOpensAndSkipsPrimaryTarget(t *testing.T) {
 			t.Fatalf("request %d status = %d, want 200; body = %s", requestIndex+1, response.Code, response.Body.String())
 		}
 		if requestIndex == 2 {
-			assertHeader(t, response.Header(), "X-NexoRoute-Attempts", "1")
-			assertHeader(t, response.Header(), "X-NexoRoute-Fallbacks", "1")
+			assertHeader(t, response.Header(), "X-Thruplane-Attempts", "1")
+			assertHeader(t, response.Header(), "X-Thruplane-Fallbacks", "1")
 		}
 	}
 	if got := primaryCalls.Load(); got != 2 {

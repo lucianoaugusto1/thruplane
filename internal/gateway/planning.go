@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"nexoroute/internal/catalog"
-	"nexoroute/internal/config"
-	"nexoroute/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/catalog"
+	"github.com/lucianoaugusto1/thruplane/internal/config"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
 )
 
 type chatPlan struct {

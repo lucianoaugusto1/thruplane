@@ -1,14 +1,15 @@
-# NexoRoute brand guide
+# Thruplane brand guide
 
 ## Brand status
 
-NexoRoute is the project's working commercial brand. A preliminary web search
-did not find another AI gateway using this name. It did find an unrelated
-transportation business in France.
+Thruplane is the project's commercial brand. A preliminary search completed on
+September 27, 2026, found no exact-name AI gateway, software product, indexed
+GitHub project, npm package, or PyPI package. The `thruplane.com` domain also
+had no registration record at the time of the search.
 
-This check is not legal clearance. Before public launch, verify trademarks,
-company names, domains, social handles, and package registries in every target
-market. Replace the working brand if that review finds a material conflict.
+This check is not legal clearance. Before a commercial launch, verify similar
+trademarks, company names, domains, and social handles in every target market.
+Domain and registry availability can change at any time.
 
 ## Positioning
 
@@ -16,10 +17,10 @@ market. Replace the working brand if that review finds a material conflict.
 
 **Tagline:** The open control plane for AI traffic.
 
-**One-line description:** NexoRoute routes, secures, observes, and governs model
+**One-line description:** Thruplane routes, secures, observes, and governs model
 calls through one OpenAI-compatible endpoint.
 
-**Short pitch:** NexoRoute gives engineering teams one stable API for hosted and
+**Short pitch:** Thruplane gives engineering teams one stable API for hosted and
 local models. The open-source gateway handles credentials, aliases, streaming,
 retries, and failover. Paid editions add team operations and enterprise
 governance without changing application code.
@@ -40,12 +41,12 @@ governance without changing application code.
 
 ## Product names
 
-- **NexoRoute Community:** Apache-licensed, self-hosted open-source gateway
-- **NexoRoute Pro:** Planned team operations and cost-control edition
-- **NexoRoute Enterprise:** Planned governance, scale, security, and support
-- **NexoRoute Cloud:** Reserved name for a future managed service
+- **Thruplane Community:** Apache-licensed, self-hosted open-source gateway
+- **Thruplane Pro:** Planned team operations and cost-control edition
+- **Thruplane Enterprise:** Planned governance, scale, security, and support
+- **Thruplane Cloud:** Reserved name for a future managed service
 
-Use **NexoRoute** on first reference and in headings. Use `nexoroute` for the
+Use **Thruplane** on first reference and in headings. Use `thruplane` for the
 binary, Go module, container image, and command examples.
 
 ## Messaging pillars
@@ -57,7 +58,7 @@ inspect behavior, and leave without exporting from a proprietary format.
 
 ### Operationally serious
 
-NexoRoute treats retries, cancellation, streaming, credentials, errors, and
+Thruplane treats retries, cancellation, streaming, credentials, errors, and
 startup validation as production concerns rather than integration details.
 
 ### Provider-neutral
@@ -84,6 +85,6 @@ unless current evidence supports the claim.
 
 ## Launch description
 
-> NexoRoute is an open-source AI gateway for routing production model traffic
+> Thruplane is an open-source AI gateway for routing production model traffic
 > through one OpenAI-compatible endpoint. Run it yourself today, then add team
 > operations or enterprise governance when you need them.

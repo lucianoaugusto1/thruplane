@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"nexoroute/internal/circuitbreaker"
-	"nexoroute/internal/provider"
-	"nexoroute/internal/ratelimit"
+	"github.com/lucianoaugusto1/thruplane/internal/circuitbreaker"
+	"github.com/lucianoaugusto1/thruplane/internal/provider"
+	"github.com/lucianoaugusto1/thruplane/internal/ratelimit"
 )
 
 type executionResult struct {

@@ -203,7 +203,7 @@ go/no-go report. Prompt and response collection is off by default.
 
 ### 9. Included inference, not unlimited free models
 
-**Create:** A metered NexoRoute Inference backend, curated stable aliases,
+**Create:** A metered Thruplane Inference backend, curated stable aliases,
 model-specific limits, admission control, abuse prevention, a compute-credit
 ledger, explicit overage consent, BYOK fallback policy, and margin dashboards.
 Start with metered external capacity and validate demand before reserving or
