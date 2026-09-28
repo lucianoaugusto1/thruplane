@@ -1,20 +1,20 @@
 :root {
-  color-scheme: dark;
-  --page: #0f1a19;
-  --panel: #14211f;
-  --panel-raised: #1b2a27;
-  --panel-soft: #182522;
-  --line: #2d3d38;
-  --line-strong: #56675f;
-  --text: #f2e9da;
-  --muted: #94a098;
-  --muted-bright: #d3d8d0;
+  color-scheme: light;
+  --page: #f2e9dc;
+  --panel: #f8f1e7;
+  --panel-raised: #fffaf3;
+  --panel-soft: #eee1d2;
+  --line: #d6c5b2;
+  --line-strong: #ab9682;
+  --text: #261d18;
+  --muted: #756a61;
+  --muted-bright: #4e423c;
   --accent: #ee6a3b;
   --accent-bright: #ff936b;
   --accent-soft: rgba(238, 106, 59, 0.13);
-  --green: #78a98b;
-  --red: #e07062;
-  --yellow: #d6a45c;
+  --green: #4b7d63;
+  --red: #c75248;
+  --yellow: #a96f24;
   --radius: 4px;
   --radius-small: 2px;
   --shadow: none;
@@ -327,7 +327,7 @@ h2 {
 .memory-pill {
   flex: 0 0 auto;
   padding: 4px 7px;
-  border: 1px solid rgba(120, 169, 139, 0.25);
+  border: 1px solid rgba(75, 125, 99, 0.25);
   border-radius: 2px;
   color: var(--green);
   font: 600 8px ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -355,10 +355,10 @@ h2 {
   gap: 9px;
   margin-top: 16px;
   padding: 10px;
-  border: 1px solid rgba(214, 164, 92, 0.22);
+  border: 1px solid rgba(169, 111, 36, 0.22);
   border-radius: 2px;
   color: var(--muted);
-  background: rgba(214, 164, 92, 0.06);
+  background: rgba(169, 111, 36, 0.06);
 }
 
 .cost-warning > span {
@@ -367,7 +367,7 @@ h2 {
   height: 18px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(214, 164, 92, 0.4);
+  border: 1px solid rgba(169, 111, 36, 0.4);
   border-radius: 50%;
   color: var(--yellow);
   font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -440,7 +440,7 @@ textarea:hover {
 
 input::placeholder,
 textarea::placeholder {
-  color: #74676a;
+  color: #9a887a;
 }
 
 .input-action {
@@ -678,7 +678,7 @@ input[type="range"] {
 }
 
 .button-danger {
-  border-color: rgba(224, 112, 98, 0.35);
+  border-color: rgba(199, 82, 72, 0.35);
   color: var(--red);
 }
 
@@ -812,18 +812,18 @@ input[type="range"] {
 .tool-calls {
   margin: 8px 0 0;
   padding: 12px;
-  border: 1px solid rgba(120, 169, 139, 0.22);
+  border: 1px solid rgba(75, 125, 99, 0.22);
   border-radius: 2px;
-  background: rgba(120, 169, 139, 0.06);
+  background: rgba(75, 125, 99, 0.06);
 }
 
 .conversation-notice {
   margin: 16px auto;
   padding: 9px 12px;
-  border: 1px solid rgba(224, 112, 98, 0.28);
+  border: 1px solid rgba(199, 82, 72, 0.28);
   border-radius: 2px;
   color: var(--red);
-  background: rgba(224, 112, 98, 0.07);
+  background: rgba(199, 82, 72, 0.07);
   font-size: 11px;
   text-align: center;
 }
@@ -926,7 +926,7 @@ input[type="range"] {
   border: 0;
   border-radius: 1px;
   color: var(--muted-bright);
-  background: rgba(247, 240, 230, 0.06);
+  background: rgba(38, 29, 24, 0.06);
 }
 
 .pulse-indicator {
@@ -935,7 +935,7 @@ input[type="range"] {
   margin-top: 10px;
   border-radius: 1px;
   background: var(--green);
-  box-shadow: 0 0 0 5px rgba(120, 169, 139, 0.09);
+  box-shadow: 0 0 0 5px rgba(75, 125, 99, 0.09);
 }
 
 .route-card {
@@ -1081,10 +1081,10 @@ input[type="range"] {
   gap: 9px;
   margin-top: 24px;
   padding: 12px;
-  border: 1px solid rgba(120, 169, 139, 0.16);
+  border: 1px solid rgba(75, 125, 99, 0.16);
   border-radius: 2px;
   color: var(--muted);
-  background: rgba(120, 169, 139, 0.045);
+  background: rgba(75, 125, 99, 0.045);
 }
 
 .privacy-note > span {

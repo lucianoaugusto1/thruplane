@@ -7,10 +7,10 @@
       <stop offset="1" stop-color="#C94F2C"/>
     </linearGradient>
   </defs>
-  <rect x="2" y="2" width="60" height="60" rx="10" fill="#14211F"/>
-  <path d="M24 10 48 22 40 54 16 42Z" fill="#263531" stroke="#EE6A3B" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M9 21H21M44.5 21H55" fill="none" stroke="#77847E" stroke-width="3" stroke-linecap="round"/>
-  <path d="M9 43H18.5M42.5 43H55" fill="none" stroke="#77847E" stroke-width="3" stroke-linecap="round"/>
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#FFF8EE"/>
+  <path d="M24 10 48 22 40 54 16 42Z" fill="#F6DFCD" stroke="#EE6A3B" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M9 21H21M44.5 21H55" fill="none" stroke="#9A8575" stroke-width="3" stroke-linecap="round"/>
+  <path d="M9 43H18.5M42.5 43H55" fill="none" stroke="#9A8575" stroke-width="3" stroke-linecap="round"/>
   <path d="M9 32H55" fill="none" stroke="url(#route)" stroke-width="4" stroke-linecap="round"/>
   <circle cx="9" cy="32" r="2.5" fill="#FF936B"/>
   <circle cx="55" cy="32" r="2.5" fill="#C94F2C"/>
