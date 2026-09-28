@@ -52,28 +52,31 @@ binary, Go module, container image, and command examples.
 ## Visual identity
 
 The visual system treats Thruplane as an operator workbench, not an AI chat
-product. Dark editorial surfaces keep attention on the request and its route.
+product. A dark petroleum shell frames a warm paper canvas where requests run.
 Cream provides legibility, while industrial orange identifies focus, traffic,
 and primary actions.
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| Carbon | `#16151B` | Page and central workspace |
-| Graphite | `#1A191F` | Side panels and navigation |
-| Elevated | `#211F26` | Raised surfaces and controls |
-| Rule | `#373138` | Borders and structural dividers |
-| Cream | `#F7F0E6` | Primary text |
-| Dust | `#A79690` | Secondary text |
-| Thruplane orange | `#F27745` | Primary actions, focus, and routes |
-| Tangerine | `#FF9B6D` | Hover, highlights, and route origin |
-| Route green | `#82AA8D` | Success and healthy state |
-| Signal amber | `#D8A45C` | Warnings and degraded state |
-| Fault clay | `#E06C60` | Errors and destructive actions |
+| Petroleum | `#0F1A19` | Application shell and header |
+| Deep teal | `#14211F` | Side panels and navigation |
+| Elevated teal | `#1B2A27` | Raised dark surfaces and controls |
+| Paper | `#F3EADC` | Central request workspace |
+| Porcelain | `#FFFAF3` | Raised light surfaces and messages |
+| Rule | `#2D3D38` | Borders on the dark shell |
+| Cream | `#F2E9DA` | Primary text on dark surfaces |
+| Thruplane orange | `#EE6A3B` | Primary actions, focus, and routes |
+| Tangerine | `#FF936B` | Hover, highlights, and route origin |
+| Route green | `#78A98B` | Success and healthy state |
+| Signal amber | `#D6A45C` | Warnings and degraded state |
+| Fault clay | `#E07062` | Errors and destructive actions |
 
-Use orange as the primary brand color and cream for readable content. Reserve
-green for success and healthy traffic. Use fine rules, restrained controls,
-square corners, and generous editorial type to create hierarchy. Avoid glowing
-orbs, nebula gradients, sparkles, oversized pills, and other generic AI motifs.
+Use orange as the primary brand color and cream for readable content. Contrast
+the petroleum shell with the paper request canvas so the product has its own
+recognizable silhouette. Reserve green for success and healthy traffic. Use
+fine rules, restrained controls, square corners, and generous editorial type
+to create hierarchy. Avoid glowing orbs, nebula gradients, sparkles, oversized
+pills, and other generic AI motifs.
 
 ### Icon
 
@@ -83,7 +86,7 @@ through the plane and deepens from tangerine to terracotta.
 
 - Use the complete square mark at 20 pixels or larger.
 - Keep clear space equal to one-eighth of the mark's width.
-- Use the supplied carbon tile on both light and dark backgrounds.
+- Use the supplied petroleum tile on both light and dark backgrounds.
 - Do not rotate the mark, change the route count, or add letters inside it.
 - Use the product name beside the mark when the audience may not know it yet.
 
