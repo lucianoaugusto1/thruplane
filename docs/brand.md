@@ -51,28 +51,29 @@ binary, Go module, container image, and command examples.
 
 ## Visual identity
 
-The visual system combines warm, paper-like surfaces with a precise industrial
-orange. Cream makes the product approachable and premium; Thruplane orange
-identifies routes, focus, and primary actions.
+The visual system treats Thruplane as an operator workbench, not an AI chat
+product. Dark editorial surfaces keep attention on the request and its route.
+Cream provides legibility, while industrial orange identifies focus, traffic,
+and primary actions.
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| Paper | `#F7F0E6` | Page background |
-| Porcelain | `#FFF9F2` | Panels and navigation |
-| Elevated | `#FFFCF7` | Raised surfaces and controls |
-| Sand | `#F2E7DA` | Secondary surfaces |
-| Clay line | `#DCCBB9` | Borders and dividers |
-| Ink | `#241A14` | Primary text |
-| Umber | `#79695C` | Secondary text |
-| Thruplane orange | `#F26632` | Primary actions, focus, and routes |
-| Tangerine | `#FF8A4C` | Hover, highlights, and route origin |
-| Route green | `#397A61` | Success and healthy state |
-| Signal amber | `#B97822` | Warnings and degraded state |
-| Fault clay | `#C94F45` | Errors and destructive actions |
+| Carbon | `#16151B` | Page and central workspace |
+| Graphite | `#1A191F` | Side panels and navigation |
+| Elevated | `#211F26` | Raised surfaces and controls |
+| Rule | `#373138` | Borders and structural dividers |
+| Cream | `#F7F0E6` | Primary text |
+| Dust | `#A79690` | Secondary text |
+| Thruplane orange | `#F27745` | Primary actions, focus, and routes |
+| Tangerine | `#FF9B6D` | Hover, highlights, and route origin |
+| Route green | `#82AA8D` | Success and healthy state |
+| Signal amber | `#D8A45C` | Warnings and degraded state |
+| Fault clay | `#E06C60` | Errors and destructive actions |
 
-Use orange as the primary brand color and let cream occupy most of the visual
-field. Reserve green for success and healthy traffic. Avoid large solid orange
-surfaces; the color works best as a route, focus signal, or decisive action.
+Use orange as the primary brand color and cream for readable content. Reserve
+green for success and healthy traffic. Use fine rules, restrained controls,
+square corners, and generous editorial type to create hierarchy. Avoid glowing
+orbs, nebula gradients, sparkles, oversized pills, and other generic AI motifs.
 
 ### Icon
 
@@ -82,7 +83,7 @@ through the plane and deepens from tangerine to terracotta.
 
 - Use the complete square mark at 20 pixels or larger.
 - Keep clear space equal to one-eighth of the mark's width.
-- Use the supplied cream tile on both light and dark backgrounds.
+- Use the supplied carbon tile on both light and dark backgrounds.
 - Do not rotate the mark, change the route count, or add letters inside it.
 - Use the product name beside the mark when the audience may not know it yet.
 

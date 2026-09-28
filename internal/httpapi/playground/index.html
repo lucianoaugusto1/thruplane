@@ -231,20 +231,18 @@
 
       <div class="conversation" id="conversation" aria-live="polite" aria-label="Conversation messages">
         <div class="empty-state" id="empty-state">
-          <div class="empty-orbit" aria-hidden="true"><i></i><i></i></div>
-          <p class="eyebrow">Ready to route</p>
-          <h3>Send one request.<br>See the entire path.</h3>
-          <p>Test streaming, tools, and multimodal input through the same API your application uses.</p>
-          <div class="starter-grid" aria-hidden="true">
-            <span>Text</span><span>Tools</span><span>Image</span><span>PDF</span><span>Audio</span>
-          </div>
+          <div class="empty-rule" aria-hidden="true"><span>01</span></div>
+          <p class="eyebrow">Request workspace</p>
+          <h3>Route one request.<br><em>Inspect every hop.</em></h3>
+          <p>Compose a real API call and inspect its route, timing, provider response, and usage in one workspace.</p>
+          <p class="capability-line">Text / tools / image / PDF / audio</p>
         </div>
       </div>
 
       <div class="composer">
         <div class="attachments" id="attachments" aria-live="polite"></div>
         <label class="sr-only" for="prompt">Message</label>
-        <textarea id="prompt" rows="3" placeholder="Ask a model through Thruplane…"></textarea>
+        <textarea id="prompt" rows="3" placeholder="Compose a request through Thruplane…"></textarea>
         <div class="composer-actions">
           <div class="composer-tools">
             <label class="attach-button" for="files" aria-label="Attach image, PDF, WAV, or MP3">

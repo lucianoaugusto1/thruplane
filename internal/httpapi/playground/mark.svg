@@ -3,15 +3,15 @@
   <desc id="desc">Three traffic paths crossing a tilted control plane, with the active route highlighted.</desc>
   <defs>
     <linearGradient id="route" x1="9" y1="32" x2="55" y2="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF8A4C"/>
+      <stop stop-color="#FF9B6D"/>
       <stop offset="1" stop-color="#C94F2C"/>
     </linearGradient>
   </defs>
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="#FFF8EE"/>
-  <path d="M24 10 48 22 40 54 16 42Z" fill="#F8E1CF" stroke="#F26632" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M9 21H21M44.5 21H55" fill="none" stroke="#9B8575" stroke-width="3" stroke-linecap="round"/>
-  <path d="M9 43H18.5M42.5 43H55" fill="none" stroke="#9B8575" stroke-width="3" stroke-linecap="round"/>
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#211F26"/>
+  <path d="M24 10 48 22 40 54 16 42Z" fill="#34282A" stroke="#F27745" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M9 21H21M44.5 21H55" fill="none" stroke="#8F7B78" stroke-width="3" stroke-linecap="round"/>
+  <path d="M9 43H18.5M42.5 43H55" fill="none" stroke="#8F7B78" stroke-width="3" stroke-linecap="round"/>
   <path d="M9 32H55" fill="none" stroke="url(#route)" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="9" cy="32" r="2.5" fill="#FF8A4C"/>
+  <circle cx="9" cy="32" r="2.5" fill="#FF9B6D"/>
   <circle cx="55" cy="32" r="2.5" fill="#C94F2C"/>
 </svg>
